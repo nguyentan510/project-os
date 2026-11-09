@@ -15,10 +15,32 @@ CARDS = """
 
 
 class CheckTest(ProjectCase):
-    def test_check_passes_on_fresh_template(self):
+    configured = False
+
+    def set_cmds(self, lint, test):
+        pos = self.root / "pos.py"
+        text = pos.read_text(encoding="utf-8")
+        text = text.replace('LINT_CMD = ""', f"LINT_CMD = {lint!r}").replace('TEST_CMD = ""', f"TEST_CMD = {test!r}")
+        pos.write_text(text, encoding="utf-8")
+
+    def test_unconfigured_lint_and_test_fail(self):
+        r = self.pos("check")
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertIn("LỖI: chưa cấu hình LINT_CMD", r.stdout)
+        self.assertNotIn("check: qua", r.stdout)
+
+    def test_none_passes_with_warning(self):
+        self.set_cmds("none", "none")
         r = self.pos("check")
         self.assertEqual(r.returncode, 0, r.stdout)
-        self.assertIn("check: qua", r.stdout)
+        self.assertIn("CẢNH BÁO: TEST_CMD", r.stdout)
+
+    def test_real_command_result_is_used(self):
+        self.set_cmds("none", "exit 3")
+        self.assertEqual(self.pos("check").returncode, 3)
+
+    def test_setup_without_command_still_passes(self):
+        self.assertEqual(self.pos("setup").returncode, 0)
 
     def test_unknown_command_exits_2(self):
         self.assertEqual(self.pos("khong-co").returncode, 2)
@@ -53,12 +75,39 @@ class PlanCheckTest(ProjectCase):
         self.assertEqual(r.returncode, 1)
         self.assertIn("T-002 ghi vào Hot file", r.stdout)
 
-    @unittest.expectedFailure  # lỗi đã biết, sửa ở bước 3: Hot file có `*` giữa đường dẫn bị so theo tiền tố "src/"
     def test_hot_file_with_inner_wildcard_does_not_flag_unrelated_scope(self):
         self.set_hot_files("src/*/routes.py")
         self.write("docs/plan/M1.md", CARDS.replace("src/map/*", "src/map/web/*").replace("src/ord/*", "src/ord/web/*"))
         r = self.pos("plan-check")
         self.assertEqual(r.returncode, 0, r.stdout)
+
+
+class OverlapTest(unittest.TestCase):
+    def setUp(self):
+        import importlib.util
+        from helpers import SKILL
+        spec = importlib.util.spec_from_file_location("pos", SKILL / "template" / "pos.py")
+        self.pos = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.pos)
+
+    def test_cases(self):
+        cases = [
+            ("src/map/*", "src/map/web/*", True),         # thư mục con
+            ("src/map/*", "src/ord/*", False),
+            ("src/map/*", "src/map", True),                # thư mục cha viết không có /
+            ("src/map/", "src/map/a.py", True),
+            ("src/*/routes.py", "src/map/web/*", False),   # * giữa chỉ thay một thư mục
+            ("src/*/routes.py", "src/map/*", True),        # src/map/routes.py
+            ("src/*/routes.py", "src/map/routes.py", True),
+            ("src/map*", "src/mapping/a.py", True),
+            ("**/contract.*", "src/map/*", True),          # ** thì báo trùng (thận trọng)
+            ("db/schema.*", "src/map/*", False),
+            ("tests/api/map/*", "tests/api/ord/*", False),
+        ]
+        for a, b, want in cases:
+            with self.subTest(a=a, b=b):
+                self.assertEqual(self.pos.overlaps(a, b), want)
+                self.assertEqual(self.pos.overlaps(b, a), want)
 
 
 class WorktreeCase(ProjectCase):

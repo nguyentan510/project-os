@@ -28,6 +28,7 @@ class ProjectCase(unittest.TestCase):
     """Mỗi test có một repo git tạm, đã chạy init.py, có commit đầu trên main."""
 
     git_repo = True
+    configured = True  # điền LINT_CMD/TEST_CMD = "none" để check (và hook pre-push) qua
 
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
@@ -39,6 +40,11 @@ class ProjectCase(unittest.TestCase):
             git(self.root, "config", "user.name", "test")
         r = run([PY, str(INIT), str(self.root)], self.root)
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        if self.configured:
+            pos = self.root / "pos.py"
+            text = pos.read_text(encoding="utf-8")
+            pos.write_text(text.replace('LINT_CMD = ""', 'LINT_CMD = "none"').replace('TEST_CMD = ""', 'TEST_CMD = "none"'),
+                           encoding="utf-8")
         if self.git_repo:
             git(self.root, "add", "-A")
             git(self.root, "commit", "-q", "-m", "init")

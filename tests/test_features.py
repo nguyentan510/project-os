@@ -61,7 +61,6 @@ class FeaturesTest(ProjectCase):
         text = (self.root / "docs/product/FEATURES.md").read_text(encoding="utf-8")
         self.assertIn("tests/api/shop/test_a.py (2)", text)
 
-    @unittest.expectedFailure  # lỗi đã biết: features.py quét cả pos.py, nơi có mã ví dụ MAP-07, MAP-02
     def test_module_named_like_doc_example_is_not_flagged_by_tooling(self):
         self.write("docs/product/FEATURES.md", REGISTRY.replace("SHOP", "MAP"))
         r = self.features()

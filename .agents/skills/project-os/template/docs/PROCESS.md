@@ -54,7 +54,7 @@ Mỗi bước có đầu ra; chủ dự án duyệt rồi mới sang bước sau
 | `AGENTS.md` | Đủ các mục theo mẫu phụ lục; Restricted zone và Hot file **thật** của dự án | AI phiên mới đọc xong làm được task mẫu mà không phải hỏi lại |
 | `STATUS.md` | Đang giữ: trống · Tiếp theo: T-001 · Đang chặn: các `Q-` liên quan | Biết ngay việc đầu tiên là gì |
 | `GLOSSARY.md` | Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) ở mục cuối | Không từ nào trong BRIEF, FEATURES phải đoán nghĩa |
-| `pos.py`, hook | `setup`, `check`, `task`, `done`; pre-push hook gọi `python pos.py check` | `python pos.py setup` + `python pos.py check` xanh trên máy sạch (0 test vẫn xanh) |
+| `pos.py`, hook | `setup`, `check`, `task`, `done`; pre-push hook gọi `python pos.py check` | `python pos.py setup` + `python pos.py check` xanh trên máy sạch; `LINT_CMD`, `TEST_CMD` đã điền (chưa có test thì ghi `"none"`: qua kèm cảnh báo; để trống thì `check` báo lỗi) |
 | GitHub | Khoá main, CI chạy `python pos.py check`, `CODEOWNERS` khi có Restricted zone | Thử push thẳng main bị chặn |
 | `.gitignore`, `.env.example` | `.env` bị bỏ qua; `.env.example` chỉ có tên biến, không giá trị; `check` báo lỗi nếu code đọc biến (`os.getenv`, `process.env`…) chưa khai ở đây | Quét khoá sạch |
 
@@ -416,7 +416,7 @@ W1 Song song  2–5 agent  Mỗi task một worktree, một Scope (RW) riêng; c
 W2 Nối dây    1 agent    Nối module vào ứng dụng chính, Hot file, e2e tổng
 ```
 
-- **Đất của ai người đó xây:** Wave nào cũng phải có Scope (RW) đôi một rời nhau. `python pos.py plan-check` chặn: trùng Scope cùng Wave, Phụ thuộc trỏ ngang hoặc ngược Wave, task ở Wave song song ghi vào Hot file, Wave quá 5 task. Chạy trước khi chủ dự án duyệt plan.
+- **Đất của ai người đó xây:** Wave nào cũng phải có Scope (RW) đôi một rời nhau. `python pos.py plan-check` chặn: trùng Scope cùng Wave, Phụ thuộc trỏ ngang hoặc ngược Wave, task ở Wave song song ghi vào Hot file, Wave quá 5 task. Chạy trước khi chủ dự án duyệt plan. Mẫu đường dẫn so theo từng đoạn giữa dấu `/`: `*` ở giữa (`src/*/routes.py`) chỉ thay một thư mục; `*` ở đoạn cuối hoặc `**` phủ cả thư mục con.
 - **Sửa chéo thì sang Wave sau:** Builder A cần sửa code của Builder B → dừng, Orchestrator mở task riêng ở Wave sau. Không sửa chéo trong cùng Wave.
 - **Đừng ép song song:** W1 chỉ có 1 task thì cứ chạy tuần tự. Thêm agent là thêm gánh review và gánh duyệt của chủ dự án; mặc định 3, tối đa 5.
 - **Không "không bao giờ xung đột":** plan-check loại xung đột file do chia việc. Còn lại (lockfile, tài liệu dùng chung, sổ mã) do merge queue bắt bằng rebase + CI; file dùng chung kiểu này chỉ Orchestrator hoặc task W2 được ghi.
