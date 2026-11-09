@@ -35,15 +35,26 @@ Skill dùng định dạng `SKILL.md` chung; mỗi công cụ tìm ở một th�
 | Codex | `~/.agents/skills/project-os/` | `$project-os` |
 | Antigravity | `~/.gemini/config/skills/project-os/` (cũng nhận `~/.agents/skills/`) | tự nhận theo mô tả |
 
+**Một lệnh** (tự nhận hệ điều hành và công cụ trên máy, clone về `~/project-os`, tạo liên kết):
+
 ```bash
-git clone https://github.com/nguyentan510/project-os.git ~/project-os
-mkdir -p ~/.agents/skills ~/.claude/skills
-ln -s ~/project-os/.agents/skills/project-os ~/.agents/skills/project-os   # Codex, Antigravity
-ln -s ~/project-os/.agents/skills/project-os ~/.claude/skills/project-os   # Claude Code
+curl -fsSL https://raw.githubusercontent.com/nguyentan510/project-os/main/install.sh | bash
 ```
 
-Windows không có symlink: chép thư mục `.agents/skills/project-os` vào các chỗ trên.
-Cập nhật skill: `git -C ~/project-os pull`.
+Windows (PowerShell, không cần bash):
+
+```powershell
+irm https://raw.githubusercontent.com/nguyentan510/project-os/main/install.ps1 | iex
+```
+
+- Luôn cài vào `~/.agents/skills/`; cài thêm cho Claude Code, Antigravity, Codex khi thấy thư mục cấu hình hoặc lệnh của chúng.
+- Chạy lại cùng lệnh để cập nhật. Không ghi đè thứ khác đã có ở đích.
+- Tuỳ chọn (chạy file đã tải): `--all` cài vào mọi thư mục · `--dry-run` chỉ in việc sẽ làm · `--uninstall` gỡ · `--dir <chỗ>` đổi nơi clone. PowerShell: `-All` `-DryRun` `-Uninstall` `-Dir`.
+- Windows dùng junction (không cần quyền admin); lỗi thì chép thư mục, chạy lại để cập nhật.
+
+Muốn xem script trước khi chạy: tải `install.sh` về, đọc, rồi `bash install.sh`.
+
+Cài bằng tay: clone repo rồi `ln -s ~/project-os/.agents/skills/project-os <thư mục skill ở bảng trên>/project-os`.
 
 ## Dùng
 
