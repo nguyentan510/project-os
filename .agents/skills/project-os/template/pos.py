@@ -172,9 +172,21 @@ def pr_merged(br):
     try:
         r = subprocess.run(["gh", "pr", "view", br, "--json", "state", "-q", ".state"],
                            capture_output=True, text=True, cwd=ROOT)
-        return r.returncode == 0 and r.stdout.strip() == "MERGED"
+        if r.returncode == 0 and r.stdout.strip() == "MERGED":
+            return True
     except OSError:
-        return False  # không có gh
+        pass  # không có gh
+    return content_merged(br)
+
+
+def content_merged(br):
+    """Không có gh: nhận ra merge squash bằng nội dung, không bằng tên. Gộp thử branch vào origin/BASE
+    (merge-tree, không đụng working tree); ra đúng cây của origin/BASE thì mọi thay đổi của branch
+    đã có trên BASE, xoá branch không mất gì. Git cũ (< 2.38) hoặc có xung đột: trả False (an toàn)."""
+    code, out, _ = git("merge-tree", "--write-tree", f"origin/{BASE}", br)
+    if code != 0 or not out:
+        return False
+    return out.splitlines()[0] == git("rev-parse", f"origin/{BASE}^{{tree}}")[1]
 
 
 def cmd_done(opts, _):
@@ -190,7 +202,8 @@ def cmd_done(opts, _):
         how = f"branch đã nằm trong origin/{BASE}"
     else:
         die(f"Branch {br} chưa merge vào {BASE}. Merge PR trước, hoặc huỷ: python pos.py drop T={t}\n"
-            "(Merge squash cần lệnh gh để nhận ra PR đã merge.)")
+            "(Merge squash: không có gh thì chỉ nhận ra khi nội dung branch đã nằm nguyên trên "
+            f"origin/{BASE}; cần git 2.38+.)")
     if git("worktree", "remove", str(path))[0]:
         die("Worktree còn thay đổi chưa commit, không dọn.")
     git("branch", "--quiet", "-D", br)
@@ -289,7 +302,10 @@ def cmd_sos(opts, _):
                 die("Không chụp được thay đổi chưa commit; dừng, chưa làm gì khác. Tự sao lưu: git stash -u")
         else:
             die("Không chụp được thay đổi chưa commit; dừng, chưa làm gì khác. Tự sao lưu: git stash -u")
-        tmpdir.cleanup()
+        try:
+            tmpdir.cleanup()
+        except OSError:
+            pass  # Windows: antivirus/indexer còn giữ file index tạm; để sót một file trong %TEMP%, không chặn cứu hộ
     stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     name = SALVAGE_PREFIX + stamp
     n = 1
@@ -447,7 +463,10 @@ def cmd_scope(opts, _):
 #   4. task thuộc Wave có từ 2 task trở lên mà "Scope" chạm "Hot file" trong AGENTS.md.
 
 def segments(pat):
-    p = pat.strip("`").lstrip("./")
+    # Bỏ "./" ở đầu nhưng giữ dấu chấm của .github/ (lstrip("./") từng xoá mất).
+    p = pat.strip("`").replace("\\", "/")
+    while p.startswith("./"):
+        p = p[2:]
     if p.endswith("/"):
         p += "*"
     return p.split("/")
