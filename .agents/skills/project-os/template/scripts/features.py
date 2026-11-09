@@ -24,7 +24,7 @@ SKIP_DIRS = {".git", "node_modules", "target", "dist", "build", ".venv", "venv",
 # Chỉ bỏ qua ở gốc repo: tài liệu và công cụ của khung (src/docs, src/mk… vẫn được quét).
 SKIP_TOP_DIRS = {"docs", ".github", ".githooks", "mk"}
 # Tài liệu và công cụ ở gốc repo có mã làm ví dụ, không phải mã đang dùng.
-SKIP_ROOT_FILES = {"Makefile", "AGENTS.md", "STATUS.md", "CLAUDE.md", "GEMINI.md", "README.md"}
+SKIP_ROOT_FILES = {"Makefile", "pos.py", "AGENTS.md", "STATUS.md", "CLAUDE.md", "GEMINI.md", "README.md"}
 CODE_RE = re.compile(r"^[A-Z]{2,6}-\d{2,}$")
 ENV_FILE = ROOT / ".env.example"
 ENV_EXTS = {".py", ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".rs", ".go", ".rb", ".php", ".vue", ".svelte"}

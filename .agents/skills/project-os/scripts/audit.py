@@ -86,6 +86,10 @@ def main():
     if zone and any(l.strip() and "{{" not in l and "không có" not in l.lower() for l in zone.group(1).splitlines()):
         owners = (read(".github/CODEOWNERS") or "").splitlines()
         report(any(l.strip() and not l.lstrip().startswith("#") for l in owners), "CODEOWNERS có luật cho Restricted zone")
+    pos = read("pos.py") or ""
+    for var in ("LINT_CMD", "TEST_CMD"):
+        m = re.search(rf"^{var}\s*=\s*([\"'])(.*?)\1", pos, re.M)
+        report(bool(m and m.group(2).strip()), f"pos.py đã điền {var} (lệnh thật, hoặc \"none\" nếu chưa có)")
     # Lưu ý: bước này chạy check thật trong repo đích (có thể có tác dụng phụ do test/lint của dự án).
     report(os.path.isfile("pos.py") and subprocess.run([sys.executable, "pos.py", "check"], capture_output=True).returncode == 0,
            "python pos.py check qua")

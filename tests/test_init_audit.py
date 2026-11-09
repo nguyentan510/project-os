@@ -33,11 +33,15 @@ class InitTest(unittest.TestCase):
 
 
 class AuditTest(ProjectCase):
+    configured = False
+
     def test_fresh_template_is_not_ready(self):
         r = run([PY, str(AUDIT), str(self.root)], self.root)
         self.assertEqual(r.returncode, 1, r.stdout)
         self.assertIn("Chưa  file lõi không còn chỗ {{…}} chưa điền", r.stdout)
         self.assertIn("Đạt   hook đã bật", r.stdout)
+        self.assertIn("Chưa  pos.py đã điền TEST_CMD", r.stdout)
+        self.assertIn("Chưa  python pos.py check qua", r.stdout)
 
 
 if __name__ == "__main__":
