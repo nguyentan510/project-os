@@ -10,8 +10,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Thêm bước cài ngôn ngữ của dự án ở đây (setup-python, setup-node, rust-toolchain…)
-      - run: make check
+        with:
+          fetch-depth: 0  # scope cần so với origin/main
+      # Thêm bước cài ngôn ngữ của dự án ở đây (setup-node, rust-toolchain…); Python đã có bên dưới cho pos.py
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python pos.py check
+      - name: Kiểm phạm vi thẻ (luật cứng 8), chống --no-verify
+        if: github.event_name == 'pull_request'
+        env:
+          POS_BRANCH: ${{ github.head_ref }}
+        run: python pos.py scope
+      - name: Kiểm plan theo Sóng
+        run: python pos.py plan-check
 
   pr-title:
     if: github.event_name == 'pull_request'

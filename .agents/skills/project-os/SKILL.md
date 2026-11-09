@@ -18,7 +18,7 @@ Bộ quy tắc để mọi AI (Claude Code, Codex, Antigravity…) mở repo là
 ## Init
 
 1. Hỏi thư mục dự án nếu chưa rõ (mặc định: thư mục hiện tại).
-2. Chạy `bash scripts/init.sh <thư-mục>`; thêm `--plan` nếu dự án đã có nhiều mốc.
+2. Chạy `python scripts/init.py <thư-mục>`; thêm `--plan` nếu dự án đã có nhiều mốc.
 3. Script không ghi đè file đã có. Báo lại danh sách file `tạo` / `giữ`; file `giữ` mà khác mẫu thì đề xuất cách gộp, không tự sửa.
 
 ## Ngày 0
@@ -32,10 +32,11 @@ Luật khi làm:
 - Không viết code tính năng trong Ngày 0. Code đầu tiên là T-001 (khung chạy được), sau khi qua kiểm toán.
 - Cần thông tin người dùng chưa cho (người dùng, chỉ số thành công, công nghệ…): hỏi, không tự đoán.
 - Vùng cấm và file nóng: ghi một danh sách trong AGENTS.md, chép đúng sang `.github/CODEOWNERS`.
+- Nhiều agent song song: lập plan bằng `docs/prompts/P-03-MULTI.md` (Sóng W0 → W1 → W2), chạy `python pos.py plan-check` trước khi người dùng duyệt; chọn cách đăng ký module tự động ở Ngày 0 để file nóng không phải sửa tay (PROCESS.md mục 11).
 
 ## Audit
 
-1. Chạy `bash scripts/audit.sh <thư-mục>`: phần máy kiểm được (file, chỗ chưa điền, BRIEF, FEATURES, DECISIONS, module, hook, `.env`, `make check`).
+1. Chạy `python scripts/audit.py <thư-mục>`: phần máy kiểm được (file, chỗ chưa điền, BRIEF, FEATURES, DECISIONS, module, hook, `.env`, `python pos.py check`).
 2. Phần còn lại theo `docs/prompts/P-15.md`, nên chạy ở **phiên AI khác** với phiên đã làm Ngày 0. Với từng ô: Đạt / Chưa + bằng chứng (file, dòng). Không sửa gì.
 3. Kết luận: qua cổng hay chưa, còn thiếu gì. Qua cổng thì đề xuất ghi `Dxx "Qua cổng Ngày 0"` và giao T-001.
 

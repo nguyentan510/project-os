@@ -10,10 +10,12 @@ Bản đầy đủ: `docs/PROCESS.md`. Chỗ `{{…}}` phải điền trong Ngà
 AGENTS.md → STATUS.md → thẻ task (nếu có) → dòng mã trong `docs/product/FEATURES.md` → `rg "<mã>"`.
 
 ## Lệnh
-- `make setup` · `make run` · `make lint`
-- `make test` · `make test F=MAP-07` (theo mã) · `make test L=api` (theo tầng)
-- `make check` = kiểm sổ mã + lint + test; chạy trước mỗi lần push
-- `make task T=T-043 N=ten-ngan` · `make done T=T-043` · `make wt`
+- `python pos.py setup` · `python pos.py run` · `python pos.py lint`
+- `python pos.py test` · `python pos.py test F=MAP-07` (theo mã) · `python pos.py test L=api` (theo tầng)
+- `python pos.py check` = kiểm sổ mã + lint + test; chạy trước mỗi lần push
+- `python pos.py task T=T-043 N=ten-ngan` · `python pos.py done T=T-043` · `python pos.py wt`
+- `python pos.py wt-clean [APPLY=1]` dọn worktree đã gộp · `python pos.py pr` sinh sẵn khung báo cáo PR
+- `python pos.py plan-check` kiểm plan nhiều agent: cùng Sóng không trùng quyền ghi (PROCESS.md mục 11)
 
 ## Luồng
 task → code → commit → check → rebase → push → PR → CI → [approve nếu vùng cấm] → merge → done
@@ -24,7 +26,7 @@ Nhanh · Thường · Kiểm soát (PROCESS.md mục 8). Ghi làn vào mô tả 
 ## Luật cứng (PROCESS.md mục 4)
 1. Không push thẳng lên main; chỉ gộp qua PR.
 2. Không đưa khoá bí mật vào Git, code, tài liệu.
-3. Chỉ push khi `make check` qua.
+3. Chỉ push khi `python pos.py check` qua.
 4. Tiêu đề PR: `<loại>(<mã>): <việc> [T-nnn]`.
 5. Mã không bao giờ dùng lại; mã trong code phải có trong sổ.
 6. Không tự sửa contract đã khóa, file nóng, vùng cấm. Cần sửa → dừng, báo Orchestrator, xin duyệt.

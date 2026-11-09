@@ -10,7 +10,7 @@ Mục tiêu: {{…}} · Quyết định: {{Dxx}} · Feature: {{MOD-01…MOD-05}}
       Mục tiêu:  {{một luồng giao diện → API → dữ liệu, kèm 1 test e2e}}
       Phạm vi:   {{file hoặc thư mục}}
       Phụ thuộc: —
-      Xong khi:  make check qua; {{người dùng làm được …}}
+      Xong khi:  python pos.py check qua; {{người dùng làm được …}}
 
 ## Bước / thiết kế
 (ngắn; điều đã chốt chuyển vào DECISIONS hoặc FEATURES)

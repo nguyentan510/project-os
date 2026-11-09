@@ -1,7 +1,7 @@
 # Sổ tính năng
 
 Nguồn duy nhất của mọi mã feature. Mã cấp một lần, không bao giờ dùng lại.
-Trạng thái: `dự kiến` · `dùng` · `bỏ (Dxx)`. Cột Test: `make features` kiểm; chưa có test tự động thì ghi `— (lý do)`.
+Trạng thái: `dự kiến` · `dùng` · `bỏ (Dxx)`. Cột Test: `python pos.py features` kiểm, `python pos.py features --sync` tự ghi `đường/dẫn (số lần gắn mã)` từ test thật; chưa có test tự động thì ghi tay `— (lý do)`.
 Mỗi module là một tiêu đề `### MÃ · Tên`; script kiểm sổ chỉ nhận mã có tiền tố là module đã khai báo.
 
 ## {{DOMAIN}} · {{Tên domain}}

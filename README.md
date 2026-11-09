@@ -10,18 +10,17 @@ Repo này vừa là **skill** (thiết lập nhanh trong AI coding) vừa là **
 ```
 .agents/skills/project-os/        skill (định dạng SKILL.md chung)
 ├── SKILL.md                      AI đọc: init · Ngày 0 · audit
-├── scripts/init.sh               chép khung vào dự án, không ghi đè
-├── scripts/audit.sh              kiểm toán Ngày 0 phần máy kiểm được
+├── scripts/init.py               chép khung vào dự án, không ghi đè
+├── scripts/audit.py              kiểm toán Ngày 0 phần máy kiểm được
 ├── template/                     khung Ngày 0 (chép nguyên vào dự án)
-│   ├── AGENTS.md  CLAUDE.md  STATUS.md  Makefile  gitignore.template (chép thành .gitignore)  .env.example
+│   ├── AGENTS.md  CLAUDE.md  STATUS.md  pos.py  Makefile (bọc tuỳ chọn)  gitignore.template (chép thành .gitignore)  .env.example
 │   ├── docs/PROCESS.md           bản đầy đủ của quy tắc (13 mục)
 │   ├── docs/product/BRIEF.md · FEATURES.md   docs/DECISIONS.md
 │   ├── docs/prompts/P-01…P-15.md bảng prompt theo từng bước
-│   ├── mk/worktree.mk            make task · done · drop · wt
-│   ├── scripts/feature-lint.py   kiểm sổ mã (make features)
-│   ├── .githooks/pre-push        chặn push khi make check chưa qua
+│   ├── scripts/feature-lint.py   kiểm sổ mã (python pos.py features [--sync])
+│   ├── .githooks/pre-push        chặn push khi check chưa qua hoặc sửa ngoài phạm vi thẻ
 │   └── .github/                  CI · CODEOWNERS · mẫu PR
-└── optional/docs/plan/           ROADMAP + mẫu plan mốc (init.sh --plan)
+└── optional/docs/plan/           ROADMAP + mẫu plan mốc (init.py --plan)
 .claude/skills/project-os         liên kết tới thư mục skill trên (cho Claude Code)
 ```
 
@@ -80,10 +79,10 @@ Trong dự án, nói với AI: *"Dùng skill project-os để bắt đầu dự 
 Không dùng skill cũng được:
 
 ```bash
-bash ~/project-os/.agents/skills/project-os/scripts/init.sh /đường/dẫn/dự-án   # thêm --plan nếu có nhiều mốc
-cd /đường/dẫn/dự-án && git init && make setup
+python ~/project-os/.agents/skills/project-os/scripts/init.py /đường/dẫn/dự-án   # thêm --plan nếu có nhiều mốc
+cd /đường/dẫn/dự-án && git init && python pos.py setup
 # điền các chỗ {{…}} theo docs/PROCESS.md mục 3
-bash ~/project-os/.agents/skills/project-os/scripts/audit.sh .
+python ~/project-os/.agents/skills/project-os/scripts/audit.py .
 ```
 
 ## Bật trên GitHub (bằng tay, một lần cho mỗi dự án)
@@ -96,5 +95,5 @@ Settings → Branches → thêm luật cho `main`:
 
 ## Yêu cầu
 
-`git`, `make`, `bash`, `python3` (chỉ thư viện chuẩn). `gh` (tuỳ chọn) để `make done` nhận ra PR đã gộp kiểu squash.
+`git` và Python 3 (chỉ thư viện chuẩn; không cần `make` hay `bash`). `gh` (tuỳ chọn) để `python pos.py done` nhận ra PR đã gộp kiểu squash.
 Claude Code từ 2.1.277 tự đọc `AGENTS.md`; `CLAUDE.md` trong khung chỉ có dòng `@AGENTS.md` để chạy được cả bản cũ.

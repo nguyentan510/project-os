@@ -6,7 +6,7 @@
 
 **Phạm vi thực tế:** khớp thẻ / thêm …, vì …
 
-**Test đã chạy:** `make check` · `make test F=…`
+**Test đã chạy:** `python pos.py check` · `python pos.py test F=…`
 
 **Khác mặc định (nếu có, lý do):**
 
@@ -14,6 +14,6 @@
 
 **Ghi chú bàn giao:**
 
-- [ ] `make check` qua ở local
+- [ ] `python pos.py check` qua ở local
 - [ ] Không chạm vùng cấm / file nóng / contract đã khóa (nếu có: làn Kiểm soát, chờ approve)
 - [ ] FEATURES.md, DECISIONS.md đã cập nhật nếu cần
