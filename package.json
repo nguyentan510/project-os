@@ -1,6 +1,6 @@
 {
   "name": "@nguyentan0510/project-os",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Cài skill Project OS (quy tắc dự án cho solo dev + nhiều AI) vào Claude Code, Codex, Antigravity bằng một lệnh: npx -y @nguyentan0510/project-os",
   "publishConfig": {
     "access": "public"

@@ -100,7 +100,7 @@ def scan_env():
     for path in sorted(ROOT.rglob("*")):
         rel = path.relative_to(ROOT)
         if (path.is_dir() or path.suffix not in ENV_EXTS or set(rel.parts) & SKIP_DIRS
-                or rel.parts[0] in SKIP_TOP_DIRS or rel.parts[0] == "scripts" or is_test(rel)):
+                or rel.parts[0] in SKIP_TOP_DIRS or rel.parts[0] == "scripts" or rel.as_posix() == "pos.py" or is_test(rel)):
             continue
         try:
             text = path.read_text(encoding="utf-8")

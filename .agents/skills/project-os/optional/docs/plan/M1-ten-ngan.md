@@ -8,7 +8,8 @@ Mục tiêu: {{…}} · Quyết định: {{Dxx}} · Feature: {{MOD-01…MOD-05}}
 - [ ] T-001 · {{MOD-01}} · khung chạy được
       Loại: build · Vùng cấm: không
       Mục tiêu:  {{một luồng giao diện → API → dữ liệu, kèm 1 test e2e}}
-      Phạm vi:   {{file hoặc thư mục}}
+      Sóng:      W0
+      Phạm vi:   {{file hoặc thư mục, gồm cả thư mục test}}
       Phụ thuộc: —
       Xong khi:  python pos.py check qua; {{người dùng làm được …}}
 
