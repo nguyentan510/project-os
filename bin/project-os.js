@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// npx -y project-os [--all] [--dry-run] [--uninstall] [--dir <chỗ>]
+// npx -y @nguyentan0510/project-os [--all] [--dry-run] [--uninstall] [--dir <chỗ>]
 // Lớp mỏng: chọn install.ps1 (Windows) hoặc install.sh (còn lại) và chuyển tham số.
 // Luôn cài từ bản clone ở ~/project-os (PROJECT_OS_CLONE=1), không từ thư mục tạm của npx.
 "use strict";

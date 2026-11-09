@@ -38,7 +38,7 @@ Skill dùng định dạng `SKILL.md` chung; mỗi công cụ tìm ở một th�
 **Một lệnh cho mọi shell** (cần Node.js và git; tự nhận hệ điều hành và công cụ, clone về `~/project-os`, tạo liên kết):
 
 ```bash
-npx -y project-os
+npx -y @nguyentan0510/project-os
 ```
 
 Không có Node.js thì dùng script theo shell:
