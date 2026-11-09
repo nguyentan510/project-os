@@ -2,7 +2,7 @@
 
 Phiên bản 1.1 · 2026-11-09 · Nguồn gốc của mọi quy tắc trong repo này. Tên gọi theo `docs/GLOSSARY.md`.
 
-AI nào mở dự án cũng phải trả lời được trong 1 phút: **đang làm gì, đã làm gì, sửa thì bắt đầu từ đâu**. Đầu mối chung là **mã** (`MAP-07`).
+Một AI mới, không có lịch sử chat, mở dự án phải biết trong 1 phút: **đang ở đâu, vì sao như vậy, cái gì không được đụng, làm tiếp từ đâu và kiểm chứng bằng gì**. Đầu mối chung là **mã** (`MAP-07`).
 
 Quy tắc có 3 tầng: **Luật cứng** (mục 4, máy chặn, không ngoại lệ) · **Mặc định** (mục 12, AI được làm khác khi hợp lý hơn và ghi lý do) · **Mẫu** (phụ lục, dùng khi cần). Bắt đầu tối giản; phần nào chưa cần thì chưa bật (mục 12). Dự án mới bắt đầu từ mục 3.
 
