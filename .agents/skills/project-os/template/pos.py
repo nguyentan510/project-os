@@ -22,7 +22,9 @@ import re
 import subprocess
 import sys
 
-# ── Cấu hình dự án: điền lệnh thật vào đây (Ngày 0). Để trống = chưa cấu hình, in thông báo rồi coi như qua.
+# ── Cấu hình dự án: điền lệnh thật vào đây (Ngày 0).
+# LINT_CMD, TEST_CMD để trống = `check` báo lỗi (tránh xanh giả). Chưa có lint/test thật (trước T-001)
+# thì ghi "none": `check` qua nhưng in cảnh báo mỗi lần chạy. SETUP_CMD, RUN_CMD để trống chỉ in thông báo.
 # {F} = mã cần test (MAP-07 hoặc MAP), {L} = tầng (unit | api | e2e).
 # {F:text %} chỉ xuất hiện khi có F, % được thay bằng giá trị. Tương tự {L:…}.
 # Ví dụ:
@@ -66,9 +68,19 @@ def expand(cmd, opts):
     return re.sub(r"\{([FL])(?::([^}]*))?\}", sub, cmd).strip()
 
 
+REQUIRED = ("lint", "test")  # check cần hai lệnh này; trống = lỗi
+
+
 def run_cmd(name, cmd, opts):
+    var = f"{name.upper()}_CMD"
+    if cmd.strip().lower() == "none":
+        say(f"{name}: CẢNH BÁO: {var} = \"none\", chưa có {name} thật; điền lệnh thật sau T-001")
+        return 0
     if not cmd:
-        say(f"{name}: chưa cấu hình {name.upper()}_CMD trong pos.py")
+        if name in REQUIRED:
+            say(f"{name}: LỖI: chưa cấu hình {var} trong pos.py (ghi lệnh thật, hoặc \"none\" nếu chưa có {name})")
+            return 1
+        say(f"{name}: chưa cấu hình {var} trong pos.py")
         return 0
     full = expand(cmd, opts)
     say(f"$ {full}")
@@ -450,27 +462,50 @@ def cmd_scope(opts, _):
 #   3. "Phụ thuộc" trỏ tới task không có trong plan;
 #   4. task thuộc Wave có từ 2 task trở lên mà "Scope" chạm "Hot file" trong AGENTS.md.
 
-def scope_prefix(pat):
-    """(tiền tố trước ký tự glob đầu tiên, có glob không). Bỏ "./" ở đầu nhưng giữ dấu chấm của .github/."""
+def segments(pat):
+    # Bỏ "./" ở đầu nhưng giữ dấu chấm của .github/ (lstrip("./") từng xoá mất).
     p = pat.strip("`").replace("\\", "/")
     while p.startswith("./"):
         p = p[2:]
-    m = re.search(r"[*?\[]", p)
-    if m:
-        return p[:m.start()], True
-    return p.rstrip("/"), False
+    if p.endswith("/"):
+        p += "*"
+    return p.split("/")
+
+
+def literal_prefix(seg):
+    m = re.search(r"[*?\[]", seg)
+    return seg[:m.start()] if m else seg
+
+
+def seg_overlap(x, y):
+    """Hai đoạn đường dẫn có thể cùng khớp một tên không."""
+    wx, wy = re.search(r"[*?\[]", x), re.search(r"[*?\[]", y)
+    if not wx:
+        return fnmatch.fnmatchcase(x, y)
+    if not wy:
+        return fnmatch.fnmatchcase(y, x)
+    px, py = literal_prefix(x), literal_prefix(y)
+    return px.startswith(py) or py.startswith(px)
 
 
 def overlaps(a, b):
-    """Hai Scope chạm nhau. Không có glob thì so theo từng thư mục (src/api không chạm src/apix);
-    có glob thì tiền tố được cắt giữa chừng (src/app/routes.* chạm src/app/routes.py)."""
-    (pa, ga), (pb, gb) = scope_prefix(a), scope_prefix(b)
-    if not pa or not pb:
-        return True  # glob từ gốc (**/x) hoặc Scope rỗng: coi như chạm
-    if ga and pb.startswith(pa) or gb and pa.startswith(pb):
-        return True
-    pa, pb = pa.rstrip("/"), pb.rstrip("/")
-    return pa == pb or pa.startswith(pb + "/") or pb.startswith(pa + "/")
+    """Hai mẫu đường dẫn có thể cùng chạm một file không. So từng đoạn giữa các dấu `/`:
+    `*` ở đoạn giữa chỉ thay một thư mục; đoạn cuối có `*` (hoặc có `**`) thì phủ cả thư mục con.
+    Phân vân thì coi là trùng: báo thừa còn hơn để lọt xung đột."""
+    A, B = segments(a), segments(b)
+    for i in range(max(len(A), len(B))):
+        if i >= len(A) or i >= len(B):
+            return True  # một bên là thư mục cha của bên kia
+        x, y = A[i], B[i]
+        if "**" in x or "**" in y:
+            return literal_prefix(x).startswith(literal_prefix(y)) or literal_prefix(y).startswith(literal_prefix(x))
+        last_wild = (i == len(A) - 1 and "*" in x) or (i == len(B) - 1 and "*" in y)
+        if last_wild:
+            return seg_overlap(x, y) or literal_prefix(x).startswith(literal_prefix(y)) \
+                or literal_prefix(y).startswith(literal_prefix(x))
+        if not seg_overlap(x, y):
+            return False
+    return True
 
 
 WAVE = "Wave|Sóng"
