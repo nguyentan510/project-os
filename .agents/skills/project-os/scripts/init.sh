@@ -15,13 +15,17 @@ DEST="$(cd "$DEST" && pwd)"
 created=0; kept=0
 copy_tree() {
   local from="$1" f
-  while IFS= read -r f; do
-    f="${f#./}"
+  local src
+  while IFS= read -r src; do
+    src="${src#./}"
+    f="$src"
+    # npm bỏ file .gitignore khi đóng gói, nên khung lưu nó là gitignore.template.
+    [[ "$(basename "$src")" == "gitignore.template" ]] && f="$(dirname "$src")/.gitignore" && f="${f#./}"
     if [[ -e "$DEST/$f" ]]; then
       echo "  giữ  $f"; kept=$((kept + 1))
     else
       mkdir -p "$DEST/$(dirname "$f")"
-      cp "$from/$f" "$DEST/$f"
+      cp "$from/$src" "$DEST/$f"
       echo "  tạo  $f"; created=$((created + 1))
     fi
   done < <(cd "$from" && find . -type f | sort)

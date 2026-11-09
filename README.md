@@ -13,7 +13,7 @@ Repo này vừa là **skill** (thiết lập nhanh trong AI coding) vừa là **
 ├── scripts/init.sh               chép khung vào dự án, không ghi đè
 ├── scripts/audit.sh              kiểm toán Ngày 0 phần máy kiểm được
 ├── template/                     khung Ngày 0 (chép nguyên vào dự án)
-│   ├── AGENTS.md  CLAUDE.md  STATUS.md  Makefile  .gitignore  .env.example
+│   ├── AGENTS.md  CLAUDE.md  STATUS.md  Makefile  gitignore.template (chép thành .gitignore)  .env.example
 │   ├── docs/PROCESS.md           bản đầy đủ của quy tắc (13 mục)
 │   ├── docs/product/BRIEF.md · FEATURES.md   docs/DECISIONS.md
 │   ├── docs/prompts/P-01…P-15.md bảng prompt theo từng bước
@@ -27,38 +27,47 @@ Repo này vừa là **skill** (thiết lập nhanh trong AI coding) vừa là **
 
 ## Cài skill
 
-Skill dùng định dạng `SKILL.md` chung; mỗi công cụ tìm ở một thư mục khác nhau.
+Skill dùng định dạng `SKILL.md` chung. Có hai kiểu cài:
 
-| Công cụ | Thư mục skill (cho mọi dự án) | Gọi |
-| --- | --- | --- |
-| Claude Code | `~/.claude/skills/project-os/` | `/project-os` |
-| Codex | `~/.agents/skills/project-os/` | `$project-os` |
-| Antigravity | `~/.gemini/config/skills/project-os/` (cũng nhận `~/.agents/skills/`) | tự nhận theo mô tả |
+### Theo dự án (khuyên dùng)
 
-**Một lệnh cho mọi shell** (cần Node.js và git; tự nhận hệ điều hành và công cụ, clone về `~/project-os`, tạo liên kết):
+Chạy trong thư mục dự án; skill được **chép vào dự án đó** để commit cùng repo, ai clone về (người hay AI) cũng có đúng phiên bản. Cần Node.js ≥ 16.7, không cần git.
 
 ```bash
+cd /đường/dẫn/dự-án
 npx -y @nguyentan0510/project-os
 ```
 
-Không có Node.js thì dùng script theo shell:
+| Chép vào | Công cụ đọc | Gọi |
+| --- | --- | --- |
+| `.agents/skills/project-os/` | Codex, Antigravity và các công cụ dùng chuẩn chung | `$project-os` · tự nhận theo mô tả |
+| `.claude/skills/project-os/` | Claude Code | `/project-os` |
+
+- Chạy lại lệnh để cập nhật. Nơi đã có thứ khác (không do lệnh này tạo) thì bỏ qua, không ghi đè.
+- `--dry-run` chỉ in việc sẽ làm · `--uninstall` gỡ · `--dir <thư-mục>` cài vào thư mục khác.
+- Mỗi lần chạy bằng `npx` lấy bản mới nhất của gói; muốn ghim phiên bản: `npx -y @nguyentan0510/project-os@1.1.0`.
+
+### Toàn cục (dùng cho mọi dự án)
+
+```bash
+npx -y @nguyentan0510/project-os --global
+```
+
+Clone repo về `~/project-os` rồi tạo liên kết (symlink, Windows dùng junction) vào thư mục skill trong home của từng công cụ tìm thấy: `~/.agents/skills/` (luôn có), `~/.claude/skills/`, `~/.gemini/config/skills/`, `~/.codex/skills/`. Cần git. Chạy lại để cập nhật.
+
+Không có Node.js thì dùng script (cài toàn cục):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nguyentan510/project-os/main/install.sh | bash
 ```
 
-Windows (PowerShell, không cần bash):
+Windows (PowerShell, không cần bash; không chạy `curl | bash` trong `cmd`):
 
 ```powershell
 irm https://raw.githubusercontent.com/nguyentan510/project-os/main/install.ps1 | iex
 ```
 
-- Luôn cài vào `~/.agents/skills/`; cài thêm cho Claude Code, Antigravity, Codex khi thấy thư mục cấu hình hoặc lệnh của chúng.
-- Chạy lại cùng lệnh để cập nhật. Không ghi đè thứ khác đã có ở đích.
-- Tuỳ chọn (chạy file đã tải): `--all` cài vào mọi thư mục · `--dry-run` chỉ in việc sẽ làm · `--uninstall` gỡ · `--dir <chỗ>` đổi nơi clone. PowerShell: `-All` `-DryRun` `-Uninstall` `-Dir`.
-- Windows dùng junction (không cần quyền admin); lỗi thì chép thư mục, chạy lại để cập nhật.
-
-Muốn xem script trước khi chạy: tải `install.sh` về, đọc, rồi `bash install.sh`.
+Script nhận `--all` · `--dry-run` · `--uninstall` · `--dir <chỗ clone>` (PowerShell: `-All` `-DryRun` `-Uninstall` `-Dir`). Muốn xem script trước khi chạy: tải về, đọc, rồi chạy.
 
 Cài bằng tay: clone repo rồi `ln -s ~/project-os/.agents/skills/project-os <thư mục skill ở bảng trên>/project-os`.
 

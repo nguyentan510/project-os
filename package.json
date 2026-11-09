@@ -1,6 +1,6 @@
 {
   "name": "@nguyentan0510/project-os",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Cài skill Project OS (quy tắc dự án cho solo dev + nhiều AI) vào Claude Code, Codex, Antigravity bằng một lệnh: npx -y @nguyentan0510/project-os",
   "publishConfig": {
     "access": "public"
@@ -11,15 +11,23 @@
   "files": [
     "bin",
     "install.sh",
-    "install.ps1"
+    "install.ps1",
+    ".agents/skills/project-os"
   ],
   "engines": {
-    "node": ">=16"
+    "node": ">=16.7"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nguyentan510/project-os.git"
   },
   "homepage": "https://github.com/nguyentan510/project-os#readme",
-  "keywords": ["claude-code", "codex", "antigravity", "agent-skills", "ai", "workflow"]
+  "keywords": [
+    "claude-code",
+    "codex",
+    "antigravity",
+    "agent-skills",
+    "ai",
+    "workflow"
+  ]
 }
