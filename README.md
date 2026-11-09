@@ -100,3 +100,8 @@ Settings → Branches → thêm luật cho `main`:
 
 `git` và Python 3 (chỉ thư viện chuẩn; không cần `make` hay `bash`). `gh` (tuỳ chọn) để `python pos.py done` nhận ra PR đã merge squash.
 Claude Code từ 2.1.277 tự đọc `AGENTS.md`; `CLAUDE.md` trong khung chỉ có dòng `@AGENTS.md` để chạy được cả bản cũ.
+
+## Phát triển repo này
+
+- Test công cụ (chỉ thư viện chuẩn Python): `python -m unittest discover -s tests`. CI ở `.github/workflows/test.yml`.
+- Test đánh dấu `expectedFailure` là lỗi đã biết, chưa sửa; sửa xong thì bỏ dấu đó.
