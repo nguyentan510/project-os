@@ -8,6 +8,7 @@ Claude Code · Codex · Antigravity · Cursor…
 [![npm](https://img.shields.io/npm/v/@nguyentan0510/project-os?color=cb3837&logo=npm)](https://www.npmjs.com/package/@nguyentan0510/project-os)
 [![node](https://img.shields.io/node/v/@nguyentan0510/project-os?logo=node.js)](https://nodejs.org)
 ![python](https://img.shields.io/badge/python-3.8%2B-3776ab?logo=python&logoColor=white)
+[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 ![platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)
 
 ```bash
@@ -35,6 +36,7 @@ Repo này vừa là **skill** (định dạng `SKILL.md` chung, AI tự gọi) v
 - [Yêu cầu](#yêu-cầu)
 - [Cấu trúc repo](#cấu-trúc-repo)
 - [Phát triển repo này](#phát-triển-repo-này)
+- [Giấy phép](#giấy-phép)
 
 ## Vì sao
 
@@ -258,3 +260,7 @@ tests/                            test cho init, audit, pos.py, features.py
 
 - Test công cụ (chỉ thư viện chuẩn Python): `python -m unittest discover -s tests`. CI ở `.github/workflows/test.yml`.
 - Test đánh dấu `expectedFailure` là lỗi đã biết, chưa sửa; sửa xong thì bỏ dấu đó.
+
+## Giấy phép
+
+[MIT](LICENSE) © 2026 nguyentan510
