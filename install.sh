@@ -42,7 +42,7 @@ SELF_DIR=""
 if [[ -n "${BASH_SOURCE[0]:-}" && -f "${BASH_SOURCE[0]}" ]]; then
   SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 fi
-if [[ -n "$SELF_DIR" && -d "$SELF_DIR/$SRC_REL" ]]; then
+if [[ -z "${PROJECT_OS_CLONE:-}" && -n "$SELF_DIR" && -d "$SELF_DIR/$SRC_REL" ]]; then
   ROOT="$SELF_DIR"
   say "dùng bản clone sẵn có: $ROOT"
 elif [[ $UNINSTALL -eq 1 ]]; then

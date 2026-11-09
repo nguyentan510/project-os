@@ -16,7 +16,7 @@ Write-Host 'Project OS · cài skill (windows)'
 
 # 1. Nguồn: chạy từ bản clone thì dùng luôn, không thì clone/cập nhật.
 $self = if ($PSScriptRoot) { $PSScriptRoot } else { $null }
-if ($self -and (Test-Path (Join-Path $self $SrcRel))) {
+if (-not $env:PROJECT_OS_CLONE -and $self -and (Test-Path (Join-Path $self $SrcRel))) {
   $Root = $self; Say "dùng bản clone sẵn có: $Root"
 } elseif ($Uninstall) {
   $Root = $Dir

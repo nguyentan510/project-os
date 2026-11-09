@@ -35,7 +35,13 @@ Skill dùng định dạng `SKILL.md` chung; mỗi công cụ tìm ở một th�
 | Codex | `~/.agents/skills/project-os/` | `$project-os` |
 | Antigravity | `~/.gemini/config/skills/project-os/` (cũng nhận `~/.agents/skills/`) | tự nhận theo mô tả |
 
-**Một lệnh** (tự nhận hệ điều hành và công cụ trên máy, clone về `~/project-os`, tạo liên kết):
+**Một lệnh cho mọi shell** (cần Node.js và git; tự nhận hệ điều hành và công cụ, clone về `~/project-os`, tạo liên kết):
+
+```bash
+npx -y project-os
+```
+
+Không có Node.js thì dùng script theo shell:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nguyentan510/project-os/main/install.sh | bash
