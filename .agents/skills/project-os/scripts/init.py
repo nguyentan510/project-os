@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Chép khung Ngày 0 vào một dự án. Không bao giờ ghi đè file đã có. Chạy được mọi hệ điều hành.
   python init.py [thư-mục-dự-án] [--plan]
-  --plan  chép thêm docs/plan/ (ROADMAP + mẫu plan mốc), dùng khi đã có nhiều mốc
+  --plan  chép thêm docs/plan/ (ROADMAP + mẫu plan của Milestone), dùng khi đã có nhiều Milestone
 """
 import pathlib
 import shutil

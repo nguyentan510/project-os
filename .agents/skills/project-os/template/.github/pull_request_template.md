@@ -1,10 +1,10 @@
 <!-- Tiêu đề PR: <loại>(<mã>): <việc> [T-nnn]   ví dụ: feat(MAP-07): add store map API [T-042] -->
 
-**Mã · Task · Làn:** MAP-07 · T-042 · Nhanh | Thường | Kiểm soát
+**Mã · Task · Lane:** MAP-07 · T-042 · Fast | Normal | Strict
 
 **Đã làm:**
 
-**Phạm vi thực tế:** khớp thẻ / thêm …, vì …
+**Scope thực tế:** khớp thẻ / thêm …, vì …
 
 **Test đã chạy:** `python pos.py check` · `python pos.py test F=…`
 
@@ -15,5 +15,5 @@
 **Ghi chú bàn giao:**
 
 - [ ] `python pos.py check` qua ở local
-- [ ] Không chạm vùng cấm / file nóng / contract đã khóa (nếu có: làn Kiểm soát, chờ approve)
-- [ ] FEATURES.md, DECISIONS.md đã cập nhật nếu cần
+- [ ] Không chạm Restricted zone / Hot file / contract đã khoá (nếu có: Lane Strict, chờ chủ dự án approve)
+- [ ] FEATURES.md, DECISIONS.md, GLOSSARY.md đã cập nhật nếu cần

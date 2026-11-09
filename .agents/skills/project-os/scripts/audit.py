@@ -49,7 +49,7 @@ def main():
     print(f"Kiểm toán Ngày 0 · {os.getcwd()}")
     print("File")
     for f in core + ["docs/PROCESS.md", "pos.py", ".githooks/pre-push", ".github/workflows/ci.yml",
-                     ".github/pull_request_template.md", ".gitignore", ".env.example", "scripts/feature-lint.py"]:
+                     ".github/pull_request_template.md", "docs/GLOSSARY.md", ".gitignore", ".env.example", "scripts/feature-lint.py"]:
         report(os.path.isfile(f), f"có {f}")
 
     print("Ý định và phạm vi")
@@ -82,16 +82,16 @@ def main():
         report(git("config", "core.hooksPath")[1] == ".githooks", "hook đã bật (core.hooksPath = .githooks)")
     else:
         report(False, "đây chưa phải repo git")
-    zone = re.search(r"^## Vùng cấm\s*\n(.*?)(?=^## |\Z)", texts["AGENTS.md"], re.M | re.S)
-    if zone and any(l.strip() and "không có" not in l.lower() for l in zone.group(1).splitlines()):
+    zone = re.search(r"^## (?:Restricted zone|Vùng cấm)[^\n]*\n(.*?)(?=^## |\Z)", texts["AGENTS.md"], re.M | re.S)
+    if zone and any(l.strip() and "{{" not in l and "không có" not in l.lower() for l in zone.group(1).splitlines()):
         owners = (read(".github/CODEOWNERS") or "").splitlines()
-        report(any(l.strip() and not l.lstrip().startswith("#") for l in owners), "CODEOWNERS có luật cho vùng cấm")
+        report(any(l.strip() and not l.lstrip().startswith("#") for l in owners), "CODEOWNERS có luật cho Restricted zone")
     # Lưu ý: bước này chạy check thật trong repo đích (có thể có tác dụng phụ do test/lint của dự án).
     report(os.path.isfile("pos.py") and subprocess.run([sys.executable, "pos.py", "check"], capture_output=True).returncode == 0,
            "python pos.py check qua")
 
     print(f"\nKết quả: Đạt {passed} · Chưa {failed}")
-    print("Còn phải kiểm bằng P-15 (AI phiên mới) hoặc bằng tay: khóa nhánh main trên GitHub, thử push thẳng main bị chặn,")
+    print("Còn phải kiểm bằng P-15 (AI phiên mới) hoặc bằng tay: khoá main trên GitHub, thử push thẳng main bị chặn,")
     print("AI phiên trắng chạy P-01 tóm tắt đúng dự án, mỗi thông tin chỉ ở một nơi.")
     sys.exit(1 if failed else 0)
 

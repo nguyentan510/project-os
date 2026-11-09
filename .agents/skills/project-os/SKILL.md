@@ -1,15 +1,15 @@
 ---
 name: project-os
-description: Thiết lập và kiểm toán quy trình Project OS (AGENTS.md, STATUS, sổ mã FEATURES, DECISIONS, worktree, luật cứng, bảng prompt) cho một repo. Dùng khi người dùng muốn bắt đầu dự án mới, áp quy tắc Project OS vào repo đang có, làm "Ngày 0", hoặc kiểm toán Ngày 0 trước khi viết code.
+description: Thiết lập và kiểm toán quy trình Project OS (AGENTS.md, STATUS, sổ mã FEATURES, DECISIONS, GLOSSARY, worktree, luật cứng, bảng prompt) cho một repo. Dùng khi người dùng muốn bắt đầu dự án mới, áp quy tắc Project OS vào repo đang có, làm "Ngày 0", hoặc kiểm toán Ngày 0 trước khi viết code.
 ---
 
 # Project OS
 
-Bộ quy tắc để mọi AI (Claude Code, Codex, Antigravity…) mở repo là biết: đang làm gì, đã làm gì, sửa thì bắt đầu từ đâu. Bản đầy đủ: `template/docs/PROCESS.md`. Đường dẫn dưới đây tính từ thư mục chứa file SKILL.md này.
+Bộ quy tắc để mọi AI (Claude Code, Codex, Antigravity…) mở repo là biết: đang làm gì, đã làm gì, sửa thì bắt đầu từ đâu. Bản đầy đủ: `template/docs/PROCESS.md`; thuật ngữ: `template/docs/GLOSSARY.md`. Đường dẫn dưới đây tính từ thư mục chứa file SKILL.md này. "Chủ dự án" là người đang làm việc với bạn.
 
 ## Chọn việc
 
-| Người dùng muốn | Làm |
+| Chủ dự án muốn | Làm |
 | --- | --- |
 | Bắt đầu dự án mới / áp quy tắc vào repo | **Init** rồi **Ngày 0** |
 | Kiểm repo đã đủ để viết code chưa | **Audit** |
@@ -19,21 +19,22 @@ Bộ quy tắc để mọi AI (Claude Code, Codex, Antigravity…) mở repo là
 ## Init
 
 1. Hỏi thư mục dự án nếu chưa rõ (mặc định: thư mục hiện tại).
-2. Chạy `python scripts/init.py <thư-mục>`; thêm `--plan` nếu dự án đã có nhiều mốc.
-3. Script không ghi đè file đã có. Báo lại danh sách file `tạo` / `giữ`; file `giữ` mà khác mẫu thì đề xuất cách gộp, không tự sửa.
+2. Chạy `python scripts/init.py <thư-mục>`; thêm `--plan` nếu dự án đã có nhiều Milestone.
+3. Script không ghi đè file đã có. Báo lại danh sách file `tạo` / `giữ`; file `giữ` mà khác mẫu thì đề xuất cách hợp nhất, không tự sửa.
 
 ## Ngày 0
 
-Làm đúng 7 bước ở `docs/PROCESS.md` mục 3 (prompt `docs/prompts/P-02.md`). Sau **mỗi** bước, trình đầu ra và **chờ người dùng duyệt** rồi mới sang bước sau:
+Làm đúng 7 bước ở `docs/PROCESS.md` mục 3 (prompt `docs/prompts/P-02.md`). Sau **mỗi** bước, trình đầu ra và **chờ chủ dự án duyệt** rồi mới sang bước sau:
 
 1. BRIEF → 2. FEATURES → 3. DECISIONS → 4. module + contract → 5. AGENTS + STATUS → 6. khung repo + máy chặn → 7. kiểm toán.
 
 Luật khi làm:
 - Thay mọi chỗ `{{…}}` bằng nội dung thật của dự án; không để lại ví dụ mẫu.
-- Không viết code tính năng trong Ngày 0. Code đầu tiên là T-001 (khung chạy được), sau khi qua kiểm toán.
-- Cần thông tin người dùng chưa cho (người dùng, chỉ số thành công, công nghệ…): hỏi, không tự đoán.
-- Vùng cấm và file nóng: ghi một danh sách trong AGENTS.md, chép đúng sang `.github/CODEOWNERS`.
-- Nhiều agent song song: lập plan bằng `docs/prompts/P-03-MULTI.md` (Sóng W0 → W1 → W2), chạy `python pos.py plan-check` trước khi người dùng duyệt; chọn cách đăng ký module tự động ở Ngày 0 để file nóng không phải sửa tay (PROCESS.md mục 11).
+- Không viết code feature trong Ngày 0. Code đầu tiên là T-001 (khung chạy được), sau khi qua kiểm toán.
+- Dùng đúng tên trong `docs/GLOSSARY.md`; thuật ngữ riêng của dự án thêm vào mục cuối file đó.
+- Cần thông tin chủ dự án chưa cho (người dùng sản phẩm, chỉ số thành công, công nghệ…): hỏi, không tự đoán.
+- Restricted zone và Hot file: ghi một danh sách trong AGENTS.md, chép đúng sang `.github/CODEOWNERS`.
+- Nhiều agent song song: lập plan bằng `docs/prompts/P-03-MULTI.md` (Wave W0 → W1 → W2), chạy `python pos.py plan-check` trước khi chủ dự án duyệt; chọn cách đăng ký module tự động ở Ngày 0 để Hot file không phải sửa tay (PROCESS.md mục 11).
 
 ## Audit
 
@@ -43,6 +44,6 @@ Luật khi làm:
 
 ## Không làm
 
-- Không ghi đè, xoá hay đổi tên file có sẵn của người dùng khi chưa hỏi.
-- Không bật cài đặt GitHub thay người dùng (khóa main, Code Owners): chỉ hướng dẫn.
+- Không ghi đè, xoá hay đổi tên file có sẵn của chủ dự án khi chưa hỏi.
+- Không bật cài đặt GitHub thay chủ dự án (khoá main, Code Owners): chỉ hướng dẫn.
 - Không ghi khoá bí mật vào bất kỳ file nào.

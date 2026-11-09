@@ -15,12 +15,13 @@ Repo này vừa là **skill** (thiết lập nhanh trong AI coding) vừa là **
 ├── template/                     khung Ngày 0 (chép nguyên vào dự án)
 │   ├── AGENTS.md  CLAUDE.md  STATUS.md  pos.py  Makefile (bọc tuỳ chọn)  gitignore.template (chép thành .gitignore)  .env.example
 │   ├── docs/PROCESS.md           bản đầy đủ của quy tắc (13 mục)
+│   ├── docs/GLOSSARY.md          bảng thuật ngữ: một khái niệm một tên
 │   ├── docs/product/BRIEF.md · FEATURES.md   docs/DECISIONS.md
-│   ├── docs/prompts/P-01…P-15, P-SOS bảng prompt theo từng bước
+│   ├── docs/prompts/P-01…P-15, P-03-MULTI, P-SOS   bảng prompt theo từng bước
 │   ├── scripts/feature-lint.py   kiểm sổ mã (python pos.py features [--sync])
-│   ├── .githooks/pre-push        chặn push khi check chưa qua hoặc sửa ngoài phạm vi thẻ
+│   ├── .githooks/pre-push        chặn push khi check chưa qua hoặc sửa ngoài Scope của thẻ
 │   └── .github/                  CI · CODEOWNERS · mẫu PR
-└── optional/docs/plan/           ROADMAP + mẫu plan mốc (init.py --plan)
+└── optional/docs/plan/           ROADMAP + mẫu plan của Milestone (init.py --plan)
 .claude/skills/project-os         liên kết tới thư mục skill trên (cho Claude Code)
 ```
 
@@ -74,12 +75,14 @@ Cài bằng tay: clone repo rồi `ln -s ~/project-os/.agents/skills/project-os 
 
 ## Dùng
 
+Tên gọi (Milestone, Wave, Task, Lane, Scope, Hot file, Restricted zone…) theo `docs/GLOSSARY.md`.
+
 Trong dự án, nói với AI: *"Dùng skill project-os để bắt đầu dự án này"*. AI sẽ chạy init, rồi dẫn đi 7 bước Ngày 0, dừng chờ bạn duyệt sau mỗi bước.
 
 Không dùng skill cũng được:
 
 ```bash
-python ~/project-os/.agents/skills/project-os/scripts/init.py /đường/dẫn/dự-án   # thêm --plan nếu có nhiều mốc
+python ~/project-os/.agents/skills/project-os/scripts/init.py /đường/dẫn/dự-án   # thêm --plan nếu có nhiều Milestone
 cd /đường/dẫn/dự-án && git init && python pos.py setup
 # điền các chỗ {{…}} theo docs/PROCESS.md mục 3
 python ~/project-os/.agents/skills/project-os/scripts/audit.py .
@@ -95,5 +98,5 @@ Settings → Branches → thêm luật cho `main`:
 
 ## Yêu cầu
 
-`git` và Python 3 (chỉ thư viện chuẩn; không cần `make` hay `bash`). `gh` (tuỳ chọn) để `python pos.py done` nhận ra PR đã gộp kiểu squash.
+`git` và Python 3 (chỉ thư viện chuẩn; không cần `make` hay `bash`). `gh` (tuỳ chọn) để `python pos.py done` nhận ra PR đã merge squash.
 Claude Code từ 2.1.277 tự đọc `AGENTS.md`; `CLAUDE.md` trong khung chỉ có dòng `@AGENTS.md` để chạy được cả bản cũ.

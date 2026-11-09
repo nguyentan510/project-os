@@ -1,6 +1,6 @@
-# Vùng cấm + contract + file nóng → bắt buộc chủ dự án duyệt (luật cứng 6, 7).
-# Phải cùng danh sách với mục "File nóng" và "Vùng cấm" trong AGENTS.md.
-# Bỏ dấu # ở các dòng cần dùng và thay @chu-du-an bằng tài khoản GitHub của bạn.
+# Restricted zone + contract + Hot file → bắt buộc chủ dự án approve (luật cứng 6, 7).
+# Phải cùng danh sách với mục "Hot file" và "Restricted zone" trong AGENTS.md.
+# Bỏ dấu # ở các dòng cần dùng và thay @chu-du-an bằng tài khoản GitHub của chủ dự án.
 # Rồi bật trên GitHub: Settings → Branches → main → Require review from Code Owners.
 #
 # /src/auth/           @chu-du-an

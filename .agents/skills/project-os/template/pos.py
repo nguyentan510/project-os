@@ -3,15 +3,15 @@
 Chỉ dùng thư viện chuẩn Python 3.8+. (Đặt tên pos.py, không phải os.py, để khỏi che module `os` của Python.)
 
   python pos.py setup | run | lint | test [F=MAP-07] [L=api] | features [--sync] | check
-  python pos.py task T=T-043 N=map-sales [TYPE=fix]    tạo worktree + nhánh từ main mới nhất
-  python pos.py done T=T-043                           dọn sau khi PR đã gộp
-  python pos.py drop T=T-043 [CONFIRM=T-043]           huỷ task chưa gộp (phải hỏi chủ dự án)
+  python pos.py task T=T-043 N=map-sales [TYPE=fix]    tạo worktree + branch từ main mới nhất
+  python pos.py done T=T-043                           dọn sau khi PR đã merge
+  python pos.py drop T=T-043 [CONFIRM=T-043]           huỷ task chưa merge (phải hỏi chủ dự án)
   python pos.py wt                                     liệt kê worktree
-  python pos.py wt-clean [APPLY=1]                     tìm worktree mồ côi đã gộp; chỉ liệt kê, APPLY=1 mới dọn
+  python pos.py wt-clean [APPLY=1]                     tìm worktree mồ côi (đã merge); chỉ liệt kê, APPLY=1 mới dọn
   python pos.py pr [T=T-043] [--no-check]              sinh sẵn khung báo cáo PR từ git diff + kết quả check
-  python pos.py scope                                  kiểm file đã sửa có nằm trong "Phạm vi" của thẻ task (luật cứng 8)
-  python pos.py plan-check                             kiểm plan: cùng Sóng không trùng "Phạm vi", Phụ thuộc chỉ trỏ về Sóng trước
-  python pos.py sos                                    cứu hộ khi bị kẹt: sao lưu nhánh salvage/sos-*, khám bệnh (chỉ đọc), rồi gửi P-SOS cho AI
+  python pos.py scope                                  kiểm file đã sửa có nằm trong "Scope" của thẻ task (luật cứng 8)
+  python pos.py plan-check                             kiểm plan: cùng Wave không trùng "Scope", Phụ thuộc chỉ trỏ về Wave trước
+  python pos.py sos                                    cứu hộ khi bị kẹt: sao lưu vào branch salvage/sos-*, khám bệnh (chỉ đọc), rồi gửi P-SOS cho AI
 
 (Linux/macOS thường chỉ có lệnh `python3`: dùng `python3 pos.py …`.)
 """
@@ -117,7 +117,7 @@ def cmd_check(opts, _):
 def need_t(opts):
     t = opts.get("T", "")
     if not t:
-        die("Thiếu T=<mã task>, ví dụ T=T-043 (làn nhanh: T=MAP-02)")
+        die("Thiếu T=<mã task>, ví dụ T=T-043 (Lane Fast: T=MAP-02)")
     if not re.fullmatch(r"T-\d{3,}|[A-Z]+-\d{2,}", t):
         die(f"T sai dạng: '{t}'. Đúng: T-043 hoặc MAP-02")
     return t
@@ -142,13 +142,13 @@ def cmd_task(opts, _):
         die(f"Đã có worktree {path}. Xem: python pos.py wt")
     br = f"{typ}/{t}-{n}"
     if git("show-ref", "--verify", "--quiet", f"refs/heads/{br}")[0] == 0:
-        die(f"Nhánh {br} đã có")
+        die(f"Branch {br} đã có")
     git("fetch", "--quiet", "origin", BASE)
     code, _, err = git("worktree", "add", "--quiet", str(path), "-b", br, f"origin/{BASE}")
     if code:
         die(f"Không tạo được worktree: {err}")
     git("branch", "--quiet", "--unset-upstream", cwd=path)
-    say(f"Đã tạo: {path}  ·  nhánh {br}  ·  từ origin/{BASE}")
+    say(f"Đã tạo: {path}  ·  branch {br}  ·  từ origin/{BASE}")
     say(f"Tiếp: cd {path}")
     return 0
 
@@ -170,17 +170,17 @@ def cmd_done(opts, _):
     _, br, _ = git("rev-parse", "--abbrev-ref", "HEAD", cwd=path)
     git("fetch", "--quiet", "origin", BASE)
     if pr_merged(br):
-        how = "PR đã gộp (gh)"
+        how = "PR đã merge (gh)"
     elif git("merge-base", "--is-ancestor", br, f"origin/{BASE}")[0] == 0:
-        how = f"nhánh đã nằm trong origin/{BASE}"
+        how = f"branch đã nằm trong origin/{BASE}"
     else:
-        die(f"Nhánh {br} chưa gộp vào {BASE}. Gộp PR trước, hoặc huỷ: python pos.py drop T={t}\n"
-            "(Gộp kiểu squash cần lệnh gh để nhận ra PR đã gộp.)")
+        die(f"Branch {br} chưa merge vào {BASE}. Merge PR trước, hoặc huỷ: python pos.py drop T={t}\n"
+            "(Merge squash cần lệnh gh để nhận ra PR đã merge.)")
     if git("worktree", "remove", str(path))[0]:
         die("Worktree còn thay đổi chưa commit, không dọn.")
     git("branch", "--quiet", "-D", br)
     git("worktree", "prune")
-    say(f"Đã dọn {t}: xoá worktree + nhánh {br} ({how})")
+    say(f"Đã dọn {t}: xoá worktree + branch {br} ({how})")
     return 0
 
 
@@ -192,7 +192,7 @@ def cmd_drop(opts, _):
     _, br, _ = git("rev-parse", "--abbrev-ref", "HEAD", cwd=path)
     if opts.get("CONFIRM") != t:
         say(f"Huỷ {t} sẽ MẤT VĨNH VIỄN:")
-        say(f"  Commit chưa gộp trên {br}:")
+        say(f"  Commit chưa merge trên {br}:")
         for line in git("log", "--oneline", f"origin/{BASE}..{br}")[1].splitlines():
             say("    " + line)
         say("  Thay đổi chưa commit:")
@@ -202,7 +202,7 @@ def cmd_drop(opts, _):
     git("worktree", "remove", "--force", str(path))
     git("branch", "--quiet", "-D", br)
     git("worktree", "prune")
-    say(f"Đã huỷ {t}: xoá worktree + nhánh {br}")
+    say(f"Đã huỷ {t}: xoá worktree + branch {br}")
     return 0
 
 
@@ -212,7 +212,7 @@ def cmd_wt(opts, _):
 
 
 def cmd_wt_clean(opts, _):
-    """Worktree trong WT_DIR mà nhánh đã gộp vào origin/BASE (hoặc PR đã MERGED) nhưng chưa ai dọn."""
+    """Worktree trong WT_DIR mà branch đã merge vào origin/BASE (hoặc PR đã MERGED) nhưng chưa ai dọn."""
     git("fetch", "--quiet", "origin", BASE)
     wt_name = pathlib.Path(WT_DIR).name
     apply, found = opts.get("APPLY") == "1", 0
@@ -232,7 +232,7 @@ def cmd_wt_clean(opts, _):
             continue
         found += 1
         if not apply:
-            say(f"Mồ côi (đã gộp): {d} ({br})")
+            say(f"Mồ côi (đã merge): {d} ({br})")
         elif git("worktree", "remove", str(d))[0] == 0:
             git("branch", "--quiet", "-D", br)
             say(f"Đã dọn {d} ({br})")
@@ -244,17 +244,17 @@ def cmd_wt_clean(opts, _):
     return 0
 
 
-# ── Cứu hộ (Cổng Exit của chủ dự án) ───────────────────────────────────────
+# ── Cứu hộ (SOS) ───────────────────────────────────────────────────────────
 
 SALVAGE_PREFIX = "salvage/sos-"
 
 
 def cmd_sos(opts, _):
-    """Chỉ đọc + tạo MỘT nhánh sao lưu. Không đổi nhánh hiện tại, không reset, không xoá."""
+    """Chỉ đọc + tạo MỘT branch sao lưu. Không đổi branch hiện tại, không reset, không xoá."""
     import datetime
     if git("rev-parse", "--git-dir")[0] != 0:
         die("Chưa phải repo git, không có gì để cứu hộ.")
-    say("=== CỔNG CỨU HỘ DỰ ÁN (không mất code: mọi thứ được sao lưu trước) ===")
+    say("=== SOS · CỨU HỘ DỰ ÁN (không mất code: mọi thứ được sao lưu trước) ===")
     _, cur, _ = git("rev-parse", "--abbrev-ref", "HEAD")
     dirty = git("status", "--porcelain")[1]
     snap = git("rev-parse", "HEAD")[1]
@@ -282,8 +282,8 @@ def cmd_sos(opts, _):
         n += 1
         name = f"{SALVAGE_PREFIX}{stamp}-{n}"
     if git("branch", name, snap)[0] != 0:
-        die("Không tạo được nhánh sao lưu; dừng, chưa làm gì khác.")
-    say(f"[1/4] Đã sao lưu vào nhánh {name} (nhánh hiện tại '{cur}' giữ nguyên).")
+        die("Không tạo được branch sao lưu; dừng, chưa làm gì khác.")
+    say(f"[1/4] Đã sao lưu vào branch {name} (branch hiện tại '{cur}' giữ nguyên).")
     say(f"      Khôi phục khi cần: git checkout {name}")
     say("[2/4] Thay đổi chưa commit:" + ("" if dirty else " không có"))
     for line in dirty.splitlines()[:15]:
@@ -338,10 +338,10 @@ def cmd_pr(opts, extra):
         check = "`check`: qua" if r.returncode == 0 else f"`check`: LỖI\n```\n{tail}\n```"
     suffix = f" [{t}]" if t else ""
     say(f"Tiêu đề gợi ý: {kind}({','.join(feats[:2]) or '<MÃ>'}): <việc>{suffix}\n")
-    say(f"**Mã · Task · Làn:** {', '.join(feats) or '<MÃ>'} · {t or '—'} · <Nhanh | Thường | Kiểm soát>\n")
+    say(f"**Mã · Task · Lane:** {', '.join(feats) or '<MÃ>'} · {t or '—'} · <Fast | Normal | Strict>\n")
     if t:
         say(f"Closes #{int(t[2:])}  <!-- chỉ giữ nếu T-nnn trùng số GitHub Issue (PROCESS.md mục 7) -->\n")
-    say("**Đã làm:**\n\n**Phạm vi thực tế:** khớp thẻ / thêm …, vì …\n")
+    say("**Đã làm:**\n\n**Scope thực tế:** khớp thẻ / thêm …, vì …\n")
     say(f"**File thay đổi:**\n```\n{stat or '(không khác ' + base + ')'}\n```\n")
     say(f"**Commit:**\n```\n{commits or '(chưa có commit)'}\n```\n")
     say(f"**Test đã chạy:** {check}\n")
@@ -349,13 +349,14 @@ def cmd_pr(opts, extra):
     return 0
 
 
-# ── Máy chặn phạm vi thẻ (luật cứng 8) ─────────────────────────────────────
-# Thẻ task nằm trong docs/plan/*.md, đọc từ origin/<BASE> (không phải từ nhánh đang làm),
-# để Builder không tự mở rộng phạm vi trong chính PR của mình. Muốn mở rộng: Orchestrator sửa thẻ
-# trên main trước. Làn Nhanh (nhánh mang mã feature, không có số T) và nhánh không có thẻ thì bỏ qua.
+# ── Máy chặn Scope của thẻ (luật cứng 8) ───────────────────────────────────
+# Thẻ task nằm trong docs/plan/*.md, đọc từ origin/<BASE> (không phải từ branch đang làm),
+# để Builder không tự mở rộng Scope trong chính PR của mình. Muốn mở rộng: Orchestrator sửa thẻ
+# trên main trước. Lane Fast (branch mang mã feature, không có số T) và branch không có thẻ thì bỏ qua.
+# Nhận cả tên trường cũ (`Phạm vi:`, `Sóng:`) để plan viết trước v1.4 vẫn chạy.
 
 def find_card(t):
-    """Trả về danh sách mẫu đường dẫn của dòng `Phạm vi:` trong thẻ task t, hoặc None nếu không có thẻ."""
+    """Trả về danh sách mẫu đường dẫn của dòng `Scope:` trong thẻ task t, hoặc None nếu không có thẻ."""
     ref = f"origin/{BASE}"
     if git("rev-parse", "--verify", "--quiet", ref)[0]:
         ref = BASE
@@ -375,9 +376,9 @@ def find_card(t):
             for nxt in lines[i + 1:]:
                 if not nxt.strip() or re.match(r"^\s*-\s*\[", nxt):
                     break
-                m = re.search(r"Phạm vi:\s*(.*?)(?:\s{2,}\S[^:]*:|$)", nxt)
-                if m:
-                    return [p for p in re.split(r"[,\s]+", m.group(1).strip()) if p]
+                v = field(nxt, SCOPE)
+                if v:
+                    return [p for p in re.split(r"[,\s]+", v) if p]
             return []
     return None
 
@@ -394,10 +395,10 @@ def in_scope(path, patterns):
 
 def cmd_scope(opts, _):
     _, br, _ = git("rev-parse", "--abbrev-ref", "HEAD")
-    br = os.environ.get("POS_BRANCH") or br  # CI checkout ở trạng thái detached: truyền tên nhánh qua POS_BRANCH
+    br = os.environ.get("POS_BRANCH") or br  # CI checkout ở trạng thái detached: truyền tên branch qua POS_BRANCH
     m = re.match(r"^[a-z]+/(T-\d{3,})-", br)
     if not m:
-        say(f"scope: nhánh '{br}' không mang số T (làn Nhanh hoặc nhánh khác): bỏ qua")
+        say(f"scope: branch '{br}' không mang số T (Lane Fast hoặc branch khác): bỏ qua")
         return 0
     t = m.group(1)
     patterns = find_card(t)
@@ -405,7 +406,7 @@ def cmd_scope(opts, _):
         say(f"scope: không thấy thẻ {t} trong docs/plan/ trên {BASE}: bỏ qua")
         return 0
     if not patterns:
-        say(f"scope: thẻ {t} chưa có dòng 'Phạm vi:': không kiểm được")
+        say(f"scope: thẻ {t} chưa có dòng 'Scope:': không kiểm được")
         return 0
     base = f"origin/{BASE}" if git("rev-parse", "--verify", "--quiet", f"origin/{BASE}")[0] == 0 else BASE
     code, out, err = git("diff", "--name-only", f"{base}...HEAD")
@@ -413,21 +414,21 @@ def cmd_scope(opts, _):
         die(f"scope: không so được với {base}: {err}")
     outside = [f for f in out.splitlines() if not in_scope(f, patterns)]
     if outside:
-        say(f"scope: {t} sửa ngoài phạm vi thẻ ({' '.join(patterns)}):")
+        say(f"scope: {t} sửa ngoài Scope của thẻ ({' '.join(patterns)}):")
         for f in outside:
             say("    " + f)
-        say("Luật cứng 8: dừng và báo Orchestrator. Được duyệt thì Orchestrator sửa 'Phạm vi' của thẻ trên main, rồi push lại.")
+        say("Luật cứng 8: dừng và báo Orchestrator. Được duyệt thì Orchestrator sửa 'Scope' của thẻ trên main, rồi push lại.")
         return 1
-    say(f"scope: {t} đúng phạm vi thẻ")
+    say(f"scope: {t} đúng Scope của thẻ")
     return 0
 
 
-# ── Kiểm plan theo Sóng (PROCESS.md mục 11) ─────────────────────────────────
-# Chạy trên docs/plan/*.md trong thư mục làm việc, TRƯỚC khi bạn duyệt plan. Bốn lỗi bị chặn:
-#   1. hai task cùng Sóng có "Phạm vi" (quyền ghi, RW) giao nhau;
-#   2. "Phụ thuộc" trỏ tới task cùng Sóng hoặc Sóng sau;
+# ── Kiểm plan theo Wave (PROCESS.md mục 11) ─────────────────────────────────
+# Chạy trên docs/plan/*.md trong thư mục làm việc, TRƯỚC khi chủ dự án duyệt plan. Bốn lỗi bị chặn:
+#   1. hai task cùng Wave có "Scope" (quyền ghi, RW) giao nhau;
+#   2. "Phụ thuộc" trỏ tới task cùng Wave hoặc Wave sau;
 #   3. "Phụ thuộc" trỏ tới task không có trong plan;
-#   4. task thuộc Sóng có từ 2 task trở lên mà "Phạm vi" chạm "File nóng" trong AGENTS.md.
+#   4. task thuộc Wave có từ 2 task trở lên mà "Scope" chạm "Hot file" trong AGENTS.md.
 
 def scope_prefix(pat):
     p = pat.strip("`").lstrip("./")
@@ -441,8 +442,13 @@ def overlaps(a, b):
     return pa.startswith(pb) or pb.startswith(pa)
 
 
+WAVE = "Wave|Sóng"
+SCOPE = "Scope|Phạm vi"
+
+
 def field(line, name):
-    m = re.search(rf"{name}:\s*(.*?)(?:\s{{2,}}\S[^:]*:|$)", line)
+    """Giá trị của trường `name:` trong một dòng thẻ; `name` là regex (nhận cả tên cũ)."""
+    m = re.search(rf"(?:{name}):\s*(.*?)(?:\s{{2,}}\S[^:]*:|$)", line)
     return m.group(1).strip() if m else None
 
 
@@ -459,11 +465,11 @@ def parse_cards():
             for nxt in lines[i + 1:]:
                 if not nxt.strip() or re.match(r"^\s*-\s*\[", nxt):
                     break
-                w = field(nxt, "Sóng")
+                w = field(nxt, WAVE)
                 if w:
                     mw = re.match(r"W(\d+)", w)
                     c["wave"] = int(mw.group(1)) if mw else None
-                rw = field(nxt, "Phạm vi")
+                rw = field(nxt, SCOPE)
                 if rw:
                     c["rw"] = [x for x in re.split(r"[,\s]+", rw) if x]
                 d = field(nxt, "Phụ thuộc")
@@ -480,7 +486,7 @@ def hot_files():
     out, on = [], False
     for line in f.read_text(encoding="utf-8").splitlines():
         if line.startswith("## "):
-            on = line.startswith("## File nóng")
+            on = line.startswith(("## Hot file", "## File nóng"))
         elif on and "{{" not in line:
             out += [x for x in re.split(r"[,\s]+", line.replace("`", " ").strip()) if x]
     return out
@@ -498,25 +504,25 @@ def cmd_plan_check(opts, _):
     waves = {}
     for c in cards:
         if c["wave"] is None:
-            errs.append(f"{c['t']}: thiếu dòng 'Sóng: W<n>'")
+            errs.append(f"{c['t']}: thiếu dòng 'Wave: W<n>'")
             continue
         if not c["rw"]:
-            errs.append(f"{c['t']}: thiếu 'Phạm vi' (quyền ghi)")
+            errs.append(f"{c['t']}: thiếu 'Scope' (quyền ghi)")
         waves.setdefault(c["wave"], []).append(c)
     hot = hot_files()
     for w, group in sorted(waves.items()):
         if len(group) > 5:
-            errs.append(f"Sóng W{w} có {len(group)} task: quá 5, review sẽ nghẽn; tách thành hai Sóng")
+            errs.append(f"W{w} có {len(group)} task: quá 5, review sẽ nghẽn; tách thành hai Wave")
         for i, a in enumerate(group):
             for b in group[i + 1:]:
                 hit = [(x, y) for x in a["rw"] for y in b["rw"] if overlaps(x, y)]
                 if hit:
-                    errs.append(f"W{w}: {a['t']} và {b['t']} trùng phạm vi ghi ({hit[0][0]} ~ {hit[0][1]})")
+                    errs.append(f"W{w}: {a['t']} và {b['t']} trùng Scope ({hit[0][0]} ~ {hit[0][1]})")
             if len(group) >= 2:
                 for x in a["rw"]:
                     for h in hot:
                         if overlaps(x, h):
-                            errs.append(f"W{w}: {a['t']} ghi vào file nóng ({x} ~ {h}); chuyển việc nối dây sang Sóng cuối")
+                            errs.append(f"W{w}: {a['t']} ghi vào Hot file ({x} ~ {h}); chuyển việc nối dây sang Wave cuối")
                             break
     for c in cards:
         for d in c["deps"]:
@@ -525,13 +531,13 @@ def cmd_plan_check(opts, _):
                 errs.append(f"{c['t']} phụ thuộc {d}: không có thẻ này trong docs/plan/ (gõ nhầm số?)")
                 continue
             if dep and dep["wave"] is not None and c["wave"] is not None and dep["wave"] >= c["wave"]:
-                errs.append(f"{c['t']} (W{c['wave']}) phụ thuộc {d} (W{dep['wave']}): phải trỏ về Sóng trước")
+                errs.append(f"{c['t']} (W{c['wave']}) phụ thuộc {d} (W{dep['wave']}): phải trỏ về Wave trước")
     if errs:
         say("plan-check: plan chưa đạt:")
         for e in errs:
             say("    " + e)
         return 1
-    say(f"plan-check: qua ({len(cards)} task, {len(waves)} Sóng, không trùng quyền ghi)")
+    say(f"plan-check: qua ({len(cards)} task, {len(waves)} Wave, không trùng Scope)")
     return 0
 
 
