@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// npx -y @nguyentan0510/project-os [--global] [--dry-run] [--uninstall] [--dir <thư-mục>]
+// npx -y @nguyentan0510/project-os [--tools agents,claude|all] [--global] [--dry-run] [--uninstall] [--dir <thư-mục>]
 //
-// Mặc định (theo dự án): chép skill vào thư mục hiện tại (hoặc --dir), để commit cùng repo:
+// Mặc định (theo dự án): chép skill vào thư mục hiện tại (hoặc --dir), để commit cùng repo
+// (chọn bớt bằng --tools hoặc biến PROJECT_OS_TOOLS):
 //   <dự-án>/.agents/skills/project-os   Codex, Antigravity và các công cụ dùng chuẩn chung
 //   <dự-án>/.claude/skills/project-os   Claude Code
 // --global: cài vào thư mục home của các công cụ (ủy quyền cho install.sh / install.ps1).
@@ -13,18 +14,34 @@ const { spawnSync } = require("child_process");
 const PKG_ROOT = path.resolve(__dirname, "..");
 const SRC = path.join(PKG_ROOT, ".agents", "skills", "project-os");
 const MARKER = ".project-os-install";
-const LOCATIONS = [
-  [".agents", "skills", "project-os"],
-  [".claude", "skills", "project-os"],
-];
+// Công cụ → thư mục skill trong dự án.
+const TOOLS = {
+  agents: [".agents", "skills", "project-os"], // Codex, Antigravity và các công cụ dùng chuẩn chung
+  claude: [".claude", "skills", "project-os"], // Claude Code
+};
 const VERSION = require(path.join(PKG_ROOT, "package.json")).version;
+
+// Mặc định: cả hai. Đổi mặc định cho riêng bạn bằng biến môi trường PROJECT_OS_TOOLS (ví dụ "agents").
+function resolveTools(spec) {
+  const names = String(spec).split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+  const out = new Set();
+  for (const n of names) {
+    if (n === "all") Object.keys(TOOLS).forEach((k) => out.add(k));
+    else if (TOOLS[n]) out.add(n);
+    else fail(`--tools không nhận "${n}". Hợp lệ: ${Object.keys(TOOLS).join(", ")}, all`);
+  }
+  if (!out.size) fail("--tools cần ít nhất một giá trị (agents, claude, all)");
+  return [...out];
+}
 
 const HELP = `project-os — cài skill Project OS
 
-  npx -y @nguyentan0510/project-os              cài vào dự án hiện tại (.agents/ và .claude/)
+  npx -y @nguyentan0510/project-os              cài vào dự án hiện tại (mặc định: .agents/ và .claude/)
   npx -y @nguyentan0510/project-os --global     cài vào thư mục home của các công cụ AI
 
 Tuỳ chọn:
+  --tools <danh-sách>  chọn nơi cài, cách nhau bằng dấu phẩy: agents (Codex, Antigravity),
+                       claude (Claude Code), all. Mặc định: all, hoặc biến PROJECT_OS_TOOLS.
   --dir <thư-mục>   cài vào thư mục này thay vì thư mục hiện tại
   --dry-run         chỉ in việc sẽ làm
   --uninstall       gỡ bản đã cài bằng lệnh này
@@ -32,10 +49,15 @@ Tuỳ chọn:
   -h, --help        trợ giúp`;
 
 function parse(argv) {
-  const o = { global: false, dry: false, uninstall: false, dir: process.cwd(), help: false };
+  const o = { global: false, dry: false, uninstall: false, dir: process.cwd(), help: false,
+    tools: process.env.PROJECT_OS_TOOLS || "all" };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === "--global") o.global = true;
+    if (a === "--tools") {
+      if (!argv[i + 1]) fail("--tools cần giá trị: agents, claude hoặc all");
+      o.tools = argv[++i];
+    } else if (a.startsWith("--tools=")) o.tools = a.slice("--tools=".length);
+    else if (a === "--global") o.global = true;
     else if (a === "--dry-run") o.dry = true;
     else if (a === "--uninstall") o.uninstall = true;
     else if (a === "--dir") {
@@ -78,12 +100,18 @@ function projectMode(o) {
   console.log(`Project OS · ${o.uninstall ? "gỡ" : "cài"} skill theo dự án · ${o.dir}`);
 
   let skipped = 0;
-  for (const loc of LOCATIONS) {
+  for (const loc of resolveTools(o.tools).map((k) => TOOLS[k])) {
     const dst = path.join(o.dir, ...loc);
     const rel = loc.join("/");
     if (o.uninstall) {
       if (installedByUs(dst)) {
-        if (!o.dry) fs.rmSync(dst, { recursive: true, force: true });
+        if (!o.dry) {
+          fs.rmSync(dst, { recursive: true, force: true });
+          // Dọn thư mục cha nếu rỗng (skills/, rồi .agents/ hoặc .claude/); thư mục có file khác thì giữ.
+          for (let d = path.dirname(dst), i = 0; i < 2; d = path.dirname(d), i++) {
+            try { fs.rmdirSync(d); } catch { break; }
+          }
+        }
         console.log(`  ${o.dry ? "[dry-run] sẽ gỡ" : "đã gỡ"}  ${rel}`);
       } else console.log(`  bỏ qua  ${rel} (không có, hoặc không phải do lệnh này tạo)`);
       continue;

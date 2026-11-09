@@ -44,6 +44,8 @@ npx -y @nguyentan0510/project-os
 | `.claude/skills/project-os/` | Claude Code | `/project-os` |
 
 - Chạy lại lệnh để cập nhật. Nơi đã có thứ khác (không do lệnh này tạo) thì bỏ qua, không ghi đè.
+- **Chọn công cụ:** `--tools agents` (chỉ `.agents/`), `--tools claude` (chỉ `.claude/`), `--tools agents,claude` hoặc `--tools all` (mặc định: cả hai). Claude Code chỉ đọc `.claude/`; Codex và Antigravity đọc `.agents/`.
+- **Mặc định riêng của bạn:** đặt biến môi trường `PROJECT_OS_TOOLS` (ví dụ `agents`); cờ `--tools` luôn thắng biến này.
 - `--dry-run` chỉ in việc sẽ làm · `--uninstall` gỡ · `--dir <thư-mục>` cài vào thư mục khác.
 - Mỗi lần chạy bằng `npx` lấy bản mới nhất của gói; muốn ghim phiên bản: `npx -y @nguyentan0510/project-os@1.1.0`.
 
