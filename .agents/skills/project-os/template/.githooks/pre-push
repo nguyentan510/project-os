@@ -1,0 +1,4 @@
+#!/bin/sh
+# Luật cứng 3: chỉ push khi make check qua. Bật bằng: make setup
+echo "pre-push: chạy make check…"
+make check || { echo "pre-push: make check chưa qua, không push."; exit 1; }

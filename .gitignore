@@ -1,0 +1,3 @@
+project-os.tar.gz
+# Windows junction; trong repo là symlink thật (mode 120000)
+.claude/skills/project-os

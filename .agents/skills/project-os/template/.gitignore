@@ -1,0 +1,13 @@
+# Khoá bí mật (luật cứng 2)
+.env
+.env.*
+!.env.example
+
+# Thường gặp
+node_modules/
+__pycache__/
+.venv/
+target/
+dist/
+build/
+.DS_Store

@@ -1,0 +1,30 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Thêm bước cài ngôn ngữ của dự án ở đây (setup-python, setup-node, rust-toolchain…)
+      - run: make check
+
+  pr-title:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kiểm tiêu đề PR (luật cứng 4)
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if printf '%s' "$TITLE" | grep -Eq '^(feat|fix|refactor|test|docs)\([A-Z]+-[0-9]{2,}(,[A-Z]+-[0-9]{2,})*\): [^[]+( \[T-[0-9]{3,}\])?$|^chore: [^[]+( \[T-[0-9]{3,}\])?$'; then
+            echo "Tiêu đề PR đúng mẫu."
+          else
+            echo "Tiêu đề PR sai mẫu: $TITLE"
+            echo "Đúng: feat(MAP-07): add store map API [T-042]  ·  chore: bump ruff"
+            exit 1
+          fi
