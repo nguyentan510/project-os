@@ -15,6 +15,7 @@ AGENTS.md → STATUS.md → thẻ task (nếu có) → dòng mã trong `docs/pro
 - `python pos.py check` = kiểm sổ mã + lint + test; chạy trước mỗi lần push
 - `python pos.py task T=T-043 N=ten-ngan` · `python pos.py done T=T-043` · `python pos.py wt`
 - `python pos.py wt-clean [APPLY=1]` dọn worktree đã gộp · `python pos.py pr` sinh sẵn khung báo cáo PR
+- `python pos.py sos` khi bị kẹt: sao lưu nhánh `salvage/sos-*` + khám bệnh, rồi chạy P-SOS (`docs/prompts/P-SOS.md`)
 - `python pos.py plan-check` kiểm plan nhiều agent: cùng Sóng không trùng quyền ghi (PROCESS.md mục 11)
 
 ## Luồng

@@ -3,9 +3,9 @@
 PY ?= python3
 POS = $(PY) pos.py
 
-.PHONY: setup run test lint features check task done drop wt scope plan-check wt-clean pr
+.PHONY: setup run test lint features check task done drop wt scope plan-check wt-clean pr sos
 
-setup run lint features check wt scope plan-check wt-clean:
+setup run lint features check wt scope plan-check wt-clean sos:
 	@$(POS) $@
 
 test:

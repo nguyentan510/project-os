@@ -141,7 +141,7 @@ Thư mục xếp **theo thứ tự đọc**: trên cùng là thứ AI đọc m�
 │   ├── plan/                 (khi có nhiều mốc)
 │   │   ├── ROADMAP.md        mốc M1, M2…
 │   │   └── M3-ban-do.md      thẻ task của mốc đang làm
-│   └── prompts/              P-01.md … P-15.md (mục 13)
+│   └── prompts/              P-01.md … P-15.md, P-SOS.md (mục 13)
 │
 │  ③ LÀM — code chia theo module
 ├── src/<module>/             Rust: crates/<module>/
@@ -519,8 +519,9 @@ Mỗi bước của luồng có một prompt mẫu, mã `P-nn`. Bản đầy đ�
 | P-13 | Nghiệm thu mốc | Orchestrator | Mốc `<M3>` đã nghiệm thu, phiên bản `<v0.5>`. Đánh dấu xong trong ROADMAP, xoá plan mốc, dọn STATUS, liệt kê câu hỏi Q- còn mở. | ROADMAP mới |
 | P-14 | Khẩn cấp | Builder | Lỗi production: `<hiện tượng>`. Sửa nhanh nhất; tôi cho phép bỏ qua `<luật>`. Ghi lý do vào DECISIONS, tạo task bù. | Hotfix + Dxx + task bù |
 | P-15 | Kiểm toán Ngày 0 | Orchestrator (phiên mới) | Kiểm toán repo theo bảng kiểm mục 3. Với từng ô: Đạt hoặc Chưa, kèm bằng chứng (file, dòng). Không sửa gì. Cuối cùng kết luận: qua cổng hay chưa, còn thiếu gì. | Bảng Đạt/Chưa + kết luận |
+| P-SOS | Bị kẹt, cần cứu hộ | Orchestrator | Chạy `python pos.py sos` (sao lưu nhánh `salvage/sos-*`, khám bệnh, chỉ đọc). Báo ≤ 5 dòng tiếng người, đưa 2 phương án: A cứu task theo đúng luồng, B huỷ task và về main xanh. Chờ tôi chọn A/B rồi mới làm. | Báo cáo + repo về chuẩn |
 
-- Thứ tự dùng trong một mốc: P-01 → P-03 (một agent) hoặc P-03-MULTI (nhiều agent) → (P-04 hoặc P-05, P-06) → P-07 khi cần → P-08 → P-09. Hết mốc: P-13. Dự án mới: P-02 → P-15 → bạn duyệt → T-001.
+- Thứ tự dùng trong một mốc: P-01 → P-03 (một agent) hoặc P-03-MULTI (nhiều agent) → (P-04 hoặc P-05, P-06) → P-07 khi cần → P-08 → P-09. Hết mốc: P-13. Dự án mới: P-02 → P-15 → bạn duyệt → T-001. Bị kẹt bất kỳ lúc nào: P-SOS (mã chữ, không chiếm số P-nn).
 - Prompt cũng là mã: không dùng lại số, sửa nội dung thì sửa trong `docs/prompts/`.
 
 ## Phụ lục · Mẫu

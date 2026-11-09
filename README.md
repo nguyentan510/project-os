@@ -16,7 +16,7 @@ Repo này vừa là **skill** (thiết lập nhanh trong AI coding) vừa là **
 │   ├── AGENTS.md  CLAUDE.md  STATUS.md  pos.py  Makefile (bọc tuỳ chọn)  gitignore.template (chép thành .gitignore)  .env.example
 │   ├── docs/PROCESS.md           bản đầy đủ của quy tắc (13 mục)
 │   ├── docs/product/BRIEF.md · FEATURES.md   docs/DECISIONS.md
-│   ├── docs/prompts/P-01…P-15.md bảng prompt theo từng bước
+│   ├── docs/prompts/P-01…P-15, P-SOS bảng prompt theo từng bước
 │   ├── scripts/feature-lint.py   kiểm sổ mã (python pos.py features [--sync])
 │   ├── .githooks/pre-push        chặn push khi check chưa qua hoặc sửa ngoài phạm vi thẻ
 │   └── .github/                  CI · CODEOWNERS · mẫu PR

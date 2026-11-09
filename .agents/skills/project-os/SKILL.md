@@ -13,6 +13,7 @@ Bộ quy tắc để mọi AI (Claude Code, Codex, Antigravity…) mở repo là
 | --- | --- |
 | Bắt đầu dự án mới / áp quy tắc vào repo | **Init** rồi **Ngày 0** |
 | Kiểm repo đã đủ để viết code chưa | **Audit** |
+| Repo đang kẹt / không rõ lỗi | Chạy `python pos.py sos` rồi prompt `docs/prompts/P-SOS.md`; chờ chủ dự án chọn A/B |
 | Đã qua Ngày 0, cần làm task | Đọc `AGENTS.md` của repo và theo luồng chung; không cần skill này |
 
 ## Init

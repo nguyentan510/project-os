@@ -11,6 +11,7 @@ Chỉ dùng thư viện chuẩn Python 3.8+. (Đặt tên pos.py, không phải 
   python pos.py pr [T=T-043] [--no-check]              sinh sẵn khung báo cáo PR từ git diff + kết quả check
   python pos.py scope                                  kiểm file đã sửa có nằm trong "Phạm vi" của thẻ task (luật cứng 8)
   python pos.py plan-check                             kiểm plan: cùng Sóng không trùng "Phạm vi", Phụ thuộc chỉ trỏ về Sóng trước
+  python pos.py sos                                    cứu hộ khi bị kẹt: sao lưu nhánh salvage/sos-*, khám bệnh (chỉ đọc), rồi gửi P-SOS cho AI
 
 (Linux/macOS thường chỉ có lệnh `python3`: dùng `python3 pos.py …`.)
 """
@@ -243,6 +244,75 @@ def cmd_wt_clean(opts, _):
     return 0
 
 
+# ── Cứu hộ (Cổng Exit của chủ dự án) ───────────────────────────────────────
+
+SALVAGE_PREFIX = "salvage/sos-"
+
+
+def cmd_sos(opts, _):
+    """Chỉ đọc + tạo MỘT nhánh sao lưu. Không đổi nhánh hiện tại, không reset, không xoá."""
+    import datetime
+    if git("rev-parse", "--git-dir")[0] != 0:
+        die("Chưa phải repo git, không có gì để cứu hộ.")
+    say("=== CỔNG CỨU HỘ DỰ ÁN (không mất code: mọi thứ được sao lưu trước) ===")
+    _, cur, _ = git("rev-parse", "--abbrev-ref", "HEAD")
+    dirty = git("status", "--porcelain")[1]
+    snap = git("rev-parse", "HEAD")[1]
+    if dirty:
+        # Chụp cả file sửa lẫn file mới chưa theo dõi, bằng index tạm: không đụng index/working tree thật.
+        import tempfile
+        tmpdir = tempfile.TemporaryDirectory()
+        tmp = os.path.join(tmpdir.name, "index")
+        env = dict(os.environ, GIT_INDEX_FILE=tmp)
+        run = lambda *a: subprocess.run(["git", *a], cwd=ROOT, env=env, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        if run("read-tree", "HEAD").returncode == 0 and run("add", "-A").returncode == 0:
+            tree = run("write-tree").stdout.strip()
+            c = run("commit-tree", tree, "-p", snap, "-m", "SOS: sao lưu thay đổi chưa commit")
+            if c.returncode == 0 and c.stdout.strip():
+                snap = c.stdout.strip()
+            else:
+                die("Không chụp được thay đổi chưa commit; dừng, chưa làm gì khác. Tự sao lưu: git stash -u")
+        else:
+            die("Không chụp được thay đổi chưa commit; dừng, chưa làm gì khác. Tự sao lưu: git stash -u")
+        tmpdir.cleanup()
+    stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    name = SALVAGE_PREFIX + stamp
+    n = 1
+    while git("show-ref", "--verify", "--quiet", f"refs/heads/{name}")[0] == 0:
+        n += 1
+        name = f"{SALVAGE_PREFIX}{stamp}-{n}"
+    if git("branch", name, snap)[0] != 0:
+        die("Không tạo được nhánh sao lưu; dừng, chưa làm gì khác.")
+    say(f"[1/4] Đã sao lưu vào nhánh {name} (nhánh hiện tại '{cur}' giữ nguyên).")
+    say(f"      Khôi phục khi cần: git checkout {name}")
+    say("[2/4] Thay đổi chưa commit:" + ("" if dirty else " không có"))
+    for line in dirty.splitlines()[:15]:
+        say("      " + line)
+    if len(dirty.splitlines()) > 15:
+        say(f"      … và {len(dirty.splitlines()) - 15} dòng nữa")
+    say("[3/4] Worktree:")
+    say("      " + git("worktree", "list")[1].replace("\n", "\n      "))
+    cmd_wt_clean({}, [])
+    st = ROOT / "STATUS.md"
+    if st.is_file():
+        say("      STATUS.md: mục Đang giữ / Đang chặn:")
+        keep = False
+        for line in st.read_text(encoding="utf-8", errors="replace").splitlines():
+            if line.startswith("## "):
+                keep = line[3:].strip() in ("Đang giữ", "Đang chặn")
+            elif keep and line.strip():
+                say("        " + line)
+    say("[4/4] Kiểm kỹ thuật (python pos.py check):")
+    r = subprocess.run([PY, str(ROOT / "pos.py"), "check"], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    out = (r.stdout + r.stderr).strip().splitlines()
+    for line in out[-30:]:
+        say("      " + line)
+    say("      => " + ("qua" if r.returncode == 0 else "CÓ LỖI (xem trên)"))
+    say("-" * 56)
+    say("Gửi prompt P-SOS cho AI để nhận 2 phương án (A: cứu task, B: huỷ và về main xanh).")
+    return 0
+
+
 # ── Báo cáo PR tự sinh ─────────────────────────────────────────────────────
 
 def cmd_pr(opts, extra):
@@ -468,7 +538,7 @@ def cmd_plan_check(opts, _):
 COMMANDS = {
     "setup": cmd_setup, "run": cmd_run, "lint": cmd_lint, "test": cmd_test, "features": cmd_features,
     "check": cmd_check, "task": cmd_task, "done": cmd_done, "drop": cmd_drop, "wt": cmd_wt, "scope": cmd_scope, "plan-check": cmd_plan_check,
-    "wt-clean": cmd_wt_clean, "pr": cmd_pr,
+    "wt-clean": cmd_wt_clean, "pr": cmd_pr, "sos": cmd_sos,
 }
 
 
