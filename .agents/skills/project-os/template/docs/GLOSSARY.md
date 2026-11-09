@@ -46,7 +46,7 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 | Sổ mã | `docs/product/FEATURES.md`: nguồn duy nhất của mã module và feature |
 | DECISIONS | Bảng quyết định `Dxx` và câu hỏi mở `Q-` (`docs/DECISIONS.md`) |
 | ROADMAP | Danh sách Milestone và trạng thái (`docs/plan/ROADMAP.md`, khi có nhiều Milestone) |
-| Plan | Thẻ task của một Milestone (`docs/plan/M3-<ten-ngan>.md`) |
+| Plan | Thẻ task của một Milestone (`docs/plan/M3-<short-name>.md`) |
 | File ranh giới | File là điểm vào của module (route, service, contract, màn hình, job); có 3 dòng đầu file gắn mã |
 
 ## Quy trình
@@ -86,7 +86,7 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 
 | Thuật ngữ | Nghĩa |
 | --- | --- |
-| Branch | Dòng phát triển của một task: `<loại>/<mã>-<tên-ngắn>`, ví dụ `feat/T-043-map-sales` |
+| Branch | Dòng phát triển của một task: `<loại>/<mã>-<short-name>`, ví dụ `feat/T-043-map-sales` |
 | Worktree | Thư mục làm việc riêng của một task, đặt ngoài repo: `../wt/T-043` |
 | Commit | Điểm lưu thay đổi; ở local tự do |
 | Push | Đẩy branch lên remote; pre-push hook chạy check và scope trước |
@@ -99,6 +99,39 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 | Khoá main | Branch protection của main: không push thẳng, bắt buộc PR, CI và Code Owner |
 | Code Owner | Người trong `.github/CODEOWNERS` phải approve PR chạm đường dẫn của mình |
 | Hook | Script Git chạy tự động; dự án dùng `.githooks/pre-push` |
+
+## Mẫu tên
+
+**Mã.** Cấp một lần, không dùng lại. Gạch nối giữ đúng như bảng (đã nằm trong regex của script, không đổi):
+
+| Loại | Mẫu | Regex | Ví dụ | Cấp ở |
+| --- | --- | --- | --- | --- |
+| Module | 2–6 chữ hoa | `[A-Z]{2,6}` | `MAP` | FEATURES.md |
+| Feature | `<MODULE>-nn` | `[A-Z]{2,6}-\d{2,}` | `MAP-07` | FEATURES.md |
+| Quyết định | `Dnn` | `D\d{2,}` | `D59` | DECISIONS.md |
+| Câu hỏi mở | `Q-<slug>` | `Q-[a-z0-9-]+` | `Q-map` | DECISIONS.md |
+| Milestone | `Mn` | `M\d+` | `M3` | ROADMAP.md |
+| Wave | `Wn`, bắt đầu từ `W0` | `W\d+` | `W1` | thẻ task |
+| Task | `T-nnn` | `T-\d{3,}` | `T-043` | plan (Orchestrator) |
+| Prompt trong luồng | `P-nn` | `P-\d{2}` | `P-04` | PROCESS.md mục 13 |
+| Biến thể prompt | `P-nn-<TÊN>` | `P-\d{2}-[A-Z]+` | `P-03-MULTI` | PROCESS.md mục 13 |
+| Prompt ngoài luồng | `P-<TÊN>` | `P-[A-Z]+` | `P-SOS` | PROCESS.md mục 13 |
+
+**Slug** (`<short-name>`): kebab-case ASCII tiếng Anh, chữ thường, số, gạch ngang; 2–4 từ. Dùng cho branch, `N=` của `pos.py task`, file plan.
+
+| Thứ | Mẫu | Ví dụ |
+| --- | --- | --- |
+| Branch | `<loại>/<mã>-<short-name>` | `feat/T-043-map-sales`, `fix/MAP-02-typo` |
+| Worktree | `../wt/<mã>` | `../wt/T-043` |
+| Branch sao lưu | `salvage/sos-<YYYYMMDD-HHMMSS>` | `salvage/sos-20261109-153000` |
+| File plan | `docs/plan/<Milestone>-<short-name>.md` | `docs/plan/M3-store-map.md` |
+| File prompt | `docs/prompts/<mã prompt>.md` | `docs/prompts/P-04.md` |
+| Thư mục module | mã module viết thường | `src/map/`, `tests/api/map/` |
+| Contract | `contract.<đuôi>` trong thư mục module | `src/map/contract.py` |
+
+**File tài liệu.** Tên VIẾT HOA một từ tiếng Anh (`STATUS.md`, `BRIEF.md`); tiêu đề H1 theo mẫu `# TÊN · mô tả ngắn` (STATUS: `# STATUS · <ngày> · <Milestone>`; plan và prompt: `# <mã> · <tên>`). Tên do công cụ quy định (`README.md`, `CODEOWNERS`, `pull_request_template.md`…) giữ nguyên.
+
+**Biến môi trường** của Project OS có tiền tố `PROJECT_OS_`: `PROJECT_OS_TOOLS`, `PROJECT_OS_BRANCH`, `PROJECT_OS_F`, `PROJECT_OS_L`, `PROJECT_OS_DIR`, `PROJECT_OS_REPO`.
 
 ## Trạng thái và kết quả
 
@@ -126,6 +159,9 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 | nhánh | branch |
 | gộp, hàng chờ gộp | merge, merge queue |
 | Kiểm local | check |
+| `M1-ten-ngan.md`, slug tiếng Việt | `M1-short-name.md`, slug tiếng Anh |
+| `POS_BRANCH` | `PROJECT_OS_BRANCH` |
+| `scripts/feature-lint.py` | `scripts/features.py` |
 | test hợp đồng | contract test |
 | stub, fixture (kèm contract) | mock |
 | E2E | e2e |

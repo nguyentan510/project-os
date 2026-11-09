@@ -77,7 +77,7 @@ def scan(modules):
     for path in ROOT.rglob("*"):
         rel = path.relative_to(ROOT)
         if (path.is_dir() or set(rel.parts) & SKIP_DIRS or rel.parts[0] in SKIP_TOP_DIRS
-                or path.name == "feature-lint.py"
+                or path.name in ("features.py", "feature-lint.py")
                 or (len(rel.parts) == 1 and path.name in SKIP_ROOT_FILES)):
             continue
         try:

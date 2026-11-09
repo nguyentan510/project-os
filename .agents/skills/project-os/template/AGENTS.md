@@ -1,4 +1,4 @@
-# AGENTS.md
+# AGENTS · Luật của dự án
 
 Luật của dự án này. Mọi AI (Claude Code, Codex, Antigravity, Cursor…) đọc file này đầu tiên.
 Bản đầy đủ: `docs/PROCESS.md`. Thuật ngữ: `docs/GLOSSARY.md`. Chỗ `{{…}}` phải điền trong Ngày 0 (PROCESS.md mục 3).
@@ -13,7 +13,7 @@ AGENTS.md → STATUS.md → thẻ task (nếu có) → dòng mã trong `docs/pro
 - `python pos.py setup` · `python pos.py run` · `python pos.py lint`
 - `python pos.py test` · `python pos.py test F=MAP-07` (theo mã) · `python pos.py test L=api` (theo tầng)
 - `python pos.py check` = kiểm sổ mã + lint + test; chạy trước mỗi lần push
-- `python pos.py task T=T-043 N=ten-ngan` · `python pos.py done T=T-043` · `python pos.py wt`
+- `python pos.py task T=T-043 N=short-name` · `python pos.py done T=T-043` · `python pos.py wt`
 - `python pos.py wt-clean [APPLY=1]` dọn worktree đã merge · `python pos.py pr` sinh sẵn khung báo cáo PR
 - `python pos.py sos` khi bị kẹt: sao lưu vào branch `salvage/sos-*` + khám bệnh, rồi chạy P-SOS (`docs/prompts/P-SOS.md`)
 - `python pos.py plan-check` kiểm plan nhiều agent: cùng Wave không trùng Scope (PROCESS.md mục 11)

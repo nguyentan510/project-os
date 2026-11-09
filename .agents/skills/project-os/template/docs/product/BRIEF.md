@@ -1,4 +1,4 @@
-# BRIEF
+# BRIEF · Mục tiêu sản phẩm
 
 Đọc 1 phút phải trả lời được: cho ai, để làm gì, khi nào là xong.
 

@@ -1,7 +1,7 @@
 # M1 · {{Tên Milestone}}
 
 Mục tiêu: {{…}} · Quyết định: {{Dxx}} · Feature: {{MOD-01…MOD-05}}
-Đổi tên file thành `M1-<ten-ngan>.md`. Chỉ Orchestrator sửa file này. Trường thẻ theo `docs/GLOSSARY.md`.
+Đổi tên file thành `M1-<short-name>.md` (slug kebab-case tiếng Anh, ví dụ `M1-store-map.md`). Chỉ Orchestrator sửa file này. Trường thẻ theo `docs/GLOSSARY.md`.
 
 ## Task
 

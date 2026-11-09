@@ -1,4 +1,4 @@
-# Quy tắc triển khai dự án
+# PROCESS · Quy tắc triển khai dự án
 
 Phiên bản 1.1 · 2026-11-09 · Nguồn gốc của mọi quy tắc trong repo này. Tên gọi theo `docs/GLOSSARY.md`.
 
@@ -130,7 +130,7 @@ Thư mục xếp **theo thứ tự đọc**: trên cùng là thứ AI đọc m�
 │   ├── DECISIONS.md          D01…, Q-…
 │   ├── plan/                 (khi có nhiều Milestone)
 │   │   ├── ROADMAP.md        Milestone M1, M2…
-│   │   └── M3-ban-do.md      thẻ task của Milestone đang làm
+│   │   └── M3-store-map.md   thẻ task của Milestone đang làm
 │   └── prompts/              P-01.md … P-15.md, P-03-MULTI.md, P-SOS.md (mục 13)
 │
 │  ③ LÀM — code chia theo module
@@ -149,7 +149,7 @@ Thư mục xếp **theo thứ tự đọc**: trên cùng là thứ AI đọc m�
 ├── pos.py                    runner: setup · run · lint · test · features · check · task · done · drop
 │                             · wt · wt-clean · pr · scope · plan-check · sos
 ├── Makefile                  lớp bọc tuỳ chọn gọi pos.py cho ai quen make
-├── scripts/feature-lint.py   kiểm sổ mã, sinh cột Test
+├── scripts/features.py      kiểm sổ mã, sinh cột Test (python pos.py features)
 └── .github/
     ├── CODEOWNERS            cùng danh sách Restricted zone + Hot file với AGENTS.md
     ├── pull_request_template.md
@@ -236,7 +236,7 @@ Dự án nhỏ chỉ cần STATUS.md, dùng mục "Tiếp theo" thay plan. "Vừ
 | Milestone | Mục tiêu            | Feature        | Plan              | Trạng thái              |
 | --------- | ------------------- | -------------- | ----------------- | ----------------------- |
 | M2        | Báo đơn và nhận đơn | ORD-01…ORD-09  | —                 | xong 2026-10-20 · v0.4  |
-| M3        | Bản đồ điểm bán     | MAP-01…MAP-08  | plan/M3-ban-do.md | đang làm                |
+| M3        | Bản đồ điểm bán     | MAP-01…MAP-08  | plan/M3-store-map.md | đang làm             |
 | M4        | Báo cáo theo vùng   | RPT-09…        | —                 | chưa bắt đầu            |
 ```
 
@@ -502,7 +502,7 @@ Mỗi bước của luồng có một prompt mẫu, mã `P-nn`. Bản đầy đ�
 | P-03 | Lập plan (một agent) | Orchestrator | Lập plan cho Milestone `<M3>`: `<mục tiêu>`. Đọc ROADMAP, FEATURES, DECISIONS. Viết thẻ task theo mẫu, task contract đi đầu, ghi Lane từng task, kiểm hai task song song không trùng Scope. Chờ tôi duyệt. | `docs/plan/M3-*.md` |
 | P-03-MULTI | Lập plan nhiều agent | Orchestrator | Lập plan cho Milestone `<M3>` theo đồ thị không chu trình. Đọc BRIEF, FEATURES, ROADMAP, DECISIONS. Chia W0 (task contract + mock) → W1 (2–5 task song song) → W2 (nối dây + e2e). Mỗi thẻ ghi Wave, Scope (RW), Read (RO), Phụ thuộc chỉ trỏ Wave trước. Cách đăng ký module để không sửa Hot file. Chạy `python pos.py plan-check` đến khi qua, dán kết quả. Chờ tôi duyệt. | `docs/plan/M3-*.md` + kết quả plan-check |
 | P-04 | Giao task | Orchestrator → Builder | Làm task sau theo luồng chung: `<thẻ task>`. Dừng và báo nếu cần sửa ngoài Scope, hoặc phải chạm contract, Hot file, Restricted zone. Trước khi mở PR tự hỏi: (1) file ranh giới mới đã có 3 dòng đầu file gắn mã chưa? (2) test mới đã gắn mã feature chưa? (3) `python pos.py check` đã in "qua" chưa? Xong thì báo cáo theo mẫu. | PR + báo cáo |
-| P-05 | Sửa nhanh | Builder (solo) | Lane Fast, mã `<MAP-02>`: `<việc cần sửa>`. `python pos.py task T=<mã> N=<tên> TYPE=fix` → sửa → `python pos.py check` → PR. | PR nhỏ |
+| P-05 | Sửa nhanh | Builder (solo) | Lane Fast, mã `<MAP-02>`: `<việc cần sửa>`. `python pos.py task T=<mã> N=<short-name> TYPE=fix` → sửa → `python pos.py check` → PR. | PR nhỏ |
 | P-06 | Sửa lỗi | Builder | Lỗi: `<hiện tượng, log>`. Mã liên quan: `<MAP-07>`. Viết test tái hiện lỗi trước, rồi sửa. Lane Normal. | Test đỏ → xanh, PR |
 | P-07 | Review Restricted zone | Reviewer | Review PR `<#n>` (Lane Strict). Đối chiếu "Xong khi", Scope của thẻ, luật cứng 6–8. Kết luận Đạt hoặc Trả lại kèm bản sửa đề xuất. Không merge. | Kết luận + lý do |
 | P-08 | Merge và dọn | Orchestrator | PR `<#n>` đã qua CI (và đã được approve nếu Lane Strict). Merge squash, `python pos.py done T=<mã>`, tick task trong plan, cập nhật STATUS. | main mới, STATUS mới |
@@ -523,7 +523,7 @@ Mỗi bước của luồng có một prompt mẫu, mã `P-nn`. Bản đầy đ�
 **AGENTS.md**
 
 ```
-# AGENTS.md
+# AGENTS · Luật của dự án
 ## Mục tiêu          1–2 câu, dẫn docs/product/BRIEF.md
 ## Đọc khi mở phiên  AGENTS.md → STATUS.md → thẻ task → dòng mã → rg "<mã>"; thuật ngữ: docs/GLOSSARY.md
 ## Lệnh              python pos.py setup · run · test [F=<mã>] [L=<tầng>] · lint · check · task · done

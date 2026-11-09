@@ -1,4 +1,4 @@
-# STATUS · {{YYYY-MM-DD}}
+# STATUS · {{YYYY-MM-DD}} · {{Milestone hoặc —}}
 
 ## Đang giữ
 (trống)

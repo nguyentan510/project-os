@@ -20,7 +20,7 @@ jobs:
       - name: Kiểm Scope của thẻ (luật cứng 8), chống --no-verify
         if: github.event_name == 'pull_request'
         env:
-          POS_BRANCH: ${{ github.head_ref }}
+          PROJECT_OS_BRANCH: ${{ github.head_ref }}
         run: python pos.py scope
       - name: Kiểm plan theo Wave
         run: python pos.py plan-check

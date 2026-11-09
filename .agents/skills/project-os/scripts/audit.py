@@ -49,7 +49,7 @@ def main():
     print(f"Kiểm toán Ngày 0 · {os.getcwd()}")
     print("File")
     for f in core + ["docs/PROCESS.md", "pos.py", ".githooks/pre-push", ".github/workflows/ci.yml",
-                     ".github/pull_request_template.md", "docs/GLOSSARY.md", ".gitignore", ".env.example", "scripts/feature-lint.py"]:
+                     ".github/pull_request_template.md", "docs/GLOSSARY.md", ".gitignore", ".env.example", "scripts/features.py"]:
         report(os.path.isfile(f), f"có {f}")
 
     print("Ý định và phạm vi")

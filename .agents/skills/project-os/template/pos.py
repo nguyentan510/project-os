@@ -100,7 +100,10 @@ def cmd_test(opts, _):
 
 
 def cmd_features(opts, extra):
-    return subprocess.run([PY, str(ROOT / "scripts" / "feature-lint.py"), *extra], cwd=ROOT).returncode
+    script = ROOT / "scripts" / "features.py"
+    if not script.exists():
+        script = ROOT / "scripts" / "feature-lint.py"  # tên cũ trước v1.5
+    return subprocess.run([PY, str(script), *extra], cwd=ROOT).returncode
 
 
 def cmd_check(opts, _):
@@ -132,9 +135,9 @@ def cmd_task(opts, _):
     n = opts.get("N", "")
     typ = opts.get("TYPE", "feat")
     if not n:
-        die("Thiếu N=<tên-ngắn>, ví dụ N=map-sales")
+        die("Thiếu N=<short-name>, ví dụ N=map-sales")
     if not re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)*", n):
-        die(f"N chỉ gồm chữ thường, số, gạch ngang: '{n}'")
+        die(f"N là slug kebab-case ASCII (chữ thường, số, gạch ngang): '{n}'")
     if typ not in TYPES:
         die("TYPE phải là một trong: " + " ".join(TYPES))
     path = wt_path(t)
@@ -395,7 +398,8 @@ def in_scope(path, patterns):
 
 def cmd_scope(opts, _):
     _, br, _ = git("rev-parse", "--abbrev-ref", "HEAD")
-    br = os.environ.get("POS_BRANCH") or br  # CI checkout ở trạng thái detached: truyền tên branch qua POS_BRANCH
+    # CI checkout ở trạng thái detached: truyền tên branch qua PROJECT_OS_BRANCH (nhận cả tên cũ POS_BRANCH)
+    br = os.environ.get("PROJECT_OS_BRANCH") or os.environ.get("POS_BRANCH") or br
     m = re.match(r"^[a-z]+/(T-\d{3,})-", br)
     if not m:
         say(f"scope: branch '{br}' không mang số T (Lane Fast hoặc branch khác): bỏ qua")

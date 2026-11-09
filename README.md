@@ -18,7 +18,7 @@ Repo này vừa là **skill** (thiết lập nhanh trong AI coding) vừa là **
 │   ├── docs/GLOSSARY.md          bảng thuật ngữ: một khái niệm một tên
 │   ├── docs/product/BRIEF.md · FEATURES.md   docs/DECISIONS.md
 │   ├── docs/prompts/P-01…P-15, P-03-MULTI, P-SOS   bảng prompt theo từng bước
-│   ├── scripts/feature-lint.py   kiểm sổ mã (python pos.py features [--sync])
+│   ├── scripts/features.py      kiểm sổ mã (python pos.py features [--sync])
 │   ├── .githooks/pre-push        chặn push khi check chưa qua hoặc sửa ngoài Scope của thẻ
 │   └── .github/                  CI · CODEOWNERS · mẫu PR
 └── optional/docs/plan/           ROADMAP + mẫu plan của Milestone (init.py --plan)
