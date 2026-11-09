@@ -5,7 +5,7 @@ description: Thiết lập và kiểm toán quy trình Project OS (AGENTS.md, ST
 
 # Project OS
 
-Bộ quy tắc để mọi AI (Claude Code, Codex, Antigravity…) mở repo là biết: đang làm gì, đã làm gì, sửa thì bắt đầu từ đâu. Bản đầy đủ: `template/docs/PROCESS.md`; thuật ngữ: `template/docs/GLOSSARY.md`. Đường dẫn dưới đây tính từ thư mục chứa file SKILL.md này. "Chủ dự án" là người đang làm việc với bạn.
+Bộ quy tắc để mọi AI (Claude Code, Codex, Antigravity…) mở repo, không cần lịch sử chat, là biết: đang ở đâu, vì sao như vậy, cái gì không được đụng, làm tiếp từ đâu và kiểm chứng bằng gì. Bản đầy đủ: `template/docs/PROCESS.md`; thuật ngữ: `template/docs/GLOSSARY.md`. Đường dẫn dưới đây tính từ thư mục chứa file SKILL.md này. "Chủ dự án" là người đang làm việc với bạn.
 
 ## Chọn việc
 

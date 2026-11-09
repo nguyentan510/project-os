@@ -17,7 +17,7 @@ npx -y @nguyentan0510/project-os
 
 </div>
 
-AI nào mở repo cũng phải trả lời được trong **1 phút**: *đang làm gì, đã làm gì, sửa thì bắt đầu từ đâu*.
+Một AI mới, không có lịch sử chat, mở repo phải biết trong **1 phút**: *đang ở đâu, vì sao như vậy, cái gì không được đụng, làm tiếp từ đâu và kiểm chứng bằng gì*.
 Project OS đạt điều đó bằng một đầu mối chung là **mã** (`MAP-07`, `D59`, `T-042`) xuyên suốt sổ feature, code, test, commit và PR, cùng **8 luật cứng do máy chặn** thay vì trông vào việc AI có đọc hướng dẫn hay không.
 
 Repo này vừa là **skill** (định dạng `SKILL.md` chung, AI tự gọi) vừa là **khung Ngày 0** (chép vào dự án trước dòng code đầu tiên).
