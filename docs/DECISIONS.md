@@ -17,6 +17,7 @@ Mỗi lựa chọn kỹ thuật một dòng. Duyệt = `PO` (quyết định l�
 | D11 | 2026-11-10 | AI chưa cần tài khoản riêng để mở PR: ở chế độ Một AI, PO tự merge. Xem lại khi chuyển sang nhiều Builder hoặc khi bật bắt buộc Code Owner | Chưa có PR Lane Strict nào cần một người khác tác giả approve | GRD-06 | PO |
 | D12 | 2026-11-10 | Chưa dùng công cụ lint: `LINT_CMD = "none"`, `check` in cảnh báo mỗi lần chạy | Giữ đúng D01 (không phụ thuộc ngoài); cảnh báo nhắc đây là việc còn nợ | RUN-01 | PO |
 | D13 | 2026-11-10 | Kiểm toán Ngày 0 của repo này chấp nhận lệch ở các ô "module có README" và "module có contract": ranh giới module và contract ghi ở `docs/product/MODULES.md` thay cho `src/<module>/`. Sửa `audit.py` cho repo có cấu trúc riêng là việc của DAY-04 | Không viết code trong Ngày 0; repo này không có `src/` (D05) | DAY-03, DAY-04 | PO |
+| D14 | 2026-11-10 | Repo này đặt `HOOK_TESTS = False`: hook pre-push chỉ kiểm sổ mã, quét khoá, lint và Scope; bộ test đầy đủ chạy ở CI trong job `test` (check bắt buộc của main). CI gộp về một workflow để bộ test chạy một lần | Mỗi lần push chờ 3 phút rưỡi và CI chạy trùng bộ test hai lần làm một thay đổi nhỏ mất 10–15 phút | GRD-04, GRD-05 | PO |
 
 ## Còn mở
 

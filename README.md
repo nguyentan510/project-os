@@ -206,7 +206,7 @@ Tám luật duy nhất không linh hoạt; luật nào máy chặn được thì
 | --- | --- | --- |
 | 1 | Không push thẳng lên `main`; chỉ merge qua PR | Khoá `main` |
 | 2 | Không đưa khoá bí mật vào Git, code, tài liệu | `.gitignore` có `.env`; `pos.py secrets` trong `check` |
-| 3 | Chỉ push khi `python pos.py check` qua | pre-push hook; CI là cổng cuối |
+| 3 | Chỉ push khi `python pos.py check` qua | pre-push hook (bộ test chậm: `HOOK_TESTS = False`, hook chỉ kiểm nhanh); CI là cổng cuối |
 | 4 | Tiêu đề PR có mã: `<loại>(<mã>): <việc> [T-nnn]` | CI kiểm tiêu đề PR |
 | 5 | Mã không bao giờ dùng lại; mã trong code phải có trong sổ mã | `pos.py check` |
 | 6 | Builder không tự sửa contract đã khoá, Hot file, Restricted zone | `CODEOWNERS` |
@@ -266,7 +266,7 @@ tests/                            test cho init, audit, pos.py, features.py
 
 ## Phát triển repo này
 
-- Test công cụ (chỉ thư viện chuẩn Python): `python -m unittest discover -s tests`. CI ở `.github/workflows/test.yml`.
+- Test công cụ (chỉ thư viện chuẩn Python): `python -m unittest discover -s tests`. CI ở `.github/workflows/ci.yml`.
 - Test đánh dấu `expectedFailure` là lỗi đã biết, chưa sửa; sửa xong thì bỏ dấu đó.
 
 ## Giấy phép
