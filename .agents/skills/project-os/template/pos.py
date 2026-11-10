@@ -5,7 +5,9 @@ Chỉ dùng thư viện chuẩn Python 3.8+. (Đặt tên pos.py, không phải 
   python pos.py setup | run | lint | test [F=MAP-07] [L=api] | features [--sync] | secrets | check
   python pos.py task T=T-043 N=map-sales [TYPE=fix]    tạo worktree + branch từ main mới nhất
   python pos.py done T=T-043                           dọn sau khi PR đã merge
-  python pos.py drop T=T-043 [CONFIRM=T-043]           huỷ task chưa merge (phải hỏi chủ dự án)
+  python pos.py drop T=T-043 [CONFIRM=T-043]           huỷ task chưa merge (phải hỏi PO)
+  python pos.py status                                 trạng thái task suy từ thẻ + Git: đang làm, sẵn sàng, chờ, xong
+  python pos.py find <lời của PO>                      tìm mã theo lời thường (không cần dấu) trong sổ mã, DECISIONS, thẻ
   python pos.py wt                                     liệt kê worktree
   python pos.py wt-clean [APPLY=1]                     tìm worktree mồ côi (đã merge); chỉ liệt kê, APPLY=1 mới dọn
   python pos.py pr [T=T-043] [--no-check]              sinh sẵn khung báo cáo PR từ git diff + kết quả check
@@ -283,7 +285,7 @@ def cmd_drop(opts, _):
         say("  Thay đổi chưa commit:")
         for line in git("status", "--short", cwd=path)[1].splitlines():
             say("    " + line)
-        die(f"Chủ dự án đồng ý thì chạy lại: python pos.py drop T={t} CONFIRM={t}")
+        die(f"PO đồng ý thì chạy lại: python pos.py drop T={t} CONFIRM={t}")
     git("worktree", "remove", "--force", str(path))
     git("branch", "--quiet", "-D", br)
     git("worktree", "prune")
@@ -381,6 +383,7 @@ def cmd_sos(opts, _):
     say("[3/4] Worktree:")
     say("      " + git("worktree", "list")[1].replace("\n", "\n      "))
     cmd_wt_clean({}, [])
+    cmd_status({}, [])
     st = ROOT / "STATUS.md"
     if st.is_file():
         say("      STATUS.md: mục Đang giữ / Đang chặn:")
@@ -426,14 +429,17 @@ def cmd_pr(opts, extra):
         check = "`check`: qua" if r.returncode == 0 else f"`check`: LỖI\n```\n{tail}\n```"
     suffix = f" [{t}]" if t else ""
     say(f"Tiêu đề gợi ý: {kind}({','.join(feats[:2]) or '<MÃ>'}): <việc>{suffix}\n")
-    say(f"**Mã · Task · Lane:** {', '.join(feats) or '<MÃ>'} · {t or '—'} · <Fast | Normal | Strict>\n")
+    say(f"**Mã · Task · Lane:** {', '.join(named(f, feature_names()) for f in feats) or '<MÃ>'} · {t or '—'} · <Fast | Normal | Strict>\n")
     if t:
         say(f"Closes #{int(t[2:])}  <!-- chỉ giữ nếu T-nnn trùng số GitHub Issue (PROCESS.md mục 7) -->\n")
+    say("**Tóm tắt cho PO** (lời thường, không dùng mã trần):\n- Người dùng thấy gì thay đổi:\n- Rủi ro nếu sai:\n"
+        "- 3 bước tự bấm thử:\n- Khuyến nghị:\n")
     say("**Đã làm:**\n\n**Scope thực tế:** khớp thẻ / thêm …, vì …\n")
     say(f"**File thay đổi:**\n```\n{stat or '(không khác ' + base + ')'}\n```\n")
     say(f"**Commit:**\n```\n{commits or '(chưa có commit)'}\n```\n")
     say(f"**Test đã chạy:** {check}\n")
-    say("**Khác mặc định (nếu có, lý do):**\n\n**Rủi ro:**\n\n**Ghi chú bàn giao:**")
+    say("**Khác mặc định (nếu có, lý do):**\n\n**Rủi ro:**\n\n**Ghi chú bàn giao:**\n\n"
+        "**Việc cần PO chuyển cho Orchestrator** (viết sẵn để dán nguyên văn; không có thì ghi \"không\"):")
     return 0
 
 
@@ -571,7 +577,7 @@ def cmd_scope(opts, _):
 
 
 # ── Kiểm plan theo Wave (PROCESS.md mục 11) ─────────────────────────────────
-# Chạy trên docs/plan/*.md trong thư mục làm việc, TRƯỚC khi chủ dự án duyệt plan. Bốn lỗi bị chặn:
+# Chạy trên docs/plan/*.md trong thư mục làm việc, TRƯỚC khi PO duyệt plan. Bốn lỗi bị chặn:
 #   1. hai task cùng Wave có "Scope" (quyền ghi, RW) giao nhau;
 #   2. "Phụ thuộc" trỏ tới task cùng Wave hoặc Wave sau;
 #   3. "Phụ thuộc" trỏ tới task không có trong plan;
@@ -634,16 +640,19 @@ def field(line, name):
     return m.group(1).strip() if m else None
 
 
-def parse_cards():
+def parse_cards(files=None):
     cards = []
-    head = re.compile(r"^\s*-\s*\[[ xX]\]\s*(T-\d{3,})\b")
-    for f in sorted((ROOT / "docs" / "plan").glob("*.md")):
+    head = re.compile(r"^\s*-\s*\[([ xX])\]\s*(T-\d{3,})\b(.*)")
+    if files is None:
+        files = sorted((ROOT / "docs" / "plan").glob("*.md"))
+    for f in files:
         lines = f.read_text(encoding="utf-8").splitlines()
         for i, line in enumerate(lines):
             m = head.match(line)
             if not m:
                 continue
-            c = {"t": m.group(1), "file": f.name, "wave": None, "rw": [], "deps": []}
+            c = {"t": m.group(2), "title": m.group(3).strip(" ·"), "ticked": m.group(1) != " ",
+                 "file": f.name, "wave": None, "rw": [], "deps": []}
             for nxt in lines[i + 1:]:
                 if not nxt.strip() or re.match(r"^\s*-\s*\[", nxt):
                     break
@@ -657,6 +666,8 @@ def parse_cards():
                 d = field(nxt, "Phụ thuộc")
                 if d:
                     c["deps"] = re.findall(r"T-\d{3,}", d)
+                if field(nxt, "Xong khi"):
+                    c["done_when"] = True
             cards.append(c)
     return cards
 
@@ -718,6 +729,9 @@ def cmd_plan_check(opts, _):
                 continue
             if dep and dep["wave"] is not None and c["wave"] is not None and dep["wave"] >= c["wave"]:
                 errs.append(f"{c['t']} (W{c['wave']}) phụ thuộc {d} (W{dep['wave']}): phải trỏ về Wave trước")
+    for c in cards:
+        if not c.get("done_when"):  # không chặn: thẻ cũ vẫn chạy, nhưng PO không tự nghiệm thu được
+            say(f"    cảnh báo  {c['t']}: thiếu 'Xong khi' (một hành vi PO tự quan sát được + một lệnh kiểm)")
     if errs:
         say("plan-check: plan chưa đạt:")
         for e in errs:
@@ -727,7 +741,175 @@ def cmd_plan_check(opts, _):
     return 0
 
 
+# ── Lớp PO: tra mã bằng lời thường (PROCESS.md mục 14) ─────────────────────
+
+def fold(s):
+    """Chữ thường, bỏ dấu tiếng Việt: PO gõ "ban do" vẫn tìm ra "Bản đồ"."""
+    import unicodedata
+    s = unicodedata.normalize("NFD", s.lower().replace("đ", "d"))
+    return "".join(c for c in s if unicodedata.category(c) != "Mn")
+
+
+def table_rows(path):
+    """Mỗi dòng dữ liệu của các bảng markdown trong file, dạng {tiêu đề cột: ô}."""
+    if not path.is_file():
+        return
+    head = None
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not line.startswith("|"):
+            head = None
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if head is None:
+            head = cells
+        elif not all(set(c) <= set("-: ") for c in cells):
+            yield dict(zip(head, cells))
+
+
+FEATURE_CODE = re.compile(r"\b[A-Z]{2,6}-\d{2,}\b")
+
+
+def feature_names():
+    """{mã: tên gọi} từ cột "Tên gọi" của sổ mã."""
+    rows = table_rows(ROOT / "docs" / "product" / "FEATURES.md")
+    return {r["Mã"]: r["Tên gọi"] for r in rows
+            if FEATURE_CODE.fullmatch(r.get("Mã", "")) and r.get("Tên gọi", "").strip("—- ") and "{{" not in r["Tên gọi"]}
+
+
+def named(text, names):
+    """Đổi mã trần thành "Tên gọi (MÃ)" để PO đọc được."""
+    return FEATURE_CODE.sub(lambda m: f"{names[m.group()]} ({m.group()})" if m.group() in names else m.group(), text)
+
+
+def all_cards():
+    """Thẻ ở docs/plan/*.md rồi STATUS.md; trùng số T thì lấy thẻ gặp trước (plan thắng STATUS)."""
+    files = sorted((ROOT / "docs" / "plan").glob("*.md"))
+    if (ROOT / "STATUS.md").is_file():
+        files.append(ROOT / "STATUS.md")
+    seen, out = set(), []
+    for c in parse_cards(files):
+        if c["t"] not in seen:
+            seen.add(c["t"])
+            out.append(c)
+    return out
+
+
+def cmd_find(opts, extra):
+    words = fold(" ".join(extra)).split()
+    if not words:
+        die("Thiếu lời cần tìm, ví dụ: python pos.py find bản đồ điểm bán")
+    entries = []  # (chữ được ưu tiên, toàn bộ chữ, dòng in ra)
+    for r in table_rows(ROOT / "docs" / "product" / "FEATURES.md"):
+        code = r.get("Mã", "")
+        if not FEATURE_CODE.fullmatch(code):
+            continue
+        name, what = r.get("Tên gọi", ""), r.get("Hành vi chính", "")
+        label = f"{name} — {what}" if name.strip("—- ") else what
+        entries.append((f"{name} {code}", f"{name} {what} {code}", f"{label} ({code}) · {list(r.values())[-1]}"))
+    for r in table_rows(ROOT / "docs" / "DECISIONS.md"):
+        code = r.get("Mã", "")
+        if re.fullmatch(r"D\d{2,}|Q-\S+", code) and "{{" not in " ".join(r.values()):
+            what = r.get("Quyết định") or r.get("Câu hỏi") or ""
+            kind = "quyết định" if code.startswith("D") else "câu hỏi còn mở"
+            entries.append((code, " ".join(r.values()), f"{what} ({code}) · {kind}"))
+    feats = ROOT / "docs" / "product" / "FEATURES.md"
+    if feats.is_file():
+        for code, name in re.findall(r"^###\s+([A-Z]{2,6})\s+·\s*(.+)$", feats.read_text(encoding="utf-8", errors="replace"), re.M):
+            entries.append((f"{name} {code}", f"{name} {code}", f"{name.strip()} (module {code})", 1))
+    names = feature_names()
+    for c in all_cards():
+        entries.append((c["t"], f"{c['title']} {c['t']}", f"{named(c['title'], names)} ({c['t']}) · thẻ task"))
+    hits = []
+    for prime, full, label, *tier in entries:  # tier 1 = module: xếp sau feature, quyết định, thẻ
+        fp, ff = fold(prime), fold(full)
+        if all(w in ff for w in words):
+            hits.append((bool(tier), -sum(fp.count(w) * 2 + ff.count(w) for w in words), label))
+    query = " ".join(extra)
+    if not hits:
+        say(f"find: không thấy gì khớp '{query}'.")
+        say("Có thể là việc mới: hỏi lại PO bằng lời khác, hoặc thêm một dòng vào sổ mã (trạng thái `dự kiến` hoặc `để sau`).")
+        return 0
+    hits.sort(key=lambda h: h[:2])
+    say(f"find: {len(hits)} kết quả cho '{query}'" + (" (hiện 5 đầu)" if len(hits) > 5 else ""))
+    for _, _, label in hits[:5]:
+        say("    " + label)
+    return 0
+
+
+# ── Trạng thái task: suy từ thẻ + Git, không ghi tay ───────────────────────
+# Thẻ ở docs/plan/*.md và STATUS.md (thư mục làm việc). Xong = main có commit mang [T-nnn] (tiêu đề PR đã
+# merge squash) hoặc thẻ đã tick. Đang làm = có branch <loại>/T-nnn-… ở máy hoặc trên origin.
+
+def waiting_on_po():
+    """Việc đang chờ PO: câu hỏi Q- còn mở, mục "Đang chặn" của STATUS, PR đang mở cần approve (qua gh)."""
+    import json
+    out = []
+    for r in table_rows(ROOT / "docs" / "DECISIONS.md"):
+        who = fold(r.get("Chờ ai", ""))
+        if r.get("Mã", "").startswith("Q-") and re.search(r"\bpo\b|product owner|chu du an", who):
+            options = next((v for k, v in r.items() if k.startswith("Lựa chọn") and v.strip("—- ")), "")
+            out.append(f"Cần quyết: {r.get('Câu hỏi', '')} ({r['Mã']})" + (f" · lựa chọn: {options}" if options else ""))
+    st, on = ROOT / "STATUS.md", False
+    if st.is_file():
+        for line in st.read_text(encoding="utf-8", errors="replace").splitlines():
+            if line.startswith("## "):
+                on = line[3:].strip() == "Đang chặn"
+            elif on and line.strip() and not line.strip().startswith("("):
+                out.append("Đang chặn: " + line.strip().lstrip("- "))
+    try:
+        r = subprocess.run(["gh", "pr", "list", "--state", "open", "--json", "number,title,reviewDecision"],
+                           cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=20)
+        prs = json.loads(r.stdout) if r.returncode == 0 else None
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        prs = None
+    if prs is None:
+        out.append("(không hỏi được GitHub qua gh: chưa liệt kê PR cần approve)")
+    else:
+        out += [f"Cần approve: PR #{p['number']} · {p['title']}" for p in prs if p.get("reviewDecision") == "REVIEW_REQUIRED"]
+    return out
+
+
+def cmd_status(opts, _):
+    cards = all_cards()
+    names = feature_names()
+    for c in cards:
+        c["title"] = named(c["title"], names)
+    base = base_ref()
+    merged = set(re.findall(r"\[(T-\d{3,})\]", git("log", base, "--format=%s")[1])) if base else set()
+    branches = {}
+    for ref in git("for-each-ref", "--format=%(refname:short)", "refs/heads", "refs/remotes/origin")[1].splitlines():
+        name = ref[len("origin/"):] if ref.startswith("origin/") else ref
+        m = re.match(r"^[a-z]+/(T-\d{3,})-", name)
+        if m:
+            branches.setdefault(m.group(1), name)
+    done = merged | {c["t"] for c in cards if c["ticked"]}
+    groups = {"Đang làm": [], "Sẵn sàng": [], "Chờ phụ thuộc": [], "Xong": []}
+    for c in cards:
+        t, br = c["t"], branches.get(c["t"])
+        wait = [d for d in c["deps"] if d not in done]
+        if t in done:
+            groups["Xong"].append(f"{t}  {c['title']}" + (f"  (chưa dọn {br}: python pos.py done T={t})" if br else ""))
+        elif br:
+            groups["Đang làm"].append(f"{t}  {br}  {c['title']}")
+        elif wait:
+            groups["Chờ phụ thuộc"].append(f"{t}  (chờ {', '.join(wait)})  {c['title']}")
+        else:
+            groups["Sẵn sàng"].append(f"{t}  {c['title']}")
+    known = {c["t"] for c in cards}
+    stray = [f"{t}  {br}" for t, br in sorted(branches.items()) if t not in known and t not in merged]
+    waiting = waiting_on_po()
+    say(f"status: {len(cards)} thẻ · " + " · ".join(f"{k.lower()} {len(v)}" for k, v in groups.items())
+        + f" · chờ PO {sum(1 for w in waiting if not w.startswith('('))}")
+    for title, rows in [("Chờ PO", waiting)] + list(groups.items()) + [("Branch mang số T nhưng không có thẻ", stray)]:
+        if rows:
+            say(title)
+            for row in rows:
+                say("    " + row)
+    return 0
+
+
 COMMANDS = {
+    "status": cmd_status, "find": cmd_find,
     "setup": cmd_setup, "run": cmd_run, "lint": cmd_lint, "test": cmd_test, "features": cmd_features,
     "secrets": cmd_secrets, "check": cmd_check, "task": cmd_task, "done": cmd_done, "drop": cmd_drop, "wt": cmd_wt, "scope": cmd_scope, "plan-check": cmd_plan_check,
     "wt-clean": cmd_wt_clean, "pr": cmd_pr, "sos": cmd_sos,

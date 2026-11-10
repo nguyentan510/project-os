@@ -1,8 +1,8 @@
 # P-SOS · Cứu hộ dự án
 
-**Khi dùng:** dự án kẹt, lỗi không rõ nguyên nhân, worktree rác; chủ dự án cần quyết định mà không phải đọc log.
+**Khi dùng:** dự án kẹt, lỗi không rõ nguyên nhân, worktree rác; PO cần quyết định mà không phải đọc log.
 **Vai:** Orchestrator · **Đầu ra:** Báo cáo cứu hộ + thực thi phương án được chọn
-Sinh từ `docs/PROCESS.md` mục 13 (bản đầy đủ ở đây). Khác P-14 (lỗi production cần hotfix) và P-12 (chỉ rà tài liệu). Luật cứng 6–8 vẫn áp dụng: SOS không phải đường tắt. Trong prompt, "tôi" là chủ dự án.
+Sinh từ `docs/PROCESS.md` mục 13 (bản đầy đủ ở đây). Khác P-14 (lỗi production cần hotfix) và P-12 (chỉ rà tài liệu). Luật cứng 6–8 vẫn áp dụng: SOS không phải đường tắt. Trong prompt, "tôi" là PO.
 
 ```
 Tôi đang bị kẹt, cứu hộ giúp tôi. Làm đúng thứ tự:

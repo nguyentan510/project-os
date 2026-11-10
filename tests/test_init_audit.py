@@ -43,7 +43,13 @@ class AuditTest(ProjectCase):
         self.assertIn("Chưa  pos.py đã điền TEST_CMD", r.stdout)
         self.assertIn("Chưa  python pos.py check qua", r.stdout)
         self.assertIn("Đạt   CODEOWNERS phủ máy chặn", r.stdout)
-        self.assertIn("Chưa  CODEOWNERS đã thay @chu-du-an", r.stdout)
+        self.assertIn("Chưa  CODEOWNERS đã thay @product-owner", r.stdout)
+
+    def test_template_protects_plan_and_asks_for_role_mode(self):
+        owners = (self.root / ".github/CODEOWNERS").read_text(encoding="utf-8")
+        self.assertIn("\n/docs/plan/", owners)
+        self.assertIn("{{Một AI", (self.root / "AGENTS.md").read_text(encoding="utf-8"))
+        self.assertNotIn("Đang giữ", (self.root / "STATUS.md").read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

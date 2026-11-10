@@ -6,6 +6,7 @@ Mục tiêu: {{…}} · Quyết định: {{Dxx}} · Feature: {{MOD-01…MOD-05}}
 ## Task
 
 - [ ] T-001 · {{MOD-01}} · khung chạy được
+      Yêu cầu gốc: {{lời của PO, chép nguyên văn}}
       Mục tiêu:  {{một luồng giao diện → API → dữ liệu, kèm 1 test e2e}}
       Lane:      Normal                   Restricted zone: không
       Wave:      W0

@@ -7,7 +7,7 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 
 1. **Giữ tiếng Anh** cho tên đơn vị, vai, đối tượng Git/GitHub, lệnh và nhãn mà script đọc: một từ, không dịch, không kèm bản dịch trong câu.
 2. **Tiếng Việt ngắn** cho diễn giải, hướng dẫn và các khái niệm riêng đã gọn: Ngày 0, luật cứng, mặc định, mã, sổ mã, thẻ task, bàn giao.
-3. **Viết hoa chữ đầu** khái niệm riêng của Project OS: Milestone, Wave, Lane (Fast · Normal · Strict), Scope, Hot file, Restricted zone, và ba vai Orchestrator · Builder · Reviewer. Từ phổ thông của nghề viết thường trong câu: task, branch, worktree, commit, merge, contract, module, feature, mock.
+3. **Viết hoa chữ đầu** khái niệm riêng của Project OS: Milestone, Wave, Lane (Fast · Normal · Strict), Scope, Hot file, Restricted zone, vai Product Owner (viết tắt PO) và ba vai AI Orchestrator · Builder · Reviewer. Từ phổ thông của nghề viết thường trong câu: task, branch, worktree, commit, merge, contract, module, feature, mock.
 4. **Một khái niệm, một tên.** Tên cũ ở bảng cuối không dùng nữa.
 5. **Chính tả:** bỏ dấu kiểu mới, thống nhất `khoá, xoá, huỷ, tuỳ, thoả` (không viết `khóa, xóa, hủy, tùy, thỏa`).
 6. Lệnh, đường dẫn, giá trị trong `code` giữ nguyên, không dịch.
@@ -24,24 +24,24 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 | Wave | Lớp task trong plan nhiều agent; task chỉ phụ thuộc Wave trước | `W0`, `W1`, `W2` |
 | Task | Đơn vị công việc; 1 task = 1 branch = 1 worktree = 1 PR | `T-043` (Lane Fast: mã feature) |
 | Quyết định | Một lựa chọn kỹ thuật kèm lý do, trong DECISIONS.md | `D59` |
-| Câu hỏi mở | Điều chưa chốt, ghi người đang chờ | `Q-map` |
+| Câu hỏi mở | Điều chưa chốt, ghi các lựa chọn và người đang chờ; chờ PO thì hiện ở nhóm "Chờ PO" của `status` | `Q-map` |
 | Prompt | Prompt mẫu cho từng bước của luồng | `P-04`, `P-SOS` |
 
 ## Vai
 
 | Thuật ngữ | Nghĩa |
 | --- | --- |
-| Chủ dự án | Người quyết định cuối: duyệt plan, approve PR Lane Strict, cho phép bỏ qua luật khi khẩn cấp |
-| Orchestrator | AI điều phối: viết thẻ task, cấp số T, chạy merge queue, ghi plan và STATUS; không viết code feature |
+| Product Owner (PO) | Người (không phải AI) quyết định cuối: duyệt plan, approve PR Lane Strict, nghiệm thu Milestone, cho phép bỏ qua luật khi khẩn cấp; phát prompt và chuyển tin giữa các phiên AI |
+| Orchestrator | AI điều phối: viết thẻ task, cấp số T, merge lần lượt, ghi plan và STATUS; không viết code feature; mỗi lúc chỉ một Orchestrator |
 | Builder | AI làm task trên worktree riêng, theo luồng chung |
-| Reviewer | AI review PR chạm Restricted zone, tối đa 2 vòng rồi chuyển chủ dự án |
+| Reviewer | AI review PR Lane Strict, tối đa 2 vòng rồi chuyển PO |
 
 ## File và tài liệu
 
 | Thuật ngữ | Nghĩa |
 | --- | --- |
 | AGENTS.md | Luật của dự án; mọi AI đọc đầu tiên |
-| STATUS.md | Chỗ dừng của phiên trước: Đang giữ · Tiếp theo · Đang chặn · Ghi chú bàn giao |
+| STATUS.md | Chỗ dừng của phiên trước: Tiếp theo · Đang chặn · Ghi chú bàn giao; ai giữ task nào xem `python pos.py status` |
 | BRIEF | Làm cho ai, để làm gì, thế nào là thành công (`docs/product/BRIEF.md`) |
 | Sổ mã | `docs/product/FEATURES.md`: nguồn duy nhất của mã module và feature |
 | DECISIONS | Bảng quyết định `Dxx` và câu hỏi mở `Q-` (`docs/DECISIONS.md`) |
@@ -58,16 +58,16 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 | Luật cứng | 8 luật không ngoại lệ, máy chặn được thì máy chặn (PROCESS.md mục 4) |
 | Mặc định | Điểm xuất phát AI được làm khác khi hợp lý, ghi lý do ở "Khác mặc định" |
 | Luồng chung | `task → code → commit → check → rebase → push → PR → CI → [approve nếu Lane Strict] → merge → done` |
-| Lane | Mức kiểm soát theo rủi ro: **Fast** (câu chữ, lỗi nhỏ) · **Normal** (feature, sửa lỗi có logic) · **Strict** (chạm contract, Hot file, Restricted zone, hoặc nhiều Builder song song) |
+| Lane | Mức kiểm soát theo rủi ro: **Fast** (câu chữ, lỗi nhỏ) · **Normal** (feature, sửa lỗi có logic) · **Strict** (chạm contract, Hot file, Restricted zone). Máy xác định: không thẻ → Fast, có thẻ → Normal, chạm `CODEOWNERS` → Strict |
 | Nâng Lane | Đang làm mà phát hiện chạm vùng rủi ro: dừng, báo Orchestrator, xin duyệt |
-| Thẻ task | Mô tả đủ một task, cũng là prompt giao việc; các trường: Mục tiêu · Lane · Wave · Scope · Read · Phụ thuộc · Cần · Restricted zone · Giao · Xong khi |
+| Thẻ task | Mô tả đủ một task, cũng là prompt giao việc; các trường: Yêu cầu gốc · Mục tiêu · Lane · Wave · Scope · Read · Phụ thuộc · Cần · Restricted zone · Giao · Xong khi |
 | Scope | Trường thẻ: các đường dẫn task được ghi (RW), gồm cả thư mục test; `python pos.py scope` chặn sửa ngoài Scope |
 | Read | Trường thẻ: đường dẫn chỉ được đọc (RO) để tham chiếu |
 | Phụ thuộc | Trường thẻ: task phải xong trước; chỉ trỏ về Wave trước |
 | Cần | Trường thẻ W1: kiểu và hàm của contract mà task dùng; Orchestrator đối chiếu trước khi khoá contract |
 | Xong khi | Trường thẻ: điều kiện nghiệm thu task, kiểm được |
 | Hot file | File nhiều task cùng cần sửa (route, registry, schema, manifest); chỉ task W2 hoặc Orchestrator ghi |
-| Restricted zone | Phần rủi ro cao (đăng nhập, phân quyền, thanh toán, contract, migration, xoá dữ liệu); PR chạm vào phải có Reviewer và chủ dự án approve |
+| Restricted zone | Phần rủi ro cao (đăng nhập, phân quyền, thanh toán, contract, migration, xoá dữ liệu); PR chạm vào phải có Reviewer và PO approve |
 | Contract | Kiểu dữ liệu và API công khai giữa các module (`contract.*`); khoá sau task contract |
 | Mock | Dữ liệu mẫu viết kèm contract để Builder chạy thử khi module kia chưa xong |
 | Contract test | Test so mock với bản thật, bắt buộc ở mọi module W1 |
@@ -80,7 +80,14 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 | Khác mặc định | Mục trong báo cáo PR ghi chỗ làm khác Mặc định và lý do |
 | Worktree mồ côi | Worktree có branch đã merge mà chưa dọn; `python pos.py wt-clean` tìm |
 | SOS | Cứu hộ khi repo kẹt: `python pos.py sos` sao lưu vào branch `salvage/sos-*` rồi chạy P-SOS |
-| Khẩn cấp | Lỗi production; chỉ chủ dự án cho bỏ qua luật, ghi `Dxx`, làm task bù (P-14) |
+| Lớp PO | Phần của quy trình để PO nói bằng lời thường: tiếp nhận, tra mã, tóm tắt cho PO, nhóm "Chờ PO" (PROCESS.md mục 14) |
+| Ý định | Loại việc PO đang muốn: khởi đầu · thay đổi sản phẩm · báo lỗi · hỏi trạng thái · quyết định · duyệt, nghiệm thu · kẹt |
+| Tiếp nhận | Orchestrator dịch lời PO sang luồng: nhận diện ý định → tra mã → hỏi → nhắc lại → chuyển (P-00) |
+| Yêu cầu gốc | Trường thẻ: lời PO chép nguyên văn |
+| Tên gọi | Cột của sổ mã: 2–5 từ bằng lời PO để gọi một feature; `python pos.py find` tìm theo đây |
+| Để sau | Trạng thái feature: ý tưởng ngoài phạm vi hiện tại, đã có mã, PO chưa quyết làm |
+| Tóm tắt cho PO | Bốn dòng kèm mọi thứ PO phải duyệt: người dùng thấy gì đổi · rủi ro nếu sai · 3 bước tự thử · khuyến nghị |
+| Khẩn cấp | Lỗi production; chỉ PO cho bỏ qua luật, ghi `Dxx`, làm task bù (P-14) |
 
 ## Git và GitHub
 
@@ -95,7 +102,7 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 | CI | Máy chủ chạy lại check trên PR; cổng cuối không tắt được |
 | Merge | Đưa PR vào main, luôn kiểu squash (ép các commit thành một) |
 | Merge queue | Merge từng PR một, mỗi lần rebase và chạy lại CI |
-| Approve | Chủ dự án bấm duyệt PR trên GitHub; bắt buộc với Lane Strict |
+| Approve | PO bấm duyệt PR trên GitHub; bắt buộc với Lane Strict |
 | Khoá main | Branch protection của main: không push thẳng, bắt buộc PR, CI và Code Owner |
 | Code Owner | Người trong `.github/CODEOWNERS` phải approve PR chạm đường dẫn của mình |
 | Hook | Script Git chạy tự động; dự án dùng `.githooks/pre-push` |
@@ -137,9 +144,9 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 
 | Ở đâu | Giá trị |
 | --- | --- |
-| Feature (sổ mã) | `dự kiến` · `dùng` · `bỏ (Dxx)` |
+| Feature (sổ mã) | `dự kiến` · `dùng` · `bỏ (Dxx)` · `để sau` |
 | Milestone (ROADMAP) | `chưa bắt đầu` · `đang làm` · `xong <ngày> · <phiên bản>` |
-| Duyệt (DECISIONS) | `Chủ dự án` · `AI` |
+| Duyệt (DECISIONS) | `PO` · `AI` |
 | Lệnh `pos.py` | `qua` · `LỖI` |
 | Kiểm toán, review | `Đạt` · `Chưa` · `Trả lại` |
 
@@ -154,8 +161,10 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 | Đọc (RO) | Read (RO) |
 | File nóng | Hot file |
 | Vùng cấm | Restricted zone |
-| Human Approval, bạn duyệt PR | chủ dự án approve |
-| bạn (chỉ người quyết định) | chủ dự án |
+| Human Approval, bạn duyệt PR | PO approve |
+| bạn (chỉ người quyết định) | PO |
+| chủ dự án | Product Owner (PO) |
+| `@chu-du-an` | `@product-owner` |
 | nhánh | branch |
 | gộp, hàng chờ gộp | merge, merge queue |
 | Kiểm local | check |

@@ -133,6 +133,7 @@ Cài bằng tay: clone repo rồi
 
 | Bạn muốn | Nói với AI / chạy |
 | --- | --- |
+| Không rành kỹ thuật, không nhớ mã hay tên prompt | Cứ nói bằng lời thường. AI tiếp nhận theo `P-00`: tự tra mã, hỏi lại, nhắc "Tôi hiểu là…" rồi mới làm |
 | Bắt đầu dự án mới, áp quy tắc vào repo đang có | *"Dùng skill project-os để bắt đầu dự án này"* |
 | Kiểm repo đã đủ để viết code chưa | *"Dùng skill project-os để kiểm toán Ngày 0"* (nên dùng phiên AI khác) |
 | Repo đang kẹt, không rõ lỗi | `python pos.py sos` rồi prompt `P-SOS` |
@@ -153,7 +154,7 @@ Luồng chung cho mọi task:
 task → code → commit → check → rebase → push → PR → CI → [approve nếu Lane Strict] → merge → done
 ```
 
-Mỗi task chọn một **Lane** theo rủi ro: **Fast** (câu chữ, lỗi nhỏ), **Normal** (feature, một Builder), **Strict** (chạm Restricted zone, contract, Hot file, hoặc nhiều Builder song song). Phân vân thì chọn Lane cao hơn. Tên gọi (Milestone, Wave, Task, Lane, Scope, Hot file, Restricted zone…) theo [`docs/GLOSSARY.md`](.agents/skills/project-os/template/docs/GLOSSARY.md).
+Mỗi task chọn một **Lane** theo rủi ro: **Fast** (câu chữ, lỗi nhỏ), **Normal** (feature, sửa lỗi có logic), **Strict** (chạm Restricted zone, contract, Hot file). Máy xác định được Lane: không có thẻ là Fast, có thẻ là Normal, chạm đường dẫn trong `CODEOWNERS` là Strict. Tên gọi (Milestone, Wave, Task, Lane, Scope, Hot file, Restricted zone…) theo [`docs/GLOSSARY.md`](.agents/skills/project-os/template/docs/GLOSSARY.md).
 
 ## Khung Ngày 0 có gì
 
@@ -162,7 +163,7 @@ Mỗi task chọn một **Lane** theo rủi ro: **Fast** (câu chữ, lỗi nh�
 | File | Vai trò |
 | --- | --- |
 | `AGENTS.md` · `CLAUDE.md` | Luật chơi cho mọi AI (`CLAUDE.md` chỉ chứa `@AGENTS.md`) |
-| `STATUS.md` | Đang giữ, tiếp theo, đang chặn, ghi chú bàn giao |
+| `STATUS.md` | Tiếp theo (thẻ task), đang chặn, ghi chú bàn giao |
 | `docs/PROCESS.md` | Bản đầy đủ của quy tắc (13 mục + phụ lục mẫu) |
 | `docs/GLOSSARY.md` | Bảng thuật ngữ: một khái niệm một tên |
 | `docs/product/BRIEF.md` · `FEATURES.md` | Sản phẩm để làm gì · sổ mã feature |
@@ -187,6 +188,8 @@ Chỉ dùng thư viện chuẩn Python 3.8+, chạy như nhau trên Windows, mac
 | `task T=T-043 N=map-sales [TYPE=fix]` | Tạo worktree + branch từ `main` mới nhất |
 | `done T=T-043` | Dọn sau khi PR đã merge (nhận cả merge squash) |
 | `drop T=T-043 [CONFIRM=T-043]` | Huỷ task chưa merge |
+| `find <lời>` | Tìm mã theo lời thường (không cần dấu) trong sổ mã, DECISIONS, thẻ task |
+| `status` | Trạng thái task suy từ thẻ + Git: đang làm, sẵn sàng, chờ, xong |
 | `wt` · `wt-clean [APPLY=1]` | Liệt kê · dọn worktree mồ côi |
 | `pr [T=T-043]` | Sinh khung báo cáo PR từ diff + kết quả check |
 | `scope` | Kiểm file đã sửa nằm trong Scope của thẻ task; không có thẻ thì chỉ qua khi đủ nhỏ để là Lane Fast |
@@ -205,7 +208,7 @@ Tám luật duy nhất không linh hoạt; luật nào máy chặn được thì
 | 4 | Tiêu đề PR có mã: `<loại>(<mã>): <việc> [T-nnn]` | CI kiểm tiêu đề PR |
 | 5 | Mã không bao giờ dùng lại; mã trong code phải có trong sổ mã | `pos.py check` |
 | 6 | Builder không tự sửa contract đã khoá, Hot file, Restricted zone | `CODEOWNERS` |
-| 7 | PR chạm các đường dẫn ở luật 6 phải có chủ dự án approve | Khoá `main`: bắt buộc Code Owner |
+| 7 | PR chạm các đường dẫn ở luật 6 phải có Product Owner (PO) approve | Khoá `main`: bắt buộc Code Owner |
 | 8 | Không sửa ngoài Scope của thẻ | pre-push hook + CI chạy `pos.py scope` (bản của `main`); không có thẻ thì phải đủ điều kiện Lane Fast |
 
 ## Bảng prompt
@@ -222,7 +225,7 @@ Mỗi bước của luồng có một prompt mẫu, gọi nhanh bằng mã, ví 
 | P-05 | Sửa nhanh (Lane Fast) | P-14 | Khẩn cấp (production) |
 | P-06 | Sửa lỗi | P-15 | Kiểm toán Ngày 0 |
 | P-07 | Review Restricted zone | P-SOS | Bị kẹt, cần cứu hộ |
-| P-08 | Merge và dọn | | |
+| P-08 | Merge và dọn | P-00 | PO nói bằng lời thường, không kèm mã |
 
 Thứ tự trong một Milestone: `P-01 → P-03 / P-03-MULTI → P-04 · P-05 · P-06 → P-07 → P-08 → P-09`, hết Milestone `P-13`. Dự án mới: `P-02 → P-15 → duyệt → T-001`. Chi tiết ở [`docs/PROCESS.md`](.agents/skills/project-os/template/docs/PROCESS.md) mục 13.
 
@@ -233,9 +236,9 @@ Làm bằng tay, một lần cho mỗi dự án: **Settings → Branches → Add
 - [x] Require a pull request before merging
 - [x] Require status checks to pass: `check`, `pr-title`
 - [x] Require branches to be up to date before merging
-- [x] Require review from Code Owners (sau khi thay `@chu-du-an` trong `.github/CODEOWNERS`)
+- [x] Require review from Code Owners (sau khi thay `@product-owner` trong `.github/CODEOWNERS`)
 
-Luật 6–8 chỉ kín khi bật mục cuối: không có nó, một PR vẫn sửa được chính `pos.py` hoặc `ci.yml`. GitHub không cho tác giả approve PR của mình, nên AI cần mở PR bằng tài khoản khác chủ dự án (tài khoản bot hoặc GitHub App).
+Luật 6–8 chỉ kín khi bật mục cuối: không có nó, một PR vẫn sửa được chính `pos.py` hoặc `ci.yml`. GitHub không cho tác giả approve PR của mình, nên AI cần mở PR bằng tài khoản khác PO (tài khoản bot hoặc GitHub App).
 
 ## Yêu cầu
 

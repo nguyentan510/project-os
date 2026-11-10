@@ -1,18 +1,22 @@
-# Máy chặn + Restricted zone + contract + Hot file → bắt buộc chủ dự án approve (luật cứng 6, 7).
+# Máy chặn + Restricted zone + contract + Hot file → bắt buộc PO approve (luật cứng 6, 7).
 # Phải cùng danh sách với mục "Hot file" và "Restricted zone" trong AGENTS.md.
-# Thay @chu-du-an bằng tài khoản GitHub của chủ dự án (kiểm toán Ngày 0 báo Chưa nếu còn để nguyên).
+# Thay @product-owner bằng tài khoản GitHub của PO (kiểm toán Ngày 0 báo Chưa nếu còn để nguyên).
 # Rồi bật trên GitHub: Settings → Branches → main → Require review from Code Owners.
-# Lưu ý: GitHub không cho tác giả approve PR của chính mình, nên AI phải mở PR bằng tài khoản khác chủ dự án.
+# Lưu ý: GitHub không cho tác giả approve PR của chính mình, nên AI phải mở PR bằng tài khoản khác PO.
 
 # Máy chặn: giữ nguyên 4 dòng này. PR sửa được chúng mà không cần duyệt thì tắt được mọi luật cứng.
-/pos.py              @chu-du-an
-/scripts/features.py @chu-du-an
-/.githooks/          @chu-du-an
-/.github/            @chu-du-an
+/pos.py              @product-owner
+/scripts/features.py @product-owner
+/.githooks/          @product-owner
+/.github/            @product-owner
+
+# Plan: thẻ trên main quyết định Scope của task, nên PO duyệt mọi thay đổi (PROCESS.md mục 7).
+# Không ghi docs/plan/ vào mục Hot file của AGENTS.md: Orchestrator sửa plan qua PR không có thẻ.
+/docs/plan/          @product-owner
 
 # Của dự án: bỏ dấu # ở các dòng cần dùng, sửa đường dẫn cho đúng.
-# /src/auth/           @chu-du-an
-# /src/payment/        @chu-du-an
-# /db/migrations/      @chu-du-an
-# **/contract.*        @chu-du-an
-# /src/app/routes.*    @chu-du-an
+# /src/auth/           @product-owner
+# /src/payment/        @product-owner
+# /db/migrations/      @product-owner
+# **/contract.*        @product-owner
+# /src/app/routes.*    @product-owner

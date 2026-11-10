@@ -1,6 +1,6 @@
 # ROADMAP · Lộ trình Milestone
 
-Mỗi Milestone một dòng. Orchestrator đề xuất, chủ dự án duyệt. Milestone xong: ghi ngày + phiên bản, xoá file plan của Milestone.
+Mỗi Milestone một dòng. Orchestrator đề xuất, PO duyệt. Milestone xong: ghi ngày + phiên bản, xoá file plan của Milestone.
 Trạng thái: `chưa bắt đầu` · `đang làm` · `xong <ngày> · <phiên bản>`.
 
 | Milestone | Mục tiêu | Feature | Plan | Trạng thái |
