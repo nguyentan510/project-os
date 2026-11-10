@@ -2,14 +2,15 @@
 """Project OS runner: một file Python thay Make + Bash. Chạy được trên Windows, macOS, Linux.
 Chỉ dùng thư viện chuẩn Python 3.8+. (Đặt tên pos.py, không phải os.py, để khỏi che module `os` của Python.)
 
-  python pos.py setup | run | lint | test [F=MAP-07] [L=api] | features [--sync] | check
+  python pos.py setup | run | lint | test [F=MAP-07] [L=api] | features [--sync] | secrets | check
   python pos.py task T=T-043 N=map-sales [TYPE=fix]    tạo worktree + branch từ main mới nhất
   python pos.py done T=T-043                           dọn sau khi PR đã merge
   python pos.py drop T=T-043 [CONFIRM=T-043]           huỷ task chưa merge (phải hỏi chủ dự án)
   python pos.py wt                                     liệt kê worktree
   python pos.py wt-clean [APPLY=1]                     tìm worktree mồ côi (đã merge); chỉ liệt kê, APPLY=1 mới dọn
   python pos.py pr [T=T-043] [--no-check]              sinh sẵn khung báo cáo PR từ git diff + kết quả check
-  python pos.py scope                                  kiểm file đã sửa có nằm trong "Scope" của thẻ task (luật cứng 8)
+  python pos.py scope                                  kiểm file đã sửa có nằm trong "Scope" của thẻ task (luật cứng 8);
+                                                       không có thẻ thì chỉ qua khi đủ nhỏ để là Lane Fast
   python pos.py plan-check                             kiểm plan: cùng Wave không trùng "Scope", Phụ thuộc chỉ trỏ về Wave trước
   python pos.py sos                                    cứu hộ khi bị kẹt: sao lưu vào branch salvage/sos-*, khám bệnh (chỉ đọc), rồi gửi P-SOS cho AI
 
@@ -40,7 +41,14 @@ WT_DIR = "../wt"  # worktree đặt ngoài repo
 BASE = "main"
 TYPES = ("feat", "fix", "refactor", "test", "docs", "chore")
 
-ROOT = pathlib.Path(__file__).resolve().parent
+# Máy chặn: các file thực thi luật cứng. Luôn là Hot file; PR không có thẻ không được đụng tới.
+GUARD = ("pos.py", "scripts/features.py", ".githooks/", ".github/")
+# PR không có thẻ task (Lane Fast) chỉ qua `scope` khi nhỏ hơn hai ngưỡng này; tài liệu (docs/, *.md) không tính.
+FAST_MAX_FILES = 5    # số file code được sửa
+FAST_MAX_LINES = 100  # tổng dòng code thêm + xoá
+
+# PROJECT_OS_ROOT: CI chạy bản pos.py lấy từ main (đặt ngoài repo) trên mã nguồn của PR.
+ROOT = pathlib.Path(os.environ.get("PROJECT_OS_ROOT") or pathlib.Path(__file__).resolve().parent).resolve()
 PY = sys.executable or "python3"
 
 
@@ -118,8 +126,57 @@ def cmd_features(opts, extra):
     return subprocess.run([PY, str(script), *extra], cwd=ROOT).returncode
 
 
+SECRET_RES = [(name, re.compile(rx)) for name, rx in (
+    ("khoá riêng (private key)", r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
+    ("AWS access key", r"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b"),
+    ("GitHub token", r"\b(?:gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{50,})"),
+    ("Slack token", r"\bxox[abprs]-[A-Za-z0-9-]{10,}"),
+    ("Stripe live key", r"\b[sr]k_live_[A-Za-z0-9]{16,}"),
+    ("Google API key", r"\bAIza[0-9A-Za-z_-]{35}\b"),
+    ("khoá API dạng sk-", r"\bsk-(?:ant-|proj-)?[A-Za-z0-9_-]{32,}"),
+)]
+SECRET_ALLOW = "project-os: allow-secret"  # ghi trên cùng dòng để bỏ qua một giá trị giả (dữ liệu test)
+ENV_OK = (".env.example", ".env.sample", ".env.template")
+
+
+def cmd_secrets(opts, _):
+    """Luật cứng 2: quét khoá bí mật trong file Git theo dõi và file mới chưa bị .gitignore bỏ qua.
+    Chỉ nhận các dạng khoá phổ biến, không quét lịch sử; không in giá trị khoá ra màn hình."""
+    if git("rev-parse", "--git-dir")[0] != 0:
+        say("secrets: chưa phải repo git: bỏ qua")
+        return 0
+    errs = []
+    for f in git("ls-files")[1].splitlines():
+        name = f.rsplit("/", 1)[-1]
+        if (name == ".env" or name.startswith(".env.")) and name not in ENV_OK:
+            errs.append(f"{f}: file .env đang nằm trong Git (gỡ: git rm --cached {f})")
+    for f in git("ls-files", "-co", "--exclude-standard")[1].splitlines():
+        p = ROOT / f
+        try:
+            if not p.is_file() or p.stat().st_size > 1_000_000:
+                continue
+            text = p.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        for n, line in enumerate(text.splitlines(), 1):
+            if SECRET_ALLOW in line:
+                continue
+            for kind, rx in SECRET_RES:
+                if rx.search(line):
+                    errs.append(f"{f}:{n}: {kind}")
+                    break
+    if errs:
+        say("secrets: có khoá bí mật (luật cứng 2):")
+        for e in errs:
+            say("    " + e)
+        say("Gỡ khỏi file, đưa vào .env, và coi khoá đó đã lộ: thu hồi, cấp khoá mới.")
+        return 1
+    say("secrets: không thấy khoá bí mật")
+    return 0
+
+
 def cmd_check(opts, _):
-    for fn in (cmd_features, cmd_lint, cmd_test):
+    for fn in (cmd_features, cmd_secrets, cmd_lint, cmd_test):
         rc = fn(opts, [])
         if rc:
             return rc
@@ -383,17 +440,17 @@ def cmd_pr(opts, extra):
 # ── Máy chặn Scope của thẻ (luật cứng 8) ───────────────────────────────────
 # Thẻ task nằm trong docs/plan/*.md, đọc từ origin/<BASE> (không phải từ branch đang làm),
 # để Builder không tự mở rộng Scope trong chính PR của mình. Muốn mở rộng: Orchestrator sửa thẻ
-# trên main trước. Lane Fast (branch mang mã feature, không có số T) và branch không có thẻ thì bỏ qua.
+# trên main trước. Mặc định là chặn: branch không có số T hoặc không có thẻ chỉ qua khi đủ điều kiện Lane Fast
+# (không chạm máy chặn, Hot file, Restricted zone; dưới FAST_MAX_FILES và FAST_MAX_LINES); thẻ thiếu `Scope:` là lỗi.
 # Nhận cả tên trường cũ (`Phạm vi:`, `Sóng:`) để plan viết trước v1.4 vẫn chạy.
 
 def find_card(t):
     """Trả về danh sách mẫu đường dẫn của dòng `Scope:` trong thẻ task t, hoặc None nếu không có thẻ."""
-    ref = f"origin/{BASE}"
-    if git("rev-parse", "--verify", "--quiet", ref)[0]:
-        ref = BASE
-        if git("rev-parse", "--verify", "--quiet", ref)[0]:
-            return None
-    code, names, _ = git("ls-tree", "-r", "--name-only", ref, "--", "docs/plan")
+    ref = base_ref()
+    if ref is None:
+        return None
+    # Dự án nhỏ không có docs/plan/: thẻ đặt trong STATUS.md (mục "Tiếp theo"), cùng mẫu.
+    code, names, _ = git("ls-tree", "-r", "--name-only", ref, "--", "docs/plan", "STATUS.md")
     if code:
         return None
     head = re.compile(rf"^\s*-\s*\[[ xX]\]\s*{re.escape(t)}\b")
@@ -414,37 +471,95 @@ def find_card(t):
     return None
 
 
-def in_scope(path, patterns):
-    for p in patterns:
-        p = p.strip("`").lstrip("./")
-        if p.endswith("/"):
-            p += "*"
-        if fnmatch.fnmatch(path, p):  # `*` khớp cả dấu `/`: src/map/* gồm mọi thư mục con
+def path_match(parts, pat):
+    """Đường dẫn (đã tách theo `/`) có khớp mẫu không. Cùng ngữ nghĩa với plan-check (`overlaps`):
+    `*` ở đoạn giữa chỉ thay một thư mục; đoạn cuối có `*` thì phủ cả thư mục con; `**` thay số thư mục
+    bất kỳ; mẫu là thư mục (`src/map`, `src/map/`) thì phủ mọi thứ bên trong."""
+    for i, seg in enumerate(pat):
+        if seg == "**":
+            rest = pat[i + 1:]
+            return not rest or any(path_match(parts[j:], rest) for j in range(i, len(parts)))
+        if i >= len(parts) or not fnmatch.fnmatchcase(parts[i], seg.replace("**", "*")):
+            return False
+        if "**" in seg or (i == len(pat) - 1 and "*" in seg):
             return True
-    return False
+    return True
+
+
+def in_scope(path, patterns):
+    parts = path.split("/")
+    return any(path_match(parts, segments(p)) for p in patterns)
+
+
+def base_ref():
+    for ref in (f"origin/{BASE}", BASE):
+        if git("rev-parse", "--verify", "--quiet", ref)[0] == 0:
+            return ref
+    return None
+
+
+def is_doc(path):
+    return path.startswith("docs/") or path.lower().endswith(".md")
+
+
+def protected_paths(ref):
+    """Máy chặn + Hot file + Restricted zone, đọc AGENTS.md từ `ref` (main), không từ branch đang làm."""
+    code, text, _ = git("show", f"{ref}:AGENTS.md")
+    zones = ("## Hot file", "## File nóng", "## Restricted zone", "## Vùng cấm")
+    return list(GUARD) + (section_paths(text, zones) if code == 0 else [])
+
+
+def fast_check(br, base, files):
+    """PR không có thẻ: chỉ qua khi đủ nhỏ để là Lane Fast và không chạm đường dẫn được bảo vệ."""
+    errs = []
+    prot = protected_paths(base)
+    for f in files:
+        if in_scope(f, prot):
+            errs.append(f"{f}: là máy chặn, Hot file hoặc Restricted zone")
+    code_files, lines = [f for f in files if not is_doc(f)], 0
+    for row in git("diff", "--numstat", "--no-renames", f"{base}...HEAD")[1].splitlines():
+        cols = row.split("\t", 2)
+        if len(cols) == 3 and not is_doc(cols[2]):
+            lines += sum(int(c) for c in cols[:2] if c.isdigit())
+    if len(code_files) > FAST_MAX_FILES:
+        errs.append(f"sửa {len(code_files)} file code: quá {FAST_MAX_FILES} (FAST_MAX_FILES)")
+    if lines > FAST_MAX_LINES:
+        errs.append(f"thêm + xoá {lines} dòng code: quá {FAST_MAX_LINES} (FAST_MAX_LINES)")
+    if errs:
+        say(f"scope: branch '{br}' không có thẻ task nên chỉ được là Lane Fast, nhưng:")
+        for e in errs:
+            say("    " + e)
+        say(f"Luật cứng 8: dừng và báo Orchestrator. Cần thẻ có dòng 'Scope:' trong docs/plan/ (hoặc STATUS.md) "
+            f"trên {BASE}, và branch đặt tên <loại>/T-nnn-<tên>.")
+        return 1
+    say(f"scope: '{br}' không có thẻ, đủ điều kiện Lane Fast ({len(code_files)} file code, {lines} dòng)")
+    return 0
 
 
 def cmd_scope(opts, _):
     _, br, _ = git("rev-parse", "--abbrev-ref", "HEAD")
     # CI checkout ở trạng thái detached: truyền tên branch qua PROJECT_OS_BRANCH (nhận cả tên cũ POS_BRANCH)
-    br = os.environ.get("PROJECT_OS_BRANCH") or os.environ.get("POS_BRANCH") or br
-    m = re.match(r"^[a-z]+/(T-\d{3,})-", br)
-    if not m:
-        say(f"scope: branch '{br}' không mang số T (Lane Fast hoặc branch khác): bỏ qua")
+    ci_br = os.environ.get("PROJECT_OS_BRANCH") or os.environ.get("POS_BRANCH")
+    if not ci_br and br == BASE:
+        say(f"scope: đang ở {BASE}, không phải branch của task: bỏ qua (luật cứng 1 do khoá {BASE} chặn)")
         return 0
-    t = m.group(1)
-    patterns = find_card(t)
-    if patterns is None:
-        say(f"scope: không thấy thẻ {t} trong docs/plan/ trên {BASE}: bỏ qua")
-        return 0
-    if not patterns:
-        say(f"scope: thẻ {t} chưa có dòng 'Scope:': không kiểm được")
-        return 0
-    base = f"origin/{BASE}" if git("rev-parse", "--verify", "--quiet", f"origin/{BASE}")[0] == 0 else BASE
-    code, out, err = git("diff", "--name-only", f"{base}...HEAD")
+    br = ci_br or br
+    base = base_ref()
+    if base is None:
+        die(f"scope: không thấy origin/{BASE} lẫn {BASE}: không kiểm được")
+    code, out, err = git("diff", "--name-only", "--no-renames", f"{base}...HEAD")
     if code:
         die(f"scope: không so được với {base}: {err}")
-    outside = [f for f in out.splitlines() if not in_scope(f, patterns)]
+    files = out.splitlines()
+    m = re.match(r"^[a-z]+/(T-\d{3,})-", br)
+    patterns = find_card(m.group(1)) if m else None
+    if patterns is None:  # không số T hoặc không có thẻ: mặc định là chặn, chỉ qua khi đủ điều kiện Lane Fast
+        return fast_check(br, base, files)
+    t = m.group(1)
+    if not patterns:
+        say(f"scope: thẻ {t} chưa có dòng 'Scope:'. Orchestrator ghi Scope vào thẻ trên {BASE}, rồi push lại.")
+        return 1
+    outside = [f for f in files if not in_scope(f, patterns)]
     if outside:
         say(f"scope: {t} sửa ngoài Scope của thẻ ({' '.join(patterns)}):")
         for f in outside:
@@ -467,6 +582,7 @@ def segments(pat):
     p = pat.strip("`").replace("\\", "/")
     while p.startswith("./"):
         p = p[2:]
+    p = p.lstrip("/")  # kiểu CODEOWNERS: /src/auth/
     if p.endswith("/"):
         p += "*"
     return p.split("/")
@@ -545,17 +661,21 @@ def parse_cards():
     return cards
 
 
-def hot_files():
-    f = ROOT / "AGENTS.md"
-    if not f.exists():
-        return []
+def section_paths(text, heads):
+    """Mẫu đường dẫn ghi dưới các tiêu đề `heads` của AGENTS.md; bỏ dòng mẫu còn {{…}}."""
     out, on = [], False
-    for line in f.read_text(encoding="utf-8").splitlines():
+    for line in text.splitlines():
         if line.startswith("## "):
-            on = line.startswith(("## Hot file", "## File nóng"))
+            on = line.startswith(heads)
         elif on and "{{" not in line:
             out += [x for x in re.split(r"[,\s]+", line.replace("`", " ").strip()) if x]
     return out
+
+
+def hot_files():
+    f = ROOT / "AGENTS.md"
+    text = f.read_text(encoding="utf-8") if f.exists() else ""
+    return list(GUARD) + section_paths(text, ("## Hot file", "## File nóng"))
 
 
 def cmd_plan_check(opts, _):
@@ -609,7 +729,7 @@ def cmd_plan_check(opts, _):
 
 COMMANDS = {
     "setup": cmd_setup, "run": cmd_run, "lint": cmd_lint, "test": cmd_test, "features": cmd_features,
-    "check": cmd_check, "task": cmd_task, "done": cmd_done, "drop": cmd_drop, "wt": cmd_wt, "scope": cmd_scope, "plan-check": cmd_plan_check,
+    "secrets": cmd_secrets, "check": cmd_check, "task": cmd_task, "done": cmd_done, "drop": cmd_drop, "wt": cmd_wt, "scope": cmd_scope, "plan-check": cmd_plan_check,
     "wt-clean": cmd_wt_clean, "pr": cmd_pr, "sos": cmd_sos,
 }
 

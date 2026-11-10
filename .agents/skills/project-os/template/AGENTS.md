@@ -12,7 +12,7 @@ AGENTS.md → STATUS.md → thẻ task (nếu có) → dòng mã trong `docs/pro
 ## Lệnh
 - `python pos.py setup` · `python pos.py run` · `python pos.py lint`
 - `python pos.py test` · `python pos.py test F=MAP-07` (theo mã) · `python pos.py test L=api` (theo tầng)
-- `python pos.py check` = kiểm sổ mã + lint + test; chạy trước mỗi lần push
+- `python pos.py check` = kiểm sổ mã + quét khoá + lint + test; chạy trước mỗi lần push
 - `python pos.py task T=T-043 N=short-name` · `python pos.py done T=T-043` · `python pos.py wt`
 - `python pos.py wt-clean [APPLY=1]` dọn worktree đã merge · `python pos.py pr` sinh sẵn khung báo cáo PR
 - `python pos.py sos` khi bị kẹt: sao lưu vào branch `salvage/sos-*` + khám bệnh, rồi chạy P-SOS (`docs/prompts/P-SOS.md`)
@@ -32,10 +32,11 @@ Fast · Normal · Strict (PROCESS.md mục 8). Ghi Lane vào mô tả PR. Phân 
 5. Mã không bao giờ dùng lại; mã trong code phải có trong sổ mã.
 6. Không tự sửa contract đã khoá, Hot file, Restricted zone. Cần sửa → dừng, báo Orchestrator, xin duyệt.
 7. PR chạm các đường dẫn ở luật 6 phải có chủ dự án approve.
-8. Không sửa ngoài Scope của thẻ; cần thì dừng và báo.
+8. Không sửa ngoài Scope của thẻ; cần thì dừng và báo. Không có thẻ thì chỉ được là Lane Fast: `python pos.py scope` chặn khi chạm Hot file, Restricted zone hoặc quá ngưỡng `FAST_MAX_*` trong `pos.py`.
 
 ## Hot file (cùng danh sách với .github/CODEOWNERS)
-{{ví dụ: src/app/routes.*, db/schema.*, src/copy.*, .github/**}}
+pos.py, scripts/features.py, .githooks/, .github/
+{{ví dụ: src/app/routes.*, db/schema.*, src/copy.*}}
 
 ## Restricted zone (cùng danh sách với .github/CODEOWNERS)
 {{ví dụ: src/auth/, src/payment/, db/migrations/, **/contract.*}}

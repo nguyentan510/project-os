@@ -86,6 +86,11 @@ def main():
     if zone and any(l.strip() and "{{" not in l and "không có" not in l.lower() for l in zone.group(1).splitlines()):
         owners = (read(".github/CODEOWNERS") or "").splitlines()
         report(any(l.strip() and not l.lstrip().startswith("#") for l in owners), "CODEOWNERS có luật cho Restricted zone")
+    owners = [l.split() for l in (read(".github/CODEOWNERS") or "").splitlines() if l.strip() and not l.lstrip().startswith("#")]
+    covered = {l[0].strip("/") for l in owners if len(l) > 1}
+    report({"pos.py", "scripts/features.py", ".githooks", ".github"} <= covered,
+           "CODEOWNERS phủ máy chặn (pos.py, scripts/features.py, .githooks/, .github/)")
+    report(bool(owners) and not any("@chu-du-an" in " ".join(l) for l in owners), "CODEOWNERS đã thay @chu-du-an bằng tài khoản thật")
     pos = read("pos.py") or ""
     for var in ("LINT_CMD", "TEST_CMD"):
         m = re.search(rf"^{var}\s*=\s*([\"'])(.*?)\1", pos, re.M)
