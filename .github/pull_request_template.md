@@ -20,6 +20,11 @@
 
 **Ghi chú bàn giao:**
 
+**Kết luận Reviewer** (chỉ PR Lane Strict; do một phiên AI khác viết theo P-07, không phải phiên đã làm task):
+- Kết luận: <Đạt | Trả lại>
+- Đã thử gì, tìm ra gì:
+- Khuyến nghị cho PO:
+
 **Việc cần PO chuyển cho Orchestrator** (viết sẵn để dán nguyên văn; không có thì ghi "không"):
 
 - [ ] `python pos.py check` qua ở local

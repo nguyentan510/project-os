@@ -33,6 +33,7 @@ Fast · Normal · Strict (PROCESS.md mục 8). Không có thẻ → Fast; có th
 ## Vai (PROCESS.md mục 11)
 {{Một AI: không tách vai | Một Orchestrator + nhiều Builder}}
 Orchestrator: thẻ, số T, merge, STATUS. Builder: làm trong Scope, dừng khi PR qua CI. Reviewer: chỉ PR Lane Strict.
+Chế độ Một AI: PO merge. PR Lane Strict phải có mục "Kết luận Reviewer" trong mô tả, do một phiên AI khác phiên đã làm task viết theo P-07; CI kiểm.
 Cần báo Orchestrator: ghi vào báo cáo hoặc PR rồi dừng; Product Owner (PO) chuyển tin. Builder không ghi STATUS, plan.
 
 ## Luật cứng (PROCESS.md mục 4)

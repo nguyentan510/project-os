@@ -38,6 +38,7 @@ Fast · Normal · Strict (PROCESS.md mục 8). Không có thẻ → Fast; có th
 
 ## Vai (PROCESS.md mục 11)
 Chế độ **Một AI** (D07): không tách vai, cùng một AI viết thẻ, làm, mở PR. PO merge (D11).
+PR Lane Strict (gần như mọi PR ở repo này): trước khi PO merge, một phiên AI khác phiên đã làm task review theo P-07 và kết luận được ghi vào mục "Kết luận Reviewer" của mô tả PR; CI đỏ nếu thiếu (D18). `python pos.py lane` cho biết Lane của thay đổi hiện tại.
 Kiểm chứng độc lập chỉ còn ở máy chặn và cổng của PO, nên mọi PR phải có "Tóm tắt cho PO" viết bằng lời thường.
 
 ## Luật cứng (PROCESS.md mục 4)

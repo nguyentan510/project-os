@@ -15,6 +15,8 @@ Chỉ dùng thư viện chuẩn Python 3.8+. (Đặt tên pos.py, không phải 
   python pos.py scope                                  kiểm file đã sửa có nằm trong "Scope" của thẻ task (luật cứng 8);
                                                        chặn xoá file test hoặc làm giảm số test so với main;
                                                        không có thẻ thì chỉ qua khi đủ nhỏ để là Lane Fast
+  python pos.py lane                                   Lane do máy xác định cho thay đổi hiện tại: Fast | Normal | Strict
+  python pos.py review-check BODY=<file mô tả PR>      PR Lane Strict phải có "Kết luận Reviewer": Đạt (luật cứng 7)
   python pos.py plan-check                             kiểm plan: cùng Wave không trùng "Scope", Phụ thuộc chỉ trỏ về Wave trước
   python pos.py sos                                    cứu hộ khi bị kẹt: sao lưu vào branch salvage/sos-*, khám bệnh (chỉ đọc), rồi gửi P-SOS cho AI
 
@@ -452,6 +454,8 @@ def cmd_pr(opts, extra):
     say(f"**Commit:**\n```\n{commits or '(chưa có commit)'}\n```\n")
     say(f"**Test đã chạy:** {check}\n")
     say("**Khác mặc định (nếu có, lý do):**\n\n**Rủi ro:**\n\n**Ghi chú bàn giao:**\n\n"
+        "**Kết luận Reviewer** (chỉ PR Lane Strict; do một phiên AI khác viết theo P-07, không phải phiên đã làm task):\n"
+        "- Kết luận: <Đạt | Trả lại>\n- Đã thử gì, tìm ra gì:\n- Khuyến nghị cho PO:\n\n"
         "**Việc cần PO chuyển cho Orchestrator** (viết sẵn để dán nguyên văn; không có thì ghi \"không\"):")
     return 0
 
@@ -984,8 +988,63 @@ def cmd_status(opts, _):
     return 0
 
 
+# ── Lane và Kết luận Reviewer (luật cứng 7) ─────────────────────────────────
+# Lane là điều máy xác định được từ diff, AI không tự khai: chạm máy chặn, Hot file hoặc Restricted zone (đọc AGENTS.md
+# trên BASE) → Strict; có thẻ → Normal; còn lại → Fast. PR Lane Strict phải có mục "Kết luận Reviewer" trong mô tả,
+# do một phiên AI khác phiên đã làm task viết theo P-07. Máy kiểm được là CÓ kết luận "Đạt", không kiểm được ai viết.
+
+def pr_lane():
+    _, br, _ = git("rev-parse", "--abbrev-ref", "HEAD")
+    br = os.environ.get("PROJECT_OS_BRANCH") or os.environ.get("POS_BRANCH") or br
+    base = base_ref()
+    if base is None:
+        return "Fast", "không có nhánh đích để so"
+    files = git("diff", "--name-only", "--no-renames", f"{base}...HEAD")[1].splitlines()
+    prot = protected_paths(base)
+    hit = [f for f in files if in_scope(f, prot)]
+    if hit:
+        return "Strict", f"chạm đường dẫn được bảo vệ: {hit[0]}" + (f" và {len(hit) - 1} file khác" if len(hit) > 1 else "")
+    m = re.match(r"^[a-z]+/(T-\d{3,})-", br)
+    if m and find_card(m.group(1)) is not None:
+        return "Normal", f"có thẻ {m.group(1)}"
+    return "Fast", "không có thẻ"
+
+
+def cmd_lane(opts, _):
+    lane, why = pr_lane()
+    say(f"lane: {lane} ({why})")
+    return 0
+
+
+REVIEW_HEAD = "Kết luận Reviewer"
+REVIEW_OK = re.compile(r"^\s*[-*]?\s*Kết luận:\s*Đạt\b", re.M)
+
+
+def cmd_review_check(opts, _):
+    """BODY=<file chứa mô tả PR>. Lane Strict mà thiếu "Kết luận: Đạt" trong mục Kết luận Reviewer thì lỗi."""
+    lane, why = pr_lane()
+    if lane != "Strict":
+        say(f"review-check: Lane {lane} ({why}): không cần {REVIEW_HEAD}")
+        return 0
+    body = ""
+    if opts.get("BODY"):
+        try:
+            body = pathlib.Path(opts["BODY"]).read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            die(f"review-check: không đọc được file mô tả PR: {opts['BODY']}")
+    at = body.find(REVIEW_HEAD)
+    if at >= 0 and REVIEW_OK.search(body[at:]):
+        say(f"review-check: Lane Strict, mô tả PR đã có {REVIEW_HEAD}: Đạt")
+        return 0
+    missing = f"chưa có mục '{REVIEW_HEAD}'" if at < 0 else f"mục '{REVIEW_HEAD}' chưa có dòng 'Kết luận: Đạt'"
+    say(f"review-check: Lane Strict ({why}), nhưng mô tả PR {missing}.")
+    say("Luật cứng 7: một phiên AI khác phiên đã làm task chạy P-07 (docs/prompts/P-07.md), rồi dán kết luận vào mô tả PR. "
+        "Reviewer trả lại thì sửa và review lại (tối đa 2 vòng, sau đó PO quyết).")
+    return 1
+
+
 COMMANDS = {
-    "status": cmd_status, "find": cmd_find,
+    "status": cmd_status, "find": cmd_find, "lane": cmd_lane, "review-check": cmd_review_check,
     "setup": cmd_setup, "run": cmd_run, "lint": cmd_lint, "test": cmd_test, "features": cmd_features,
     "secrets": cmd_secrets, "check": cmd_check, "task": cmd_task, "done": cmd_done, "drop": cmd_drop, "wt": cmd_wt, "scope": cmd_scope, "plan-check": cmd_plan_check,
     "wt-clean": cmd_wt_clean, "pr": cmd_pr, "sos": cmd_sos,
