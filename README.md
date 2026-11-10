@@ -99,7 +99,7 @@ npx -y @nguyentan0510/project-os
 
 - Chạy lại lệnh để cập nhật. Nơi đã có thứ khác (không do lệnh này tạo) thì bỏ qua, **không ghi đè**.
 - Mặc định riêng: đặt biến môi trường `PROJECT_OS_TOOLS` (ví dụ `agents`); cờ `--tools` luôn thắng.
-- Ghim phiên bản: `npx -y @nguyentan0510/project-os@1.5.1`.
+- Ghim phiên bản: `npx -y @nguyentan0510/project-os@1.6.0`.
 
 ### Toàn cục (cho mọi dự án)
 
