@@ -1,6 +1,6 @@
 # PROCESS · Quy tắc triển khai dự án
 
-Phiên bản 1.1 · 2026-11-09 · Nguồn gốc của mọi quy tắc trong repo này. Tên gọi theo `docs/GLOSSARY.md`.
+Phiên bản 1.5.1 · 2026-11-10 · Nguồn gốc của mọi quy tắc trong repo này. Tên gọi theo `docs/GLOSSARY.md`.
 
 **Vibe code có kiểm soát:** một người làm cùng nhiều AI, nói bằng lời thường, mà dự án không trượt khỏi mục tiêu. Một AI mới, không có lịch sử chat, mở dự án phải biết trong 1 phút: **đang ở đâu, vì sao như vậy, cái gì không được đụng, làm tiếp từ đâu và kiểm chứng bằng gì**. Đầu mối chung là **mã** (`MAP-07`).
 
