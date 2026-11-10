@@ -188,6 +188,7 @@ Chỉ dùng thư viện chuẩn Python 3.8+, chạy như nhau trên Windows, mac
 | `task T=T-043 N=map-sales [TYPE=fix]` | Tạo worktree + branch từ `main` mới nhất |
 | `done T=T-043` | Dọn sau khi PR đã merge (nhận cả merge squash) |
 | `drop T=T-043 [CONFIRM=T-043]` | Huỷ task chưa merge |
+| `find <lời>` | Tìm mã theo lời thường (không cần dấu) trong sổ mã, DECISIONS, thẻ task |
 | `status` | Trạng thái task suy từ thẻ + Git: đang làm, sẵn sàng, chờ, xong |
 | `wt` · `wt-clean [APPLY=1]` | Liệt kê · dọn worktree mồ côi |
 | `pr [T=T-043]` | Sinh khung báo cáo PR từ diff + kết quả check |

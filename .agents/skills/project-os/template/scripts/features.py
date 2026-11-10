@@ -7,6 +7,7 @@ Lỗi (dừng python pos.py check):
   - mã đã `bỏ` vẫn còn trong code (test khẳng định đã bỏ thì được)
 Cảnh báo (không dừng):
   - mã `dùng` chưa có test nào gắn mã, và cột Test không ghi `— (lý do)`
+  - mã `để sau` (ý tưởng PO chưa quyết làm) đã xuất hiện trong code
   - biến môi trường code đọc (os.getenv, process.env…) mà `.env.example` chưa khai báo
 `--sync`: ghi lại cột Test của sổ từ các test gắn mã tìm thấy, dạng `đường/dẫn/test.py (5), …`
   (số trong ngoặc = số lần mã xuất hiện trong file test). Ô `— (lý do)` chỉ bị thay khi đã có test thật.
@@ -181,18 +182,22 @@ def main():
     for code, row in sorted(rows.items()):
         if row["status"] == "dùng" and not found.get(code, {}).get("test") and not row["test"].startswith("— ("):
             warnings.append(f"{code}: đang dùng nhưng chưa có test gắn mã (hoặc ghi `— (lý do)` ở cột Test)")
+    for code, where in sorted(found.items()):
+        if code in rows and rows[code]["status"].startswith("để sau") and where["code"]:
+            warnings.append(f"{code}: trạng thái `để sau` nhưng đã có trong {where['code'][0]}; đổi sang `dự kiến` hoặc `dùng`")
     declared = declared_env()
     for name, where in sorted(scan_env().items()):
         if declared is None:
             errors.append(f"{name}: code đọc biến này ({where}) nhưng chưa có .env.example")
         elif name not in declared:
             errors.append(f"{name}: {where} đọc biến môi trường này nhưng .env.example chưa khai báo")
-    counts = {s: sum(1 for r in rows.values() if r["status"].startswith(s)) for s in ("dùng", "dự kiến", "bỏ")}
+    counts = {s: sum(1 for r in rows.values() if r["status"].startswith(s)) for s in ("dùng", "dự kiến", "bỏ", "để sau")}
+    later = f", để sau {counts['để sau']}" if counts["để sau"] else ""
     for w in warnings:
         print(f"  cảnh báo  {w}")
     for e in errors:
         print(f"  LỖI      {e}")
-    print(f"python pos.py features: {len(rows)} mã (dùng {counts['dùng']}, dự kiến {counts['dự kiến']}, bỏ {counts['bỏ']})"
+    print(f"python pos.py features: {len(rows)} mã (dùng {counts['dùng']}, dự kiến {counts['dự kiến']}, bỏ {counts['bỏ']}{later})"
           f" · {len(modules)} module · lỗi {len(errors)} · cảnh báo {len(warnings)}")
     sys.exit(1 if errors else 0)
 

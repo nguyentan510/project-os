@@ -149,7 +149,7 @@ Thư mục xếp **theo thứ tự đọc**: trên cùng là thứ AI đọc m�
 │
 │  ⑤ MÁY CHẶN — công cụ và cổng tự động
 ├── pos.py                    runner: setup · run · lint · test · features · check · task · done · drop
-│                             · wt · wt-clean · pr · scope · plan-check · sos
+│                             · status · find · wt · wt-clean · pr · scope · plan-check · secrets · sos
 ├── Makefile                  lớp bọc tuỳ chọn gọi pos.py cho ai quen make
 ├── scripts/features.py      kiểm sổ mã, sinh cột Test (python pos.py features)
 └── .github/
@@ -187,18 +187,20 @@ Hai trục nối nhau qua mã feature: **Sản phẩm** (có gì, sống lâu) v
 ```
 ## SALES · Bán hàng
 ### MAP · Bản đồ điểm bán
-| Mã     | Hành vi chính                                         | Code chính (điểm vào)   | Test liên quan                  | QĐ  | Trạng thái |
-| ------ | ----------------------------------------------------- | ----------------------- | ------------------------------- | --- | ---------- |
-| MAP-07 | Sales chỉ thấy điểm bán trong phạm vi được cấp quyền | src/map/service.py      | tests/api/map/test_scope.py (5) | D59 | dùng       |
-| MAP-02 | Sales mở bản đồ từ Bảng tin, ghim tô màu theo lần ghé | src/map/web/MapPage.tsx | tests/e2e/map/map.spec.ts (2)   | D59 | dùng       |
-| MAP-09 | Lọc ghim theo khung nhìn                              | —                       | —                               | D61 | bỏ (D61)   |
+| Mã     | Tên gọi                | Hành vi chính                                         | Code chính (điểm vào)   | Test liên quan                  | QĐ  | Trạng thái |
+| ------ | ---------------------- | ----------------------------------------------------- | ----------------------- | ------------------------------- | --- | ---------- |
+| MAP-07 | Phạm vi xem điểm bán   | Sales chỉ thấy điểm bán trong phạm vi được cấp quyền | src/map/service.py      | tests/api/map/test_scope.py (5) | D59 | dùng       |
+| MAP-02 | Bản đồ Sales           | Sales mở bản đồ từ Bảng tin, ghim tô màu theo lần ghé | src/map/web/MapPage.tsx | tests/e2e/map/map.spec.ts (2)   | D59 | dùng       |
+| MAP-09 | Lọc theo khung nhìn    | Lọc ghim theo khung nhìn                              | —                       | —                               | D61 | bỏ (D61)   |
+| MAP-10 | Chỉ đường tới điểm bán | Sales bấm một điểm bán để mở chỉ đường                | —                       | —                               | —   | để sau     |
 ```
 
+- **Tên gọi:** 2–5 từ bằng lời của PO. PO gọi feature bằng tên này; `python pos.py find <lời>` tìm ra mã.
 - **Hành vi chính:** viết theo điều người dùng thấy, kiểm chứng được bằng test.
 - **Code chính:** 1–2 file điểm vào; file còn lại tìm bằng `rg "<mã>"`.
 - **Test liên quan:** `python pos.py features --sync` tự sinh từ mã gắn trong test (đường dẫn + số lần gắn), không ghi tay. Chưa có test tự động thì ghi `— (lý do)`.
 - **QĐ:** mã quyết định liên quan.
-- **Trạng thái:** `dự kiến` (chưa làm, đã có hành vi) · `dùng` · `bỏ (Dxx)`. Mã bỏ giữ dòng, không còn trong code.
+- **Trạng thái:** `dự kiến` (chưa làm, đã có hành vi) · `dùng` · `bỏ (Dxx)` · `để sau` (ý tưởng ngoài phạm vi hiện tại, PO chưa quyết làm). Mã bỏ giữ dòng, không còn trong code.
 
 **Mẫu `docs/DECISIONS.md`:**
 

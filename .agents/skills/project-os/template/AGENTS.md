@@ -18,6 +18,7 @@ Nói với PO bằng tên gọi, mã để trong ngoặc: "Bản đồ Sales (MA
 - `python pos.py test` · `python pos.py test F=MAP-07` (theo mã) · `python pos.py test L=api` (theo tầng)
 - `python pos.py check` = kiểm sổ mã + quét khoá + lint + test; chạy trước mỗi lần push
 - `python pos.py task T=T-043 N=short-name` · `python pos.py done T=T-043` · `python pos.py wt`
+- `python pos.py find <lời của PO>` tìm mã theo tên gọi, hành vi, quyết định, thẻ (không cần dấu)
 - `python pos.py status` ai đang làm task nào, task nào sẵn sàng, đã xong (suy từ thẻ + Git, không ghi tay)
 - `python pos.py wt-clean [APPLY=1]` dọn worktree đã merge · `python pos.py pr` sinh sẵn khung báo cáo PR
 - `python pos.py sos` khi bị kẹt: sao lưu vào branch `salvage/sos-*` + khám bệnh, rồi chạy P-SOS (`docs/prompts/P-SOS.md`)

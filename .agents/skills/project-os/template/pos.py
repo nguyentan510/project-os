@@ -7,6 +7,7 @@ Chỉ dùng thư viện chuẩn Python 3.8+. (Đặt tên pos.py, không phải 
   python pos.py done T=T-043                           dọn sau khi PR đã merge
   python pos.py drop T=T-043 [CONFIRM=T-043]           huỷ task chưa merge (phải hỏi PO)
   python pos.py status                                 trạng thái task suy từ thẻ + Git: đang làm, sẵn sàng, chờ, xong
+  python pos.py find <lời của PO>                      tìm mã theo lời thường (không cần dấu) trong sổ mã, DECISIONS, thẻ
   python pos.py wt                                     liệt kê worktree
   python pos.py wt-clean [APPLY=1]                     tìm worktree mồ côi (đã merge); chỉ liệt kê, APPLY=1 mới dọn
   python pos.py pr [T=T-043] [--no-check]              sinh sẵn khung báo cáo PR từ git diff + kết quả check
@@ -428,7 +429,7 @@ def cmd_pr(opts, extra):
         check = "`check`: qua" if r.returncode == 0 else f"`check`: LỖI\n```\n{tail}\n```"
     suffix = f" [{t}]" if t else ""
     say(f"Tiêu đề gợi ý: {kind}({','.join(feats[:2]) or '<MÃ>'}): <việc>{suffix}\n")
-    say(f"**Mã · Task · Lane:** {', '.join(feats) or '<MÃ>'} · {t or '—'} · <Fast | Normal | Strict>\n")
+    say(f"**Mã · Task · Lane:** {', '.join(named(f, feature_names()) for f in feats) or '<MÃ>'} · {t or '—'} · <Fast | Normal | Strict>\n")
     if t:
         say(f"Closes #{int(t[2:])}  <!-- chỉ giữ nếu T-nnn trùng số GitHub Issue (PROCESS.md mục 7) -->\n")
     say("**Đã làm:**\n\n**Scope thực tế:** khớp thẻ / thêm …, vì …\n")
@@ -732,15 +733,110 @@ def cmd_plan_check(opts, _):
     return 0
 
 
+# ── Lớp PO: tra mã bằng lời thường (PROCESS.md mục 14) ─────────────────────
+
+def fold(s):
+    """Chữ thường, bỏ dấu tiếng Việt: PO gõ "ban do" vẫn tìm ra "Bản đồ"."""
+    import unicodedata
+    s = unicodedata.normalize("NFD", s.lower().replace("đ", "d"))
+    return "".join(c for c in s if unicodedata.category(c) != "Mn")
+
+
+def table_rows(path):
+    """Mỗi dòng dữ liệu của các bảng markdown trong file, dạng {tiêu đề cột: ô}."""
+    if not path.is_file():
+        return
+    head = None
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not line.startswith("|"):
+            head = None
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if head is None:
+            head = cells
+        elif not all(set(c) <= set("-: ") for c in cells):
+            yield dict(zip(head, cells))
+
+
+FEATURE_CODE = re.compile(r"\b[A-Z]{2,6}-\d{2,}\b")
+
+
+def feature_names():
+    """{mã: tên gọi} từ cột "Tên gọi" của sổ mã."""
+    rows = table_rows(ROOT / "docs" / "product" / "FEATURES.md")
+    return {r["Mã"]: r["Tên gọi"] for r in rows
+            if FEATURE_CODE.fullmatch(r.get("Mã", "")) and r.get("Tên gọi", "").strip("—- ") and "{{" not in r["Tên gọi"]}
+
+
+def named(text, names):
+    """Đổi mã trần thành "Tên gọi (MÃ)" để PO đọc được."""
+    return FEATURE_CODE.sub(lambda m: f"{names[m.group()]} ({m.group()})" if m.group() in names else m.group(), text)
+
+
+def all_cards():
+    """Thẻ ở docs/plan/*.md rồi STATUS.md; trùng số T thì lấy thẻ gặp trước (plan thắng STATUS)."""
+    files = sorted((ROOT / "docs" / "plan").glob("*.md"))
+    if (ROOT / "STATUS.md").is_file():
+        files.append(ROOT / "STATUS.md")
+    seen, out = set(), []
+    for c in parse_cards(files):
+        if c["t"] not in seen:
+            seen.add(c["t"])
+            out.append(c)
+    return out
+
+
+def cmd_find(opts, extra):
+    words = fold(" ".join(extra)).split()
+    if not words:
+        die("Thiếu lời cần tìm, ví dụ: python pos.py find bản đồ điểm bán")
+    entries = []  # (chữ được ưu tiên, toàn bộ chữ, dòng in ra)
+    for r in table_rows(ROOT / "docs" / "product" / "FEATURES.md"):
+        code = r.get("Mã", "")
+        if not FEATURE_CODE.fullmatch(code):
+            continue
+        name, what = r.get("Tên gọi", ""), r.get("Hành vi chính", "")
+        label = f"{name} — {what}" if name.strip("—- ") else what
+        entries.append((f"{name} {code}", f"{name} {what} {code}", f"{label} ({code}) · {list(r.values())[-1]}"))
+    for r in table_rows(ROOT / "docs" / "DECISIONS.md"):
+        code = r.get("Mã", "")
+        if re.fullmatch(r"D\d{2,}|Q-\S+", code) and "{{" not in " ".join(r.values()):
+            what = r.get("Quyết định") or r.get("Câu hỏi") or ""
+            kind = "quyết định" if code.startswith("D") else "câu hỏi còn mở"
+            entries.append((code, " ".join(r.values()), f"{what} ({code}) · {kind}"))
+    feats = ROOT / "docs" / "product" / "FEATURES.md"
+    if feats.is_file():
+        for code, name in re.findall(r"^###\s+([A-Z]{2,6})\s+·\s*(.+)$", feats.read_text(encoding="utf-8", errors="replace"), re.M):
+            entries.append((f"{name} {code}", f"{name} {code}", f"{name.strip()} (module {code})"))
+    names = feature_names()
+    for c in all_cards():
+        entries.append((c["t"], f"{c['title']} {c['t']}", f"{named(c['title'], names)} ({c['t']}) · thẻ task"))
+    hits = []
+    for prime, full, label in entries:
+        fp, ff = fold(prime), fold(full)
+        if all(w in ff for w in words):
+            hits.append((sum(fp.count(w) * 2 + ff.count(w) for w in words), label))
+    query = " ".join(extra)
+    if not hits:
+        say(f"find: không thấy gì khớp '{query}'.")
+        say("Có thể là việc mới: hỏi lại PO bằng lời khác, hoặc thêm một dòng vào sổ mã (trạng thái `dự kiến` hoặc `để sau`).")
+        return 0
+    hits.sort(key=lambda h: -h[0])
+    say(f"find: {len(hits)} kết quả cho '{query}'" + (" (hiện 5 đầu)" if len(hits) > 5 else ""))
+    for _, label in hits[:5]:
+        say("    " + label)
+    return 0
+
+
 # ── Trạng thái task: suy từ thẻ + Git, không ghi tay ───────────────────────
 # Thẻ ở docs/plan/*.md và STATUS.md (thư mục làm việc). Xong = main có commit mang [T-nnn] (tiêu đề PR đã
 # merge squash) hoặc thẻ đã tick. Đang làm = có branch <loại>/T-nnn-… ở máy hoặc trên origin.
 
 def cmd_status(opts, _):
-    files = sorted((ROOT / "docs" / "plan").glob("*.md"))
-    if (ROOT / "STATUS.md").is_file():
-        files.append(ROOT / "STATUS.md")
-    cards = parse_cards(files)
+    cards = all_cards()
+    names = feature_names()
+    for c in cards:
+        c["title"] = named(c["title"], names)
     base = base_ref()
     merged = set(re.findall(r"\[(T-\d{3,})\]", git("log", base, "--format=%s")[1])) if base else set()
     branches = {}
@@ -774,7 +870,7 @@ def cmd_status(opts, _):
 
 
 COMMANDS = {
-    "status": cmd_status,
+    "status": cmd_status, "find": cmd_find,
     "setup": cmd_setup, "run": cmd_run, "lint": cmd_lint, "test": cmd_test, "features": cmd_features,
     "secrets": cmd_secrets, "check": cmd_check, "task": cmd_task, "done": cmd_done, "drop": cmd_drop, "wt": cmd_wt, "scope": cmd_scope, "plan-check": cmd_plan_check,
     "wt-clean": cmd_wt_clean, "pr": cmd_pr, "sos": cmd_sos,
