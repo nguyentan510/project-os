@@ -188,5 +188,7 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 | Khung | Bộ file Ngày 0 trong `template/` được chép vào dự án | DAY-01 |
 | Bản gốc, bản chép | Bản gốc của khung là `template/`; các file cùng tên ở gốc repo này là bản chép, sửa sau bản gốc (D06) | DOC-02 |
 | Phiên trắng | Một phiên AI mới, không có lịch sử chat, chỉ có repo | EVL-01 |
+| PO ảo | Phần của bộ thử đóng vai PO: trả lời AI theo một kịch bản soạn sẵn, chỉ có quyền trong thư mục thử | EVL-04 |
+| Thư mục thử | Thư mục tạm ngoài mọi repo mà một bộ thử dựng lên rồi xoá khi chạy xong | EVL-03, EVL-04 |
 | Tự áp dụng | Repo Project OS dùng chính quy trình Project OS để phát triển nó | DAY-04 |
 | Trình cài | `bin/project-os.js` và hai script `install.sh`, `install.ps1` | INS-01, INS-02 |

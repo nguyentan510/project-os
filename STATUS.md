@@ -34,6 +34,15 @@
       Xong khi:  PO chạy `node bin/project-os.js --global`: trình cài báo cách này đã bỏ và chỉ sang cài theo dự án; chạy không cờ ở một thư mục tạm thì skill vào `.agents/` và `.claude/` như cũ; python pos.py check qua
       Ghi chú:   người đã cài toàn cục cần một đường gỡ: giữ lệnh gỡ bản toàn cục hoặc ghi cách gỡ tay vào README. Sửa contract C9 nên liệt kê module dùng nó trước (DAY, INS). Nên vào cùng bản phát hành của T-010: PO chốt thứ tự
 
+- [ ] T-012 · EVL-04 · chạy thử trọn vòng với PO ảo, mức 1
+      Yêu cầu gốc: "Tôi có thể Xây dựng PO ảo dành riêng cho quá trình Build dự án. Agent sẽ tự mở Folder Project > Chạy "Project OS" và giả định triển khai theo motip lite nhẹ để test không ?" · "Hoàn thành có nên xoá ngay để tránh tạo Rác thực thi. Hãy viết Quy trình đã rồi mới Viết thẻ"
+      Mục tiêu:  một lệnh chạy mức 1 của `docs/product/VIRTUAL-PO.md`: dựng thư mục thử với dự án mẫu, cài skill theo dự án, để một AI phiên trắng làm Ngày 0 với PO ảo trả lời theo kịch bản, tự chạy kiểm toán và check, in bảng chấm, rồi xoá thư mục thử kể cả khi hỏng giữa chừng (`KEEP=1` mới giữ)
+      Lane:      Normal
+      Scope:     evals/*, tests/*, docs/product/VIRTUAL-PO.md, docs/product/FEATURES.md, docs/DECISIONS.md, docs/GLOSSARY.md, README.md
+      Phụ thuộc: T-009
+      Xong khi:  PO chạy một lệnh trong `evals/`, thấy bảng chấm có đủ các ô bắt buộc của mức 1, mỗi công cụ AI một cột (Claude Code, Codex, Antigravity) ghi Đạt, Chưa hoặc "không chạy được" kèm lý do, và sau khi lệnh kết thúc thư mục thử không còn trên máy; python pos.py check qua
+      Ghi chú:   hỗ trợ cả ba công cụ (D20). Việc đầu tiên: xác nhận từng công cụ có chế độ chạy không giao diện; công cụ nào không có thì dừng và báo PO. Làm lần lượt từng bộ nối công cụ. Bộ test tự động không gọi AI thật: thử bộ chạy bằng một AI giả trả lời cố định. Mức 2 và mức 3 là thẻ sau
+
 Chưa viết thẻ (PO chọn thứ tự):
 - Hai bộ thử còn lại ứng với BRIEF: AI phiên trắng (EVL-01), tiếp nhận 8 câu (EVL-02).
 - `find` khớp theo từ thay vì chuỗi con: gõ "do luong" đang ra nhầm "Bảng prompt" (POL-02).
