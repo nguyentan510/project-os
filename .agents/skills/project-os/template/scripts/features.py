@@ -12,6 +12,8 @@ Cảnh báo (không dừng):
 `--sync`: ghi lại cột Test của sổ từ các test gắn mã tìm thấy, dạng `đường/dẫn/test.py (5), …`
   (số trong ngoặc = số lần mã xuất hiện trong file test). Ô `— (lý do)` chỉ bị thay khi đã có test thật.
 Chỉ nhận mã có tiền tố là module đã khai báo bằng tiêu đề `### MÃ · Tên` trong FEATURES.md.
+Không quét thư mục skill do trình cài chép vào dự án (thư mục có file `.project-os-install`): đó là công cụ cài vào,
+mã ví dụ và biến môi trường trong đó không phải của dự án.
 """
 import collections
 import pathlib
@@ -27,6 +29,9 @@ SKIP_TOP_DIRS = {"docs", ".github", ".githooks", "mk"}
 # Tài liệu và công cụ ở gốc repo có mã làm ví dụ, không phải mã đang dùng.
 SKIP_ROOT_FILES = {"Makefile", "pos.py", "AGENTS.md", "STATUS.md", "CLAUDE.md", "GEMINI.md", "README.md"}
 CODE_RE = re.compile(r"^[A-Z]{2,6}-\d{2,}$")
+# Trình cài (bin/project-os.js) ghi file này vào thư mục skill nó chép vào dự án, ví dụ .agents/skills/project-os/.
+# Bản nguồn của skill trong repo project-os không có file này, nên vẫn được quét như code của dự án.
+INSTALL_MARKER = ".project-os-install"
 ENV_FILE = ROOT / ".env.example"
 ENV_EXTS = {".py", ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".rs", ".go", ".rb", ".php", ".vue", ".svelte"}
 # Biến do hệ điều hành, runtime hoặc CI cấp: không cần khai báo trong .env.example.
@@ -61,6 +66,20 @@ def read_registry():
     return modules, rows, dups
 
 
+def installed_skill_dirs():
+    """Đường dẫn (tách theo phần) của các thư mục skill đã cài vào dự án."""
+    dirs = []
+    for marker in ROOT.rglob(INSTALL_MARKER):
+        parts = marker.parent.relative_to(ROOT).parts
+        if parts and not set(parts) & SKIP_DIRS:
+            dirs.append(parts)
+    return dirs
+
+
+def in_dirs(rel, dirs):
+    return any(rel.parts[:len(d)] == d for d in dirs)
+
+
 def is_test(path):
     parts = {p.lower() for p in path.parts}
     name = path.name.lower()
@@ -75,9 +94,10 @@ def scan(modules):
     alt = "|".join(sorted(modules))
     upper = re.compile(rf"\b({alt})-(\d{{2,}})\b")
     lower = re.compile(rf"\b({alt.lower()})_(\d{{2,}})_")  # tên test Rust: map_07_…
+    skills = installed_skill_dirs()
     for path in ROOT.rglob("*"):
         rel = path.relative_to(ROOT)
-        if (path.is_dir() or set(rel.parts) & SKIP_DIRS or rel.parts[0] in SKIP_TOP_DIRS
+        if (path.is_dir() or set(rel.parts) & SKIP_DIRS or rel.parts[0] in SKIP_TOP_DIRS or in_dirs(rel, skills)
                 or path.name in ("features.py", "feature-lint.py")
                 or (len(rel.parts) == 1 and path.name in SKIP_ROOT_FILES)):
             continue
@@ -98,9 +118,10 @@ def scan(modules):
 def scan_env():
     """Trả về {tên biến: file đầu tiên đọc nó} cho code (không tính test) ngoài docs/."""
     used = {}
+    skills = installed_skill_dirs()
     for path in sorted(ROOT.rglob("*")):
         rel = path.relative_to(ROOT)
-        if (path.is_dir() or path.suffix not in ENV_EXTS or set(rel.parts) & SKIP_DIRS
+        if (path.is_dir() or path.suffix not in ENV_EXTS or set(rel.parts) & SKIP_DIRS or in_dirs(rel, skills)
                 or rel.parts[0] in SKIP_TOP_DIRS or rel.parts[0] == "scripts" or rel.as_posix() == "pos.py" or is_test(rel)):
             continue
         try:

@@ -63,7 +63,7 @@ Mỗi module là một tiêu đề `### MÃ · Tên`; kiểm sổ mã chỉ nh�
 
 | Mã | Tên gọi | Hành vi chính | Code chính (điểm vào) | Test liên quan | QĐ | Trạng thái |
 | --- | --- | --- | --- | --- | --- | --- |
-| REG-01 | Kiểm sổ mã | Mã có trong code mà không có trong sổ, mã trùng, mã đã bỏ còn trong code: đều báo lỗi | khung/scripts/features.py | — (có test, chưa gắn mã) | — | dùng |
+| REG-01 | Kiểm sổ mã | Mã có trong code mà không có trong sổ, mã trùng, mã đã bỏ còn trong code: đều báo lỗi. File của skill đã cài vào dự án không bị quét | khung/scripts/features.py | — (có test, chưa gắn mã) | — | dùng |
 | REG-02 | Tự ghi cột Test | Một lệnh ghi lại cột Test của sổ mã từ các test có gắn mã | khung/scripts/features.py | — (có test, chưa gắn mã) | — | dùng |
 | REG-03 | Kiểm biến môi trường | Code đọc biến môi trường chưa khai trong `.env.example` thì báo lỗi | khung/scripts/features.py | — (có test, chưa gắn mã) | — | dùng |
 
