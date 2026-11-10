@@ -2,3 +2,9 @@ project-os.tar.gz
 # Windows junction; trong repo là symlink thật (mode 120000)
 .claude/skills/project-os
 __pycache__/
+.pytest_cache/
+
+# Khoá bí mật (luật cứng 2)
+.env
+.env.*
+!.env.example
