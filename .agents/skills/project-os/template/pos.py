@@ -815,23 +815,23 @@ def cmd_find(opts, extra):
     feats = ROOT / "docs" / "product" / "FEATURES.md"
     if feats.is_file():
         for code, name in re.findall(r"^###\s+([A-Z]{2,6})\s+·\s*(.+)$", feats.read_text(encoding="utf-8", errors="replace"), re.M):
-            entries.append((f"{name} {code}", f"{name} {code}", f"{name.strip()} (module {code})"))
+            entries.append((f"{name} {code}", f"{name} {code}", f"{name.strip()} (module {code})", 1))
     names = feature_names()
     for c in all_cards():
         entries.append((c["t"], f"{c['title']} {c['t']}", f"{named(c['title'], names)} ({c['t']}) · thẻ task"))
     hits = []
-    for prime, full, label in entries:
+    for prime, full, label, *tier in entries:  # tier 1 = module: xếp sau feature, quyết định, thẻ
         fp, ff = fold(prime), fold(full)
         if all(w in ff for w in words):
-            hits.append((sum(fp.count(w) * 2 + ff.count(w) for w in words), label))
+            hits.append((bool(tier), -sum(fp.count(w) * 2 + ff.count(w) for w in words), label))
     query = " ".join(extra)
     if not hits:
         say(f"find: không thấy gì khớp '{query}'.")
         say("Có thể là việc mới: hỏi lại PO bằng lời khác, hoặc thêm một dòng vào sổ mã (trạng thái `dự kiến` hoặc `để sau`).")
         return 0
-    hits.sort(key=lambda h: -h[0])
+    hits.sort(key=lambda h: h[:2])
     say(f"find: {len(hits)} kết quả cho '{query}'" + (" (hiện 5 đầu)" if len(hits) > 5 else ""))
-    for _, label in hits[:5]:
+    for _, _, label in hits[:5]:
         say("    " + label)
     return 0
 
