@@ -98,16 +98,18 @@ Tám luật duy nhất không linh hoạt. Luật nào máy chặn được thì
 | # | Luật | Máy chặn bằng |
 | --- | --- | --- |
 | 1 | Không push thẳng lên main; chỉ merge qua PR | Khoá main |
-| 2 | Không đưa khoá bí mật vào Git, code, tài liệu | `.gitignore` có `.env`; quét khoá (gitleaks) |
+| 2 | Không đưa khoá bí mật vào Git, code, tài liệu | `.gitignore` có `.env`; `python pos.py secrets` (trong `check`) quét các dạng khoá phổ biến và file `.env` lọt vào Git |
 | 3 | Chỉ push khi `python pos.py check` qua | pre-push hook; CI của PR là cổng cuối |
 | 4 | Tiêu đề PR có mã: `<loại>(<mã>): <việc> [T-nnn]` | CI kiểm tiêu đề PR |
 | 5 | Mã không bao giờ dùng lại; mã trong code phải có trong sổ mã | Kiểm sổ mã trong `python pos.py check` |
-| 6 | Builder không tự sửa **contract đã khoá, Hot file, Restricted zone**. Cần sửa → dừng task, báo Orchestrator, xin duyệt | `CODEOWNERS` liệt kê đúng các đường dẫn này |
+| 6 | Builder không tự sửa **contract đã khoá, Hot file, Restricted zone**. Cần sửa → dừng task, báo Orchestrator, xin duyệt | `CODEOWNERS` liệt kê đúng các đường dẫn này; máy chặn (`pos.py`, `scripts/features.py`, `.githooks/`, `.github/`) luôn là Hot file |
 | 7 | PR chạm các đường dẫn ở luật 6 phải có **chủ dự án approve** | Khoá main: bắt buộc Code Owner approve (dùng merge queue: thêm job `approval-check`, phụ lục) |
-| 8 | Không sửa ngoài Scope của thẻ; cần thì dừng và báo | pre-push hook và CI chạy `python pos.py scope` (so file đã sửa với dòng `Scope:` của thẻ trên main); Reviewer |
+| 8 | Không sửa ngoài Scope của thẻ; cần thì dừng và báo | pre-push hook và CI chạy `python pos.py scope` (so file đã sửa với dòng `Scope:` của thẻ trên main; không có thẻ thì chỉ qua khi đủ điều kiện Lane Fast); CI dùng bản `pos.py` của main; Reviewer |
 
 - Restricted zone và Hot file ghi **một danh sách** trong AGENTS.md, chép đúng sang `CODEOWNERS` (phụ lục). Mặc định Restricted zone: đăng nhập, phân quyền, thanh toán, contract, migration, xoá dữ liệu.
 - Xin duyệt = Orchestrator tạo task riêng cho phần cần sửa; chủ dự án duyệt task trước, approve PR sau.
+- Luật 2 chỉ quét dạng khoá phổ biến trong file hiện có, không quét lịch sử Git; cần chặt hơn thì thêm gitleaks vào CI. Giá trị giả trong dữ liệu test: ghi `project-os: allow-secret` trên cùng dòng.
+- Luật 6–8 chỉ kín khi đã bật "Require review from Code Owners": không có nó, một PR vẫn sửa được chính `ci.yml`. GitHub không cho tác giả approve PR của mình, nên AI phải mở PR bằng tài khoản khác chủ dự án (tài khoản bot hoặc GitHub App).
 - Khẩn cấp (lỗi production): chỉ chủ dự án được cho bỏ qua luật, ghi lý do vào DECISIONS.md, làm task bù sau (P-14).
 
 ## 5. Thư mục và file
@@ -263,7 +265,7 @@ Dự án nhỏ chỉ cần STATUS.md, dùng mục "Tiếp theo" thay plan. "Vừ
 | Huỷ | `python pos.py drop T=T-043` (xoá branch chưa merge) | Orchestrator, **hỏi chủ dự án trước** |
 
 - Worktree đặt ngoài repo (`../wt/`), không lồng trong repo.
-- Lệnh nằm ở `pos.py` (cần Python 3, không cần make hay bash; Linux/macOS có thể phải gõ `python3`); `python pos.py wt` liệt kê worktree đang có. `python pos.py done` nhận ra PR đã merge squash qua lệnh `gh`; máy không có `gh` thì chỉ nhận ra branch đã merge thường.
+- Lệnh nằm ở `pos.py` (cần Python 3, không cần make hay bash; Linux/macOS có thể phải gõ `python3`); `python pos.py wt` liệt kê worktree đang có. `python pos.py done` nhận ra PR đã merge squash qua lệnh `gh`; máy không có `gh` thì so nội dung branch với `origin/main` (cần git 2.38+).
 - Cuối phiên, Orchestrator chạy `python pos.py wt-clean`: liệt kê worktree mồ côi (branch đã merge vào main, hoặc PR đã MERGED qua `gh`; bỏ qua cái còn thay đổi chưa commit). Đúng danh sách thì `python pos.py wt-clean APPLY=1` để dọn. Worktree chưa merge mà không có trong "Đang giữ" của STATUS thì báo, không tự xoá (huỷ phải qua `drop`).
 - Mở PR: `python pos.py pr` in sẵn khung báo cáo từ `git diff --stat`, commit, mã feature và kết quả `check`; Builder chỉ điền các ô còn trống.
 
@@ -279,7 +281,7 @@ AI tự chọn Lane và ghi Lane vào mô tả PR. Phân vân thì chọn Lane c
 
 | Lane | Khi nào | Được bỏ | Bắt buộc thêm |
 | --- | --- | --- | --- |
-| **Fast** | Câu chữ, tài liệu, lỗi nhỏ rõ nguyên nhân; không chạm Restricted zone, contract, Hot file | Thẻ task, số T, plan, Reviewer | — (task mang mã feature: `python pos.py task T=MAP-02 N=typo TYPE=fix`) |
+| **Fast** | Câu chữ, tài liệu, lỗi nhỏ rõ nguyên nhân; không chạm Restricted zone, contract, Hot file | Thẻ task, số T, plan, Reviewer | Qua `python pos.py scope`: không chạm đường dẫn được bảo vệ, tối đa 5 file code và 100 dòng code (`FAST_MAX_*` trong `pos.py`; tài liệu không tính). Task mang mã feature: `python pos.py task T=MAP-02 N=typo TYPE=fix` |
 | **Normal** | Feature hoặc sửa lỗi có logic; 1 Builder | Reviewer, merge queue | Thẻ task, test cho hành vi mới |
 | **Strict** | Chạm Restricted zone, contract, Hot file; hoặc nhiều Builder chạy song song | — | Task riêng được chủ dự án duyệt trước; chủ dự án approve PR; song song: worktree riêng + PR phải rebase theo main trước khi merge |
 
@@ -329,7 +331,7 @@ Bên trái là việc của Builder trên máy mình; chỉ khi check qua mới 
       Xong khi:  python pos.py test F=MAP-02 qua; thử tay trên điện thoại
 ```
 
-`python pos.py scope` đọc dòng `Scope:` của thẻ từ `docs/plan/*.md` trên `origin/main` (không đọc từ branch đang làm), nên Builder không tự mở rộng Scope. Ghi Scope bằng mẫu đường dẫn cách nhau bởi dấu phẩy hoặc khoảng trắng, **gồm cả thư mục test**. Scope là quyền ghi (RW); Read (RO) chỉ để Builder biết được tham chiếu gì, không được sửa. Pre-push chặn khi push; CI chạy lại `python pos.py scope` để `--no-verify` không lách được. Lane Fast và branch không có số T thì bỏ qua. Cần mở rộng: Builder dừng và báo, Orchestrator sửa thẻ trên main, Builder rebase rồi push lại.
+`python pos.py scope` đọc dòng `Scope:` của thẻ từ `docs/plan/*.md` (dự án nhỏ không có plan: từ `STATUS.md`) trên `origin/main`, không đọc từ branch đang làm, nên Builder không tự mở rộng Scope. Ghi Scope bằng mẫu đường dẫn cách nhau bởi dấu phẩy hoặc khoảng trắng, **gồm cả thư mục test**. Scope là quyền ghi (RW); Read (RO) chỉ để Builder biết được tham chiếu gì, không được sửa. Pre-push chặn khi push; CI chạy lại `python pos.py scope` để `--no-verify` không lách được. Mẫu đường dẫn theo cùng cách đọc với plan-check (mục 11). **Mặc định là chặn:** branch không có số T hoặc không tìm thấy thẻ thì bị coi là Lane Fast và phải qua giới hạn của Lane Fast; thẻ thiếu dòng `Scope:` là lỗi. AI không tự khai Lane để tránh kiểm. Cần mở rộng: Builder dừng và báo, Orchestrator sửa thẻ trên main, Builder rebase rồi push lại.
 
 **Báo cáo khi xong:**
 

@@ -18,10 +18,18 @@ jobs:
           python-version: '3.x'
       - run: python pos.py check
       - name: Kiểm Scope của thẻ (luật cứng 8), chống --no-verify
+        # Chạy bản pos.py của nhánh đích, không phải bản trong PR: PR không tự nới được máy chặn Scope.
         if: github.event_name == 'pull_request'
         env:
           PROJECT_OS_BRANCH: ${{ github.head_ref }}
-        run: python pos.py scope
+          PROJECT_OS_ROOT: ${{ github.workspace }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if git show "origin/$BASE_REF:pos.py" > "$RUNNER_TEMP/pos.py" 2>/dev/null; then
+            python "$RUNNER_TEMP/pos.py" scope
+          else
+            python pos.py scope  # nhánh đích chưa có pos.py (PR đầu tiên của dự án)
+          fi
       - name: Kiểm plan theo Wave
         run: python pos.py plan-check
 

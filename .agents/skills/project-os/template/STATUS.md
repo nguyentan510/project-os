@@ -4,7 +4,11 @@
 (trống)
 
 ## Tiếp theo
-- T-001 · khung chạy được: một luồng giao diện → API → dữ liệu cho {{mã feature MVP đầu tiên}}, kèm 1 test e2e
+- [ ] T-001 · {{mã feature MVP đầu tiên}} · khung chạy được
+      Mục tiêu:  một luồng giao diện → API → dữ liệu, kèm 1 test e2e
+      Lane:      Normal
+      Scope:     {{file hoặc thư mục, gồm cả thư mục test}}
+      Xong khi:  python pos.py check qua
 
 ## Đang chặn
 (trống, hoặc các Q-… liên quan)

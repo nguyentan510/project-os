@@ -163,10 +163,10 @@ class ScopeTest(WorktreeCase):
     def scope(self):
         return run([PY, "pos.py", "scope"], self.wt)
 
-    def edit(self, rel):
+    def edit(self, rel, text="x"):
         p = self.wt / rel
         p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text("x", encoding="utf-8")
+        p.write_text(text, encoding="utf-8")
         git(self.wt, "add", "-A")
         git(self.wt, "commit", "-q", "-m", rel)
 
@@ -192,6 +192,121 @@ class ScopeTest(WorktreeCase):
         env = dict(os.environ, PROJECT_OS_BRANCH="feat/T-003-ord")
         r = run([PY, "pos.py", "scope"], self.wt, env=env)
         self.assertIn("T-003", r.stdout)
+
+
+    # Mặc định là chặn: không có thẻ thì chỉ qua khi đủ điều kiện Lane Fast.
+    def scope_as(self, branch, **extra):
+        return run([PY, "pos.py", "scope"], self.wt, env=dict(os.environ, PROJECT_OS_BRANCH=branch, **extra))
+
+    def test_no_card_small_change_passes_as_fast(self):
+        self.edit("src/ord/a.py")
+        r = self.scope_as("fix/ORD-01-typo")
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertIn("Lane Fast", r.stdout)
+
+    def test_no_card_large_change_fails(self):
+        self.edit("src/ord/a.py", "x\n" * 150)
+        for branch in ("fix/ORD-01-typo", "feat/T-099-no-card", "whatever"):
+            with self.subTest(branch=branch):
+                r = self.scope_as(branch)
+                self.assertEqual(r.returncode, 1, r.stdout)
+                self.assertIn("FAST_MAX_LINES", r.stdout)
+
+    def test_no_card_docs_are_not_counted(self):
+        self.edit("docs/notes.md", "x\n" * 500)
+        self.assertEqual(self.scope_as("docs/ORD-01-notes").returncode, 0)
+
+    def test_no_card_touching_guard_or_hot_file_fails(self):
+        self.edit(".github/workflows/extra.yml")
+        r = self.scope_as("fix/ORD-01-typo")
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertIn(".github/workflows/extra.yml", r.stdout)
+
+    def test_restricted_zone_is_read_from_main(self):
+        agents = (self.root / "AGENTS.md").read_text(encoding="utf-8")
+        self.commit_on_main("AGENTS.md", agents.replace("## Restricted zone (cùng danh sách với .github/CODEOWNERS)\n",
+                                                        "## Restricted zone\nsrc/auth/, **/contract.*\n"))
+        git(self.wt, "rebase", "-q", "origin/main")
+        self.edit("src/map/contract.py")
+        self.assertEqual(self.scope_as("fix/MAP-01-typo").returncode, 1)
+
+    def test_card_without_scope_line_fails(self):
+        self.commit_on_main("docs/plan/M2.md", "- [ ] T-004 · MAP-01 · thiếu Scope\n      Wave:      W1\n")
+        self.edit("src/map/a.py")
+        r = self.scope_as("feat/T-004-x")
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertIn("chưa có dòng 'Scope:'", r.stdout)
+
+    def test_card_in_status_md_for_small_project(self):
+        self.commit_on_main("STATUS.md", "## Tiếp theo\n- [ ] T-005 · MAP-01 · khung\n      Scope:     src/app/*, .github/**\n")
+        self.edit("src/app/main.py", "x\n" * 300)
+        self.edit(".github/workflows/extra.yml")
+        r = self.scope_as("feat/T-005-skeleton")
+        self.assertEqual(r.returncode, 0, r.stdout)
+
+    def test_pos_py_copied_from_main_runs_on_pr_tree(self):
+        # CI: bản pos.py của nhánh đích đặt ngoài repo, PROJECT_OS_ROOT trỏ về mã nguồn của PR
+        import shutil
+        outside = self.root.parent / "base-pos.py"
+        shutil.copy(self.root / "pos.py", outside)
+        (self.wt / "pos.py").write_text("raise SystemExit(0)  # PR tự tắt máy chặn\n", encoding="utf-8")
+        self.edit("src/ord/a.py")
+        env = dict(os.environ, PROJECT_OS_BRANCH="feat/T-002-map-sales", PROJECT_OS_ROOT=str(self.wt))
+        r = run([PY, str(outside), "scope"], self.wt, env=env)
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertIn("pos.py", r.stdout)
+
+    def test_on_main_without_ci_branch_is_skipped(self):
+        self.assertEqual(self.pos("scope").returncode, 0)
+
+
+class PathMatchTest(OverlapTest):
+    def test_cases(self):
+        cases = [
+            (".github/workflows/ci.yml", ".github/**", True),    # dấu chấm đầu không bị xoá
+            (".env.example", ".env.example", True),
+            ("src/map/web/x.ts", "src/map", True),                # thư mục trần
+            ("src/map/web/x.ts", "src/map/", True),
+            ("src/map/web/x.ts", "src/map/*", True),              # * cuối phủ thư mục con
+            ("src/mapping/x.ts", "src/map/*", False),
+            ("src/a/routes.py", "src/*/routes.py", True),
+            ("src/a/b/routes.py", "src/*/routes.py", False),      # * giữa chỉ thay một thư mục
+            ("src/map/contract.py", "**/contract.*", True),
+            ("contract.py", "**/contract.*", True),
+            ("src/map/service.py", "**/contract.*", False),
+            ("src/auth/login.py", "/src/auth/", True),            # kiểu CODEOWNERS
+            ("src/map/a.py", "src/map/*.py", True),
+            ("src/map/a.ts", "src/map/*.py", False),
+        ]
+        for path, pat, want in cases:
+            with self.subTest(path=path, pat=pat):
+                self.assertEqual(self.pos.in_scope(path, [pat]), want)
+
+
+class SecretsTest(ProjectCase):
+    FAKE = "AKIA" + "ABCDEFGHIJKLMNOP"  # ghép chuỗi để file test này không tự dính quét khoá
+
+    def test_clean_project_passes(self):
+        self.assertEqual(self.pos("secrets").returncode, 0)
+
+    def test_secret_in_new_file_fails_check_without_printing_value(self):
+        self.write("src/config.py", f'KEY = "{self.FAKE}"\n')
+        r = self.pos("check")
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertIn("src/config.py:1: AWS access key", r.stdout)
+        self.assertNotIn(self.FAKE, r.stdout)
+
+    def test_allow_marker_skips_line(self):
+        self.write("tests/fixture.py", f'KEY = "{self.FAKE}"  # project-os: allow-secret\n')
+        self.assertEqual(self.pos("secrets").returncode, 0)
+
+    def test_ignored_env_passes_but_tracked_env_fails(self):
+        self.write(".env", f"KEY={self.FAKE}\n")
+        self.assertEqual(self.pos("secrets").returncode, 0)
+        git(self.root, "add", "-f", ".env")
+        r = self.pos("secrets")
+        self.assertEqual(r.returncode, 1)
+        self.assertIn(".env: file .env đang nằm trong Git", r.stdout)
 
 
 class SosTest(ProjectCase):

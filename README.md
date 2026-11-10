@@ -181,14 +181,15 @@ Chỉ dùng thư viện chuẩn Python 3.8+, chạy như nhau trên Windows, mac
 | Lệnh | Việc |
 | --- | --- |
 | `setup` · `run` · `lint` · `test [F=MAP-07] [L=api]` | Lệnh của dự án, điền ở Ngày 0 |
-| `check` | Kiểm sổ mã + lint + test; cổng trước khi push |
+| `check` | Kiểm sổ mã + quét khoá + lint + test; cổng trước khi push |
+| `secrets` | Quét khoá bí mật trong file Git theo dõi (chạy trong `check`) |
 | `features [--sync]` | Kiểm mã trong code có trong sổ mã |
 | `task T=T-043 N=map-sales [TYPE=fix]` | Tạo worktree + branch từ `main` mới nhất |
 | `done T=T-043` | Dọn sau khi PR đã merge (nhận cả merge squash) |
 | `drop T=T-043 [CONFIRM=T-043]` | Huỷ task chưa merge |
 | `wt` · `wt-clean [APPLY=1]` | Liệt kê · dọn worktree mồ côi |
 | `pr [T=T-043]` | Sinh khung báo cáo PR từ diff + kết quả check |
-| `scope` | Kiểm file đã sửa nằm trong Scope của thẻ task |
+| `scope` | Kiểm file đã sửa nằm trong Scope của thẻ task; không có thẻ thì chỉ qua khi đủ nhỏ để là Lane Fast |
 | `plan-check` | Kiểm plan: cùng Wave không trùng Scope, phụ thuộc chỉ trỏ Wave trước |
 | `sos` | Cứu hộ: sao lưu vào branch `salvage/sos-*`, khám bệnh (chỉ đọc) |
 
@@ -199,13 +200,13 @@ Tám luật duy nhất không linh hoạt; luật nào máy chặn được thì
 | # | Luật | Máy chặn bằng |
 | --- | --- | --- |
 | 1 | Không push thẳng lên `main`; chỉ merge qua PR | Khoá `main` |
-| 2 | Không đưa khoá bí mật vào Git, code, tài liệu | `.gitignore` có `.env`; quét khoá |
+| 2 | Không đưa khoá bí mật vào Git, code, tài liệu | `.gitignore` có `.env`; `pos.py secrets` trong `check` |
 | 3 | Chỉ push khi `python pos.py check` qua | pre-push hook; CI là cổng cuối |
 | 4 | Tiêu đề PR có mã: `<loại>(<mã>): <việc> [T-nnn]` | CI kiểm tiêu đề PR |
 | 5 | Mã không bao giờ dùng lại; mã trong code phải có trong sổ mã | `pos.py check` |
 | 6 | Builder không tự sửa contract đã khoá, Hot file, Restricted zone | `CODEOWNERS` |
 | 7 | PR chạm các đường dẫn ở luật 6 phải có chủ dự án approve | Khoá `main`: bắt buộc Code Owner |
-| 8 | Không sửa ngoài Scope của thẻ | pre-push hook + CI chạy `pos.py scope` |
+| 8 | Không sửa ngoài Scope của thẻ | pre-push hook + CI chạy `pos.py scope` (bản của `main`); không có thẻ thì phải đủ điều kiện Lane Fast |
 
 ## Bảng prompt
 
@@ -232,7 +233,9 @@ Làm bằng tay, một lần cho mỗi dự án: **Settings → Branches → Add
 - [x] Require a pull request before merging
 - [x] Require status checks to pass: `check`, `pr-title`
 - [x] Require branches to be up to date before merging
-- [x] Require review from Code Owners (khi đã điền `.github/CODEOWNERS`)
+- [x] Require review from Code Owners (sau khi thay `@chu-du-an` trong `.github/CODEOWNERS`)
+
+Luật 6–8 chỉ kín khi bật mục cuối: không có nó, một PR vẫn sửa được chính `pos.py` hoặc `ci.yml`. GitHub không cho tác giả approve PR của mình, nên AI cần mở PR bằng tài khoản khác chủ dự án (tài khoản bot hoặc GitHub App).
 
 ## Yêu cầu
 

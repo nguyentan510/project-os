@@ -42,6 +42,8 @@ class AuditTest(ProjectCase):
         self.assertIn("Đạt   hook đã bật", r.stdout)
         self.assertIn("Chưa  pos.py đã điền TEST_CMD", r.stdout)
         self.assertIn("Chưa  python pos.py check qua", r.stdout)
+        self.assertIn("Đạt   CODEOWNERS phủ máy chặn", r.stdout)
+        self.assertIn("Chưa  CODEOWNERS đã thay @chu-du-an", r.stdout)
 
 
 if __name__ == "__main__":
