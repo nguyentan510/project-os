@@ -1,23 +1,6 @@
 # STATUS · 2026-11-10 · —
 
 ## Tiếp theo
-- [ ] T-004 · GRD-04 · hook kiểm nhanh, gộp job CI chạy trùng
-      Yêu cầu gốc: "Giảm chi phí trước"
-      Mục tiêu:  push không còn chờ 3 phút rưỡi: dự án đặt `HOOK_TESTS = False` thì hook chỉ kiểm sổ mã, quét khoá, lint và Scope,
-                 còn bộ test đầy đủ chạy ở CI; CI của repo này chạy bộ test một lần thay vì hai
-      Lane:      Strict
-      Scope:     .agents/skills/project-os/template/pos.py, pos.py, .agents/skills/project-os/template/.githooks/*, .githooks/*, .github/workflows/*, tests/*, .agents/skills/project-os/template/docs/PROCESS.md, docs/PROCESS.md, .agents/skills/project-os/template/AGENTS.md, AGENTS.md, README.md, docs/DECISIONS.md
-      Xong khi:  push một thay đổi nhỏ trên repo này, hook chạy xong dưới 30 giây; PR chỉ còn hai job CI (`test`, `pr-title`)
-                 và bộ test chạy đúng một lần; python pos.py check qua
-
-- [ ] T-005 · GRD-08 · bảo toàn test
-      Yêu cầu gốc: "Đồng ý, thực thi lần lượt" (đề xuất: chặn việc làm check xanh bằng cách xoá test)
-      Mục tiêu:  thay đổi xoá file test hoặc làm giảm số test so với main thì bị chặn, trừ khi thẻ ghi đích danh file đó trong Scope
-      Lane:      Strict
-      Scope:     .agents/skills/project-os/template/pos.py, pos.py, tests/*, .agents/skills/project-os/template/docs/PROCESS.md, docs/PROCESS.md, .agents/skills/project-os/template/AGENTS.md, AGENTS.md, README.md, docs/product/FEATURES.md, docs/DECISIONS.md
-      Phụ thuộc: T-004
-      Xong khi:  PO xoá thử một file trong tests/ trên một branch rồi push: bị chặn kèm tên file bị xoá; python pos.py check qua
-
 - [ ] T-006 · DOC-02 · Reviewer cho PR Lane Strict ở chế độ Một AI
       Yêu cầu gốc: "Đồng ý, thực thi lần lượt" (đề xuất: PR Strict phải có một phiên AI khác thẩm định trước khi PO merge)
       Mục tiêu:  PR Lane Strict phải có mục "Kết luận Reviewer" do một phiên AI khác viết theo P-07, CI đỏ nếu thiếu; tài liệu chỉ còn một câu trả lời cho "ai merge ở chế độ Một AI" (PO, theo D11)
@@ -34,6 +17,14 @@
       Phụ thuộc: T-006
       Xong khi:  PO chạy một lệnh, thấy bảng 10 dòng, mỗi dòng một kiểu vi phạm kèm "bắt được" hay "lọt"; python pos.py check qua
 
+- [ ] T-008 · GRD-09 · vá các điểm Reviewer nêu ở PR 18 và PR 19
+      Yêu cầu gốc: "Đồng ý, thực thi lần lượt" (Reviewer của hai PR khuyến nghị gom các điểm nên sửa vào một thẻ)
+      Mục tiêu:  AGENTS.md thành file máy chặn (không gỡ được Hot file, Restricted zone bằng PR không thẻ); review-check lấy dòng "Kết luận:" cuối cùng trong mục, chặn "Trả lại", và gắn kết luận với commit đã review; bước review-check xuống cuối job CI; bảo toàn test không đếm file tài liệu và bỏ qua submodule; tài liệu ghi đúng chuỗi "Kết luận: Đạt"; P-05 không còn để AI tự merge
+      Lane:      Strict
+      Scope:     .agents/skills/project-os/template/pos.py, pos.py, tests/*, .agents/skills/project-os/template/docs/PROCESS.md, docs/PROCESS.md, .agents/skills/project-os/template/docs/prompts/P-05.md, docs/prompts/P-05.md, .agents/skills/project-os/template/AGENTS.md, AGENTS.md, .agents/skills/project-os/template/.github/*, .github/*, README.md, docs/product/FEATURES.md, docs/DECISIONS.md
+      Phụ thuộc: T-006
+      Xong khi:  PO dán vào mô tả một PR Lane Strict mục Kết luận Reviewer có "Kết luận: Trả lại" kèm một dòng "Kết luận: Đạt" ở dưới: CI đỏ; python pos.py check qua
+
 Chưa viết thẻ (PO chọn thứ tự):
 - Hai bộ thử còn lại ứng với BRIEF: AI phiên trắng (EVL-01), tiếp nhận 8 câu (EVL-02).
 - `find` khớp theo từ thay vì chuỗi con: gõ "do luong" đang ra nhầm "Bảng prompt" (POL-02).
@@ -44,6 +35,6 @@ Chưa viết thẻ (PO chọn thứ tự):
 - Phát hành 1.6.0 lên npm: chờ PO đăng nhập npm và chạy `npm publish` (T-002 đã merge, gói trên npm vẫn là 1.5.1).
 
 ## Ghi chú bàn giao
-T-001, T-002, T-003 đã xong (PR 11, 13, 12). Ngày 0 đã vào main (PR 9); kiểm toán máy Đạt 29, Chưa 18, lệch đã chấp nhận (D13).
+T-001 đến T-005 đã xong (PR 11, 13, 12, 16, 18). Ngày 0 đã vào main (PR 9); kiểm toán máy Đạt 29, Chưa 18, lệch đã chấp nhận (D13).
 Chưa làm: kiểm toán theo P-15 bằng một phiên AI khác; chưa ghi quyết định "Qua cổng Ngày 0".
 PO cần tự làm trên GitHub: thêm `pr-title` vào check bắt buộc của main (sau T-004 thì `test` đã gồm cả `check`).
