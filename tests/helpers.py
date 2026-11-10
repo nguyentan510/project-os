@@ -1,4 +1,5 @@
 """Hàm dùng chung cho test: dựng một dự án tạm đã chép khung Ngày 0. Chỉ thư viện chuẩn."""
+import os
 import pathlib
 import subprocess
 import sys
@@ -13,8 +14,25 @@ AUDIT = SKILL / "scripts" / "audit.py"
 PY = sys.executable
 
 
+# Git đặt các biến này khi gọi hook (rõ nhất là khi push từ một worktree). Để lọt vào test thì mọi lệnh git
+# của test, kể cả `git init` trong thư mục tạm, sẽ chạy trên CHÍNH repo đang push thay vì repo tạm.
+GIT_LOCAL_ENV = (
+    "GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR", "GIT_PREFIX", "GIT_OBJECT_DIRECTORY",
+    "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_NAMESPACE", "GIT_CONFIG", "GIT_CONFIG_PARAMETERS", "GIT_CONFIG_COUNT",
+    "GIT_IMPLICIT_WORK_TREE", "GIT_GRAFT_FILE", "GIT_NO_REPLACE_OBJECTS", "GIT_REPLACE_REF_BASE", "GIT_SHALLOW_FILE",
+    "GIT_INTERNAL_SUPER_PREFIX", "GIT_QUARANTINE_PATH",
+)
+
+
+def clean_env(env=None):
+    env = dict(os.environ if env is None else env)
+    for name in GIT_LOCAL_ENV:
+        env.pop(name, None)
+    return env
+
+
 def run(args, cwd, env=None):
-    return subprocess.run(args, cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
+    return subprocess.run(args, cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace", env=clean_env(env))
 
 
 def git(cwd, *args):
