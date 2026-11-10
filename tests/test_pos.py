@@ -363,6 +363,51 @@ class LostTestsTest(WorktreeCase):
         r = self.scope()
         self.assertEqual(r.returncode, 0, r.stdout)
 
+    # Các trường hợp dưới đây do Reviewer độc lập của PR 18 tìm ra.
+    def test_non_ascii_test_file_is_guarded_and_can_be_named_in_scope(self):
+        self.commit_on_main("tests/api/map/test_đơn.py", TWO_TESTS)
+        git(self.wt, "rebase", "-q", "origin/main")
+        (self.wt / "tests/api/map/test_đơn.py").unlink()
+        self.commit("xoá test có dấu")
+        r = self.scope()
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertIn("tests/api/map/test_đơn.py: xoá file test", r.stdout)
+        self.assertEqual(self.scope("fix/MAP-01-typo").returncode, 1, "không thẻ cũng phải bị chặn")
+
+        self.commit_on_main("docs/plan/M1.md", CARDS.replace("src/map/*, tests/api/map/*", "src/map/*, tests/api/map/*, tests/api/map/test_đơn.py"))
+        self.assertEqual(self.scope().returncode, 0, "thẻ ghi đích danh file có dấu thì được xoá")
+
+    def test_turning_a_test_file_into_a_symlink_is_blocked(self):
+        blob = git(self.wt, "hash-object", "-w", "--stdin") if False else None
+        target = self.wt / "link-target.txt"
+        target.write_text("src/map/a.py", encoding="utf-8")
+        blob = git(self.wt, "hash-object", "-w", "link-target.txt")
+        target.unlink()
+        git(self.wt, "update-index", "--cacheinfo", f"120000,{blob},tests/api/map/test_a.py")
+        git(self.wt, "commit", "-q", "-m", "đổi file test thành symlink")
+        r = self.scope()
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertIn("tests/api/map/test_a.py: đổi loại file test", r.stdout)
+
+    def test_deleting_helpers_and_fixtures_without_tests_is_allowed(self):
+        self.commit_on_main("tests/api/map/helpers.py", "def build():\n    return 1\n")
+        self.commit_on_main("tests/api/map/data.json", "{}\n")
+        git(self.wt, "rebase", "-q", "origin/main")
+        (self.wt / "tests/api/map/helpers.py").unlink()
+        (self.wt / "tests/api/map/data.json").unlink()
+        self.commit("dọn fixture")
+        r = self.scope()
+        self.assertEqual(r.returncode, 0, r.stdout)
+
+    def test_file_with_tests_outside_test_dirs_is_guarded(self):
+        self.commit_on_main("src/map/tests.py", TWO_TESTS)
+        git(self.wt, "rebase", "-q", "origin/main")
+        (self.wt / "src/map/tests.py").unlink()
+        self.commit("xoá tests.py kiểu Django")
+        r = self.scope()
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertIn("src/map/tests.py: xoá file test", r.stdout)
+
     def test_branch_without_card_cannot_remove_tests(self):
         (self.wt / "tests/api/map/test_a.py").unlink()
         self.commit("xoá test")

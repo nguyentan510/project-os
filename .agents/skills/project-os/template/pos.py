@@ -69,7 +69,10 @@ def die(msg, code=1):
 
 
 def git(*args, cwd=None):
-    r = subprocess.run(["git", *args], cwd=cwd or ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    # core.quotepath=false: git in đúng đường dẫn có dấu, không bọc ngoặc kép và mã thoát (nếu không, tên file tiếng Việt
+    # không bao giờ khớp Scope và lọt khỏi phép bảo toàn test).
+    r = subprocess.run(["git", "-c", "core.quotepath=false", *args], cwd=cwd or ROOT, capture_output=True, text=True,
+                       encoding="utf-8", errors="replace")
     return r.returncode, r.stdout.strip(), r.stderr.strip()
 
 
@@ -553,9 +556,13 @@ def fast_check(br, base, files):
 
 
 # ── Bảo toàn test (luật cứng 8) ─────────────────────────────────────────────
-# Một PR không được làm `check` xanh bằng cách bỏ test. So với BASE: xoá một file test, hoặc làm giảm số test trong một
-# file test, đều bị chặn, trừ khi thẻ của task ghi ĐÍCH DANH file đó trong Scope (mẫu có `*` không tính là đích danh).
-# Đây là phép đếm theo dấu hiệu khai báo test; nó không phát hiện được việc làm yếu một phép kiểm bên trong test.
+# Một PR không được làm `check` xanh bằng cách bỏ test. So với BASE, ba việc sau bị chặn, trừ khi thẻ của task ghi
+# ĐÍCH DANH file đó trong Scope (mẫu có `*` không tính là đích danh):
+#   - xoá một file có test, hoặc một file mang tên file test nằm trong thư mục test;
+#   - đổi loại một file như vậy (ví dụ thành symlink);
+#   - làm giảm số test đếm được trong một file.
+# Máy đếm theo dấu hiệu khai báo test của Python, JavaScript/TypeScript, Rust, Go, Java. Nó không phát hiện được việc
+# làm yếu một phép kiểm bên trong test, bỏ qua test bằng skip, hay test viết bằng ngôn ngữ khác: phần đó là của Reviewer.
 
 TEST_DIRS = {"tests", "test", "spec", "e2e", "__tests__"}
 TEST_NAME = re.compile(r"^test_|_test\.|\.test\.|\.spec\.|_spec\.", re.I)
@@ -563,14 +570,16 @@ TEST_DEF = re.compile(r"^\s*(?:async\s+)?def\s+test\w*\s*\(|^\s*(?:it|test)(?:\.
                       r"|^func\s+Test\w*\s*\(|@Test\b", re.M)
 
 
-def is_test_file(path):
+def named_like_test(path):
+    """File mang tên file test VÀ nằm trong thư mục test: coi là file test kể cả khi không đếm được test nào."""
     parts = path.split("/")
-    return bool({p.lower() for p in parts[:-1]} & TEST_DIRS) or bool(TEST_NAME.search(parts[-1]))
+    return bool({p.lower() for p in parts[:-1]} & TEST_DIRS) and bool(TEST_NAME.search(parts[-1]))
 
 
 def count_tests(ref, path):
+    """Số test đếm được trong file tại ref; None nếu không đọc được file."""
     code, text, _ = git("show", f"{ref}:{path}")
-    return len(TEST_DEF.findall(text)) if code == 0 else 0
+    return len(TEST_DEF.findall(text)) if code == 0 else None
 
 
 def lost_tests(base, patterns):
@@ -580,13 +589,19 @@ def lost_tests(base, patterns):
     errs = []
     for row in git("diff", "--name-status", "--no-renames", f"{base}...HEAD")[1].splitlines():
         status, _, path = row.partition("\t")
-        if not is_test_file(path) or path in named:
+        if status[:1] not in "DMT" or path in named:
             continue
-        if status == "D":
-            errs.append(f"{path}: xoá file test")
-        elif status == "M":
-            before, after = count_tests(start, path), count_tests("HEAD", path)
-            if after < before:
+        before = count_tests(start, path)
+        if before is None:
+            errs.append(f"{path}: không đọc được file ở {start[:10]} để đếm test")
+        elif status[0] in "DT":
+            if before or named_like_test(path):
+                errs.append(f"{path}: " + ("xoá file test" if status[0] == "D" else "đổi loại file test (ví dụ thành symlink)"))
+        else:
+            after = count_tests("HEAD", path)
+            if after is None:
+                errs.append(f"{path}: không đọc được file ở HEAD để đếm test")
+            elif after < before:
                 errs.append(f"{path}: số test giảm từ {before} xuống {after}")
     return errs
 
