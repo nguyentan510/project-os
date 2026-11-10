@@ -34,7 +34,7 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 | Product Owner (PO) | Solo Dev trong vai người quyết định; một người, không phải AI. Quyết định cuối: duyệt plan, approve PR Lane Strict, nghiệm thu Milestone, cho phép bỏ qua luật khi khẩn cấp; phát prompt và chuyển tin giữa các phiên AI |
 | Orchestrator | AI điều phối: viết thẻ task, cấp số T, merge lần lượt, ghi plan và STATUS; không viết code feature; mỗi lúc chỉ một Orchestrator |
 | Builder | AI làm task trên worktree riêng, theo luồng chung |
-| Reviewer | AI review PR Lane Strict, tối đa 2 vòng rồi chuyển PO |
+| Reviewer | AI review PR Lane Strict theo P-07; là phiên khác phiên đã làm task; tối đa 2 vòng rồi chuyển PO |
 
 ## File và tài liệu
 
@@ -87,6 +87,7 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 | Tên gọi | Cột của sổ mã: 2–5 từ bằng lời PO để gọi một feature; `python pos.py find` tìm theo đây |
 | Để sau | Trạng thái feature: ý tưởng ngoài phạm vi hiện tại, đã có mã, PO chưa quyết làm |
 | Tóm tắt cho PO | Bốn dòng kèm mọi thứ PO phải duyệt: người dùng thấy gì đổi · rủi ro nếu sai · 3 bước tự thử · khuyến nghị |
+| Kết luận Reviewer | Mục trong mô tả PR Lane Strict do Reviewer viết: Đạt hoặc Trả lại, đã thử gì, khuyến nghị cho PO; `python pos.py review-check` kiểm có dòng "Kết luận: Đạt" |
 | Khẩn cấp | Lỗi production; chỉ PO cho bỏ qua luật, ghi `Dxx`, làm task bù (P-14) |
 
 ## Git và GitHub

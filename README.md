@@ -195,6 +195,7 @@ Chỉ dùng thư viện chuẩn Python 3.8+, chạy như nhau trên Windows, mac
 | `wt` · `wt-clean [APPLY=1]` | Liệt kê · dọn worktree mồ côi |
 | `pr [T=T-043]` | Sinh khung báo cáo PR từ diff + kết quả check |
 | `scope` | Kiểm file đã sửa nằm trong Scope của thẻ task; không có thẻ thì chỉ qua khi đủ nhỏ để là Lane Fast |
+| `lane` · `review-check` | Lane do máy xác định · PR Lane Strict phải có "Kết luận Reviewer": Đạt |
 | `plan-check` | Kiểm plan: cùng Wave không trùng Scope, phụ thuộc chỉ trỏ Wave trước |
 | `sos` | Cứu hộ: sao lưu vào branch `salvage/sos-*`, khám bệnh (chỉ đọc) |
 
@@ -210,7 +211,7 @@ Tám luật duy nhất không linh hoạt; luật nào máy chặn được thì
 | 4 | Tiêu đề PR có mã: `<loại>(<mã>): <việc> [T-nnn]` | CI kiểm tiêu đề PR |
 | 5 | Mã không bao giờ dùng lại; mã trong code phải có trong sổ mã | `pos.py check` |
 | 6 | Builder không tự sửa contract đã khoá, Hot file, Restricted zone | `CODEOWNERS` |
-| 7 | PR chạm các đường dẫn ở luật 6 phải có Product Owner (PO) approve | Khoá `main`: bắt buộc Code Owner |
+| 7 | PR chạm các đường dẫn ở luật 6 phải có Product Owner (PO) approve | Khoá `main`: bắt buộc Code Owner; CI đỏ nếu PR Lane Strict thiếu "Kết luận Reviewer" của một phiên AI khác |
 | 8 | Không sửa ngoài Scope của thẻ; không xoá hay làm giảm test để `check` qua | pre-push hook + CI chạy `pos.py scope` (bản của `main`); không có thẻ thì phải đủ điều kiện Lane Fast; mất test thì chặn trong phạm vi máy đếm được |
 
 ## Bảng prompt

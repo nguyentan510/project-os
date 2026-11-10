@@ -21,6 +21,7 @@ Mỗi lựa chọn kỹ thuật một dòng. Duyệt = `PO` (quyết định l�
 | D15 | 2026-11-10 | Bảo toàn test: xoá file test hoặc làm giảm số test chỉ được phép khi thẻ của task ghi đích danh file đó trong Scope. Không thêm trường mới vào thẻ | Thêm trường là sửa contract C1 mà ba module đang đọc; PO duyệt thẻ nên đó là chỗ PO cho phép | GRD-08 | PO |
 | D16 | 2026-11-10 | Lane Normal không thêm bước bắt buộc PO tự thử "Xong khi" trước khi merge | Gần như mọi việc ở repo này đã là Lane Strict; thêm một cổng người sẽ lặp lại chi phí vừa giảm ở D14. "Tóm tắt cho PO" đã có ba bước tự thử | DOC-02 | PO |
 | D17 | 2026-11-10 | Chưa viết luồng phát hành và luồng hoàn tác sau merge; xem lại sau lần phát hành thứ hai | Mới phát hành một lần, chưa hoàn tác lần nào; viết quy trình lúc này là đoán | INS-01 | PO |
+| D18 | 2026-11-10 | Ở chế độ Một AI, PO là người merge; PR Lane Strict phải được một phiên AI khác phiên đã làm task review theo P-07, kết luận ghi vào mục "Kết luận Reviewer" của mô tả PR, CI đỏ nếu thiếu. Máy chỉ kiểm được là có kết luận Đạt, không kiểm được ai viết (xem Q-codeowner) | PR 18 đã qua máy chặn, CI và năm test nhưng Reviewer độc lập vẫn tìm ra hai đường lọt trong máy chặn mới; trước đó PROCESS ghi AI tự merge còn AGENTS và D11 ghi PO merge | DOC-02, GRD-09 | PO |
 
 ## Còn mở
 

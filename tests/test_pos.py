@@ -416,6 +416,70 @@ class LostTestsTest(WorktreeCase):
         self.assertIn("xoá file test", r.stdout)
 
 
+class ReviewCheckTest(WorktreeCase):
+    """GRD-09: Lane do máy xác định; PR Lane Strict phải có Kết luận Reviewer: Đạt."""
+
+    PLAN = CARDS + """- [ ] T-009 · MAP-01 · sửa CI
+      Wave:      W2
+      Scope:     src/map/*, .github/workflows/*
+"""
+
+    def setUp(self):
+        super().setUp()
+        self.commit_on_main("docs/plan/M1.md", self.PLAN)
+        self.pos("task", "T=T-002", "N=map-sales")
+
+    def edit(self, rel):
+        p = self.wt / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text("x", encoding="utf-8")
+        git(self.wt, "add", "-A")
+        git(self.wt, "commit", "-q", "-m", rel)
+
+    def cmd(self, branch, *args):
+        return run([PY, "pos.py", *args], self.wt, env=dict(os.environ, PROJECT_OS_BRANCH=branch))
+
+    def body(self, text):
+        f = self.root.parent / "pr-body.md"
+        f.write_text(text, encoding="utf-8")
+        return f"BODY={f}"
+
+    def test_lane_is_derived_from_the_change(self):
+        self.edit("src/map/a.py")
+        self.assertIn("lane: Fast", self.cmd("fix/MAP-01-typo", "lane").stdout)
+        self.assertIn("lane: Normal (có thẻ T-002)", self.cmd("feat/T-002-map-sales", "lane").stdout)
+        self.edit(".github/workflows/extra.yml")
+        out = self.cmd("feat/T-009-ci", "lane").stdout
+        self.assertIn("lane: Strict", out)
+        self.assertIn(".github/workflows/extra.yml", out)
+
+    def test_normal_lane_needs_no_reviewer(self):
+        self.edit("src/map/a.py")
+        r = self.cmd("feat/T-002-map-sales", "review-check")
+        self.assertEqual(r.returncode, 0, r.stdout)
+
+    def test_strict_lane_requires_reviewer_verdict(self):
+        self.edit(".github/workflows/extra.yml")
+        branch = "feat/T-009-ci"
+        r = self.cmd(branch, "review-check")
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertIn("chưa có mục 'Kết luận Reviewer'", r.stdout)
+
+        template = (self.root / ".github/pull_request_template.md").read_text(encoding="utf-8")
+        r = self.cmd(branch, "review-check", self.body(template))
+        self.assertEqual(r.returncode, 1, "mẫu PR chưa điền không được tính là Đạt: " + r.stdout)
+        self.assertIn("chưa có dòng 'Kết luận: Đạt'", r.stdout)
+
+        r = self.cmd(branch, "review-check", self.body("**Kết luận Reviewer**\n- Kết luận: Trả lại\n"))
+        self.assertEqual(r.returncode, 1, r.stdout)
+
+        r = self.cmd(branch, "review-check", self.body("Kết luận: Đạt\n\n**Tóm tắt cho PO**\n"))
+        self.assertEqual(r.returncode, 1, "dòng Đạt nằm ngoài mục Kết luận Reviewer không tính: " + r.stdout)
+
+        r = self.cmd(branch, "review-check", self.body("**Kết luận Reviewer** (phiên AI khác):\n- Kết luận: Đạt (vòng hai)\n- Đã thử gì: …\n"))
+        self.assertEqual(r.returncode, 0, r.stdout)
+
+
 class ScopeBootstrapTest(unittest.TestCase):
     """Repo đang có code, main đã khoá, áp Project OS lần đầu: PR Ngày 0 phải qua được scope."""
 
