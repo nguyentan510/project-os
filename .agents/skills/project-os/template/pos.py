@@ -840,6 +840,35 @@ def cmd_find(opts, extra):
 # Thẻ ở docs/plan/*.md và STATUS.md (thư mục làm việc). Xong = main có commit mang [T-nnn] (tiêu đề PR đã
 # merge squash) hoặc thẻ đã tick. Đang làm = có branch <loại>/T-nnn-… ở máy hoặc trên origin.
 
+def waiting_on_po():
+    """Việc đang chờ PO: câu hỏi Q- còn mở, mục "Đang chặn" của STATUS, PR đang mở cần approve (qua gh)."""
+    import json
+    out = []
+    for r in table_rows(ROOT / "docs" / "DECISIONS.md"):
+        who = fold(r.get("Chờ ai", ""))
+        if r.get("Mã", "").startswith("Q-") and re.search(r"\bpo\b|product owner|chu du an", who):
+            options = next((v for k, v in r.items() if k.startswith("Lựa chọn") and v.strip("—- ")), "")
+            out.append(f"Cần quyết: {r.get('Câu hỏi', '')} ({r['Mã']})" + (f" · lựa chọn: {options}" if options else ""))
+    st, on = ROOT / "STATUS.md", False
+    if st.is_file():
+        for line in st.read_text(encoding="utf-8", errors="replace").splitlines():
+            if line.startswith("## "):
+                on = line[3:].strip() == "Đang chặn"
+            elif on and line.strip() and not line.strip().startswith("("):
+                out.append("Đang chặn: " + line.strip().lstrip("- "))
+    try:
+        r = subprocess.run(["gh", "pr", "list", "--state", "open", "--json", "number,title,reviewDecision"],
+                           cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=20)
+        prs = json.loads(r.stdout) if r.returncode == 0 else None
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        prs = None
+    if prs is None:
+        out.append("(không hỏi được GitHub qua gh: chưa liệt kê PR cần approve)")
+    else:
+        out += [f"Cần approve: PR #{p['number']} · {p['title']}" for p in prs if p.get("reviewDecision") == "REVIEW_REQUIRED"]
+    return out
+
+
 def cmd_status(opts, _):
     cards = all_cards()
     names = feature_names()
@@ -868,8 +897,10 @@ def cmd_status(opts, _):
             groups["Sẵn sàng"].append(f"{t}  {c['title']}")
     known = {c["t"] for c in cards}
     stray = [f"{t}  {br}" for t, br in sorted(branches.items()) if t not in known and t not in merged]
-    say(f"status: {len(cards)} thẻ · " + " · ".join(f"{k.lower()} {len(v)}" for k, v in groups.items()))
-    for title, rows in list(groups.items()) + [("Branch mang số T nhưng không có thẻ", stray)]:
+    waiting = waiting_on_po()
+    say(f"status: {len(cards)} thẻ · " + " · ".join(f"{k.lower()} {len(v)}" for k, v in groups.items())
+        + f" · chờ PO {len(waiting)}")
+    for title, rows in [("Chờ PO", waiting)] + list(groups.items()) + [("Branch mang số T nhưng không có thẻ", stray)]:
         if rows:
             say(title)
             for row in rows:

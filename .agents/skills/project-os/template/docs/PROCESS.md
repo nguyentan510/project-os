@@ -332,16 +332,19 @@ Bên trái là việc của Builder trên máy mình; chỉ khi check qua mới 
       Phụ thuộc: T-042 (W0, contract đã khoá)
       Cần:       MapPoint, list_points()  (chỉ thẻ W1: kiểu và hàm của contract mà task dùng)
       Restricted zone: không              Giao: Builder A · feat/T-043-map-sales
-      Xong khi:  python pos.py test F=MAP-02 qua; thử tay trên điện thoại
+      Xong khi:  Sales mở Bảng tin, bấm "Bản đồ", thấy ghim các điểm bán của mình (PO tự thử trên điện thoại);
+                 python pos.py test F=MAP-02 qua
 ```
 
-`python pos.py scope` đọc dòng `Scope:` của thẻ từ `docs/plan/*.md` (dự án nhỏ không có plan: từ `STATUS.md`) trên `origin/main`, không đọc từ branch đang làm, nên Builder không tự mở rộng Scope. `Yêu cầu gốc:` là lời PO chép nguyên văn (mục 14). Ghi Scope bằng mẫu đường dẫn cách nhau bởi dấu phẩy hoặc khoảng trắng, **gồm cả thư mục test**. Scope là quyền ghi (RW); Read (RO) chỉ để Builder biết được tham chiếu gì, không được sửa. Pre-push chặn khi push; CI chạy lại `python pos.py scope` để `--no-verify` không lách được. Mẫu đường dẫn theo cùng cách đọc với plan-check (mục 11). **Mặc định là chặn:** branch không có số T hoặc không tìm thấy thẻ thì bị coi là Lane Fast và phải qua giới hạn của Lane Fast; thẻ thiếu dòng `Scope:` là lỗi. AI không tự khai Lane để tránh kiểm. Cần mở rộng: Builder dừng và báo, Orchestrator sửa thẻ trên main, Builder rebase rồi push lại.
+`python pos.py scope` đọc dòng `Scope:` của thẻ từ `docs/plan/*.md` (dự án nhỏ không có plan: từ `STATUS.md`) trên `origin/main`, không đọc từ branch đang làm, nên Builder không tự mở rộng Scope. `Yêu cầu gốc:` là lời PO chép nguyên văn (mục 14). Ghi Scope bằng mẫu đường dẫn cách nhau bởi dấu phẩy hoặc khoảng trắng, **gồm cả thư mục test**. "Xong khi" có hai lớp: một hành vi PO tự quan sát được và một lệnh kiểm; `python pos.py plan-check` cảnh báo thẻ thiếu dòng này. Scope là quyền ghi (RW); Read (RO) chỉ để Builder biết được tham chiếu gì, không được sửa. Pre-push chặn khi push; CI chạy lại `python pos.py scope` để `--no-verify` không lách được. Mẫu đường dẫn theo cùng cách đọc với plan-check (mục 11). **Mặc định là chặn:** branch không có số T hoặc không tìm thấy thẻ thì bị coi là Lane Fast và phải qua giới hạn của Lane Fast; thẻ thiếu dòng `Scope:` là lỗi. AI không tự khai Lane để tránh kiểm. Cần mở rộng: Builder dừng và báo, Orchestrator sửa thẻ trên main, Builder rebase rồi push lại.
 
 **Báo cáo khi xong:**
 
 ```
 Đã làm · Scope thực tế (khớp thẻ / thêm gì, vì sao) · File thay đổi
 Test đã chạy · Khác mặc định (nếu có, lý do) · Rủi ro · Ghi chú bàn giao
+Tóm tắt cho PO: người dùng thấy gì đổi · rủi ro nếu sai · 3 bước tự bấm thử · khuyến nghị
+Việc cần PO chuyển cho Orchestrator: viết sẵn một đoạn để PO dán nguyên văn (không có thì ghi "không")
 ```
 
 ## 9. Quy tắc code
@@ -416,7 +419,7 @@ Có hai chế độ; dự án chọn một và ghi vào AGENTS.md.
 | Builder | Thẻ của mình, README module, contract, `rg "<mã>"` | Luồng chung (mục 8) trên worktree riêng, tới khi PR qua CI; rebase và sửa xung đột trên branch của mình | Sửa ngoài Scope, contract đã khoá, Hot file; ghi plan, STATUS; tự merge |
 | Reviewer | Diff của PR + "Xong khi" | Chỉ PR Lane Strict: kiểm, ghi kết luận vào PR, đề xuất bản sửa cho Builder, rồi chuyển PO approve. Nên là phiên AI khác phiên đã làm task | Kiểm PR Fast, Normal (CI đã lo); tự sửa code; tự merge |
 
-**Kênh báo.** Các phiên AI không nhắn được cho nhau. "Dừng và báo Orchestrator" nghĩa là: Builder commit WIP, ghi vấn đề vào báo cáo (hoặc comment trên PR nếu đã mở) rồi dừng; PO chuyển cho phiên Orchestrator. Builder không tự ghi STATUS hay plan.
+**Kênh báo.** Các phiên AI không nhắn được cho nhau. "Dừng và báo Orchestrator" nghĩa là: Builder commit WIP, ghi vấn đề vào báo cáo (hoặc comment trên PR nếu đã mở) rồi dừng; PO chuyển cho phiên Orchestrator. Phần cần chuyển, Builder viết sẵn thành một đoạn ở mục "Việc cần PO chuyển cho Orchestrator" của báo cáo để PO dán nguyên văn, không phải tự diễn đạt lại. Builder không tự ghi STATUS hay plan.
 
 ### Plan theo Wave (đồ thị không chu trình, DAG)
 
@@ -526,7 +529,7 @@ Mỗi bước của luồng có một prompt mẫu, mã `P-nn`. Bản đầy đ�
 | P-10 | Nâng Lane / đổi contract | Orchestrator | Task `<T-043>` cần sửa `<file>` vì `<lý do>`. Liệt kê ảnh hưởng (`rg` theo mã), tạo task riêng Lane Strict. Chờ tôi duyệt. | Task mới + ảnh hưởng |
 | P-11 | Ghi quyết định | Mọi vai | Ghi quyết định: `<nội dung>`, lý do `<…>`. Cấp mã D tiếp theo, điền bảng DECISIONS, cột Duyệt = `<PO/AI>`, ghi mã liên quan. | Dòng Dxx mới |
 | P-12 | Rà tài liệu | Orchestrator | Rà AGENTS.md, STATUS, FEATURES, DECISIONS, GLOSSARY: thông tin trùng, lỗi thời, thuật ngữ lệch GLOSSARY, mã thiếu test, worktree thừa. Liệt kê, chưa sửa. | Danh sách cần dọn |
-| P-13 | Nghiệm thu Milestone | Orchestrator | Milestone `<M3>` đã nghiệm thu, phiên bản `<v0.5>`. Đánh dấu xong trong ROADMAP, xoá plan của Milestone, dọn STATUS, liệt kê câu hỏi Q- còn mở. | ROADMAP mới |
+| P-13 | Nghiệm thu Milestone | Orchestrator | Milestone `<M3>` cần nghiệm thu, phiên bản dự kiến `<v0.5>`. Trước hết lập bảng nghiệm thu: từng chỉ số thành công trong BRIEF và "Xong khi" của từng thẻ, đạt hay chưa, kèm kịch bản bấm thử để tôi tự kiểm; chờ tôi kết luận. Tôi đồng ý thì đánh dấu xong trong ROADMAP, xoá plan của Milestone, dọn STATUS, liệt kê câu hỏi Q- còn mở. | ROADMAP mới |
 | P-14 | Khẩn cấp | Builder | Lỗi production: `<hiện tượng>`. Sửa nhanh nhất; tôi cho phép bỏ qua `<luật>`. Ghi lý do vào DECISIONS, đề xuất task bù để Orchestrator cấp số T. | Hotfix + Dxx + task bù |
 | P-15 | Kiểm toán Ngày 0 | Orchestrator (phiên mới) | Kiểm toán repo theo bảng kiểm mục 3. Với từng ô: Đạt hoặc Chưa, kèm bằng chứng (file, dòng). Không sửa gì. Cuối cùng kết luận: qua cổng hay chưa, còn thiếu gì. | Bảng Đạt/Chưa + kết luận |
 | P-SOS | Bị kẹt, cần cứu hộ | Orchestrator | Chạy `python pos.py sos` (sao lưu vào branch `salvage/sos-*`, khám bệnh, chỉ đọc). Báo ≤ 5 dòng dễ hiểu, đưa 2 phương án: A cứu task theo đúng luồng, B huỷ task và về main xanh. Chờ tôi chọn A/B rồi mới làm. | Báo cáo + repo về chuẩn |
@@ -624,7 +627,7 @@ Mọi yêu cầu thay đổi được đối chiếu với BRIEF, cho một tron
 ## Vai               chế độ Một AI, hoặc Một Orchestrator + nhiều Builder (PROCESS.md mục 11)
 ## Hot file          pos.py, scripts/features.py, .githooks/, .github/, src/app/routes.*, db/schema.*, src/copy.*
 ## Restricted zone   src/auth/, src/payment/, db/migrations/, **/contract.*
-## Báo cáo           Đã làm · Scope thực tế · File · Test · Khác mặc định · Rủi ro · Bàn giao
+## Báo cáo           Đã làm · Scope thực tế · File · Test · Khác mặc định · Rủi ro · Bàn giao · Tóm tắt cho PO · Việc cần PO chuyển
 ```
 
 **Kiểm tiêu đề PR (regex cho CI, khớp `.github/workflows/ci.yml`)**

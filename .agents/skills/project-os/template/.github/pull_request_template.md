@@ -2,6 +2,12 @@
 
 **Mã · Task · Lane:** MAP-07 · T-042 · Fast | Normal | Strict
 
+**Tóm tắt cho PO** (lời thường, không dùng mã trần):
+- Người dùng thấy gì thay đổi:
+- Rủi ro nếu sai:
+- 3 bước tự bấm thử:
+- Khuyến nghị:
+
 **Đã làm:**
 
 **Scope thực tế:** khớp thẻ / thêm …, vì …
@@ -13,6 +19,8 @@
 **Rủi ro:**
 
 **Ghi chú bàn giao:**
+
+**Việc cần PO chuyển cho Orchestrator** (viết sẵn để dán nguyên văn; không có thì ghi "không"):
 
 - [ ] `python pos.py check` qua ở local
 - [ ] Không chạm Restricted zone / Hot file / contract đã khoá (nếu có: Lane Strict, chờ PO approve)

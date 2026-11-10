@@ -57,3 +57,4 @@ pos.py, scripts/features.py, .githooks/, .github/
 
 ## Báo cáo khi xong
 Đã làm · Scope thực tế (khớp thẻ / thêm gì, vì sao) · File thay đổi · Test đã chạy · Khác mặc định · Rủi ro · Ghi chú bàn giao
+Tóm tắt cho PO (người dùng thấy gì đổi · rủi ro nếu sai · 3 bước tự bấm thử · khuyến nghị) · Việc cần PO chuyển cho Orchestrator (viết sẵn để dán)
