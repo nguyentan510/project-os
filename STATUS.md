@@ -18,6 +18,15 @@
       Xong khi:  sau khi PO chạy `npm publish`, lệnh `npx -y @nguyentan0510/project-os@1.6.0` cài được bản mới;
                  python pos.py check qua
 
+- [ ] T-003 · GRD-04 · hook dọn biến môi trường của git
+      Yêu cầu gốc: phát sinh từ sự cố khi làm T-001 (bộ test chạy nhầm lên repo thật lúc push từ worktree)
+      Mục tiêu:  hook pre-push dọn các biến môi trường cục bộ của git trước khi chạy `check`, để bộ test của bất kỳ dự án nào
+                 cũng không chạy nhầm lên repo thật
+      Lane:      Strict
+      Scope:     .agents/skills/project-os/template/.githooks/*, .githooks/*, tests/*
+      Xong khi:  push từ một worktree, với bộ test có gọi `git init` trong thư mục tạm, không làm đổi cấu hình repo thật;
+                 python pos.py check qua
+
 Sau T-002, chưa viết thẻ (PO chọn thứ tự):
 - Gắn mã feature vào test hiện có, để cột Test của sổ mã tự ghi được (REG-02).
 - `find` khớp theo từ thay vì chuỗi con: gõ "do luong" đang ra nhầm "Bảng prompt" (POL-02).
