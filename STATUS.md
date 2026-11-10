@@ -25,12 +25,21 @@
       Phụ thuộc: T-008, T-009
       Xong khi:  PO chạy `npm publish`, rồi chạy `npx -y @nguyentan0510/project-os` ở một thư mục tạm: file `.project-os-install` ghi số mới và `template/pos.py` có dòng `HOOK_TESTS`; python pos.py check qua
 
+- [ ] T-011 · INS-02 · bỏ cài toàn cục, chỉ còn cài theo dự án
+      Yêu cầu gốc: "skills nên thêm trực tiếp trên dự án Thay vì đẩy về toàn cụ. Như vậy sẽ hạn chế việc phiên bản hơn ko Đơn giản, hiệu quả" (D19)
+      Mục tiêu:  trình cài chỉ còn cài theo dự án: bỏ cờ `--global`, `install.sh`, `install.ps1`; khi máy còn bản toàn cục cũ thì trình cài cảnh báo và chỉ cách gỡ; INS-02 trong sổ mã thành `bỏ (D19)`; README, MODULES (module INS, contract C9), GLOSSARY, AGENTS và CODEOWNERS không còn nhắc cài toàn cục hay hai script cài
+      Lane:      Strict
+      Scope:     bin/project-os.js, install.sh, install.ps1, package.json, README.md, AGENTS.md, docs/product/FEATURES.md, docs/product/MODULES.md, docs/GLOSSARY.md, docs/DECISIONS.md, .github/workflows/*, .github/CODEOWNERS, tests/*
+      Phụ thuộc: T-009
+      Xong khi:  PO chạy `node bin/project-os.js --global`: trình cài báo cách này đã bỏ và chỉ sang cài theo dự án; chạy không cờ ở một thư mục tạm thì skill vào `.agents/` và `.claude/` như cũ; python pos.py check qua
+      Ghi chú:   người đã cài toàn cục cần một đường gỡ: giữ lệnh gỡ bản toàn cục hoặc ghi cách gỡ tay vào README. Sửa contract C9 nên liệt kê module dùng nó trước (DAY, INS). Nên vào cùng bản phát hành của T-010: PO chốt thứ tự
+
 Chưa viết thẻ (PO chọn thứ tự):
 - Hai bộ thử còn lại ứng với BRIEF: AI phiên trắng (EVL-01), tiếp nhận 8 câu (EVL-02).
 - `find` khớp theo từ thay vì chuỗi con: gõ "do luong" đang ra nhầm "Bảng prompt" (POL-02).
 - Gắn mã feature vào test hiện có, để cột Test của sổ mã tự ghi được (REG-02).
 - Thẻ có `Scope:` xuống nhiều dòng: máy chỉ đọc dòng đầu và không báo gì; cần đọc được dòng nối hoặc `plan-check` báo lỗi (GRD-01).
-- Hai bản cài chồng nhau, bản cũ thắng mà không ai biết: ở eDMS, skill toàn cục (liên kết tới một bản clone cũ, "Phiên bản 1.1") che bản 1.6.0 vừa cài trong dự án, nên khung được chép là bản cũ; lệnh chép khung cần in phiên bản và cảnh báo khi thấy bản cài khác phiên bản (INS-02, DAY-01).
+- Hai bản cài chồng nhau, bản cũ thắng mà không ai biết: ở eDMS, skill toàn cục (liên kết tới một bản clone cũ, "Phiên bản 1.1") che bản 1.6.0 vừa cài trong dự án, nên khung được chép là bản cũ; phần gốc (bỏ cài toàn cục, trình cài cảnh báo bản toàn cục cũ) đã vào T-011; còn lại: lệnh chép khung in phiên bản của skill đang chép (DAY-01).
 - Kiểm toán chỉ nhận thư mục module đặt theo mã (`crates/<mã>`, `src/<mã>`): ở eDMS, AI phải sửa quyết định D05 đã duyệt (tên `identity`, `catalog`) cho khớp, và sửa thẳng vào dòng cũ; cần nói quy ước này từ bước 3 hoặc cho khai tên thư mục của từng module (DAY-03).
 - Ngày 0 không kiểm bộ công cụ có chạy được không: ở eDMS, bước 4 viết 1.591 dòng contract Rust mà chưa biên dịch được vì máy thiếu trình liên kết; cần một bước thử dựng tối thiểu sau khi chốt công nghệ, trước khi viết contract (DAY-02).
 - Git đến bước 6 mới có: các bước trước không có lịch sử, không có hook, tuân thủ chỉ dựa vào AI; tạo repo Git ngay lúc chép khung để mỗi bước đã duyệt là một commit (DAY-01).
@@ -40,5 +49,5 @@ Chưa viết thẻ (PO chọn thứ tự):
 
 ## Ghi chú bàn giao
 T-001 đến T-007 đã xong (PR 11, 13, 12, 16, 18, 19, 21). Ngày 0 đã vào main (PR 9); kiểm toán máy Đạt 29, Chưa 18, lệch đã chấp nhận (D13). Chưa làm: kiểm toán theo P-15 bằng một phiên AI khác; chưa ghi quyết định "Qua cổng Ngày 0".
-Thứ tự đề xuất: T-009 → T-008 → T-010. Thử trên eDMS (dự án ngoài đầu tiên): Ngày 0 xong 4/7 bước bằng khung cũ; skill toàn cục trên máy PO giờ trỏ thẳng vào repo này (giữ repo ở `main`, làm task trong worktree); sau T-009 thì chép lại khung, làm nốt bước 5 đến 7, một thẻ T-001 và một PR cố tình vi phạm.
+Thứ tự đề xuất: T-009 → T-008 → T-011 → T-010 (T-011 trước T-010 nếu PO muốn bỏ cài toàn cục ngay trong bản phát hành tới). Thử trên eDMS (dự án ngoài đầu tiên): Ngày 0 xong 4/7 bước bằng khung cũ; skill toàn cục trên máy PO giờ trỏ thẳng vào repo này (giữ repo ở `main`, làm task trong worktree); sau T-009 thì chép lại khung, làm nốt bước 5 đến 7, một thẻ T-001 và một PR cố tình vi phạm.
 PO cần tự làm trên GitHub: thêm `pr-title` vào check bắt buộc của main (sau T-004 thì `test` đã gồm cả `check`).
