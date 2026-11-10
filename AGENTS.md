@@ -9,6 +9,7 @@ Project OS giúp Solo Dev, cũng là Product Owner (PO), vibe code có kiểm so
 ## Riêng của repo này
 - Repo này vừa là sản phẩm vừa tự dùng sản phẩm. Bản gốc của khung là `.agents/skills/project-os/template/`; `pos.py`, `scripts/`, `.githooks/`, `docs/PROCESS.md`, `docs/GLOSSARY.md`, `docs/prompts/` ở gốc repo là bản chép (D06). **Sửa ở `template/` trước, rồi chép ra gốc.**
 - Chín contract (C1–C9 trong `docs/product/MODULES.md`) phần lớn là định dạng văn bản mà code đọc bằng biểu thức chính quy. Đổi tên cột, tên mục hay tên trường trong tài liệu mẫu là sửa contract: Lane Strict.
+- Hook pre-push ở repo này chỉ kiểm nhanh (D14): sổ mã, quét khoá, lint, Scope. Bộ test chạy ở CI. Trước khi mở PR, tự chạy `python pos.py check` đầy đủ (khoảng 3 phút rưỡi).
 - Công cụ chỉ dùng thư viện chuẩn Python 3.8+ (D01). Không thêm phụ thuộc ngoài khi chưa hỏi PO.
 
 ## Đọc khi mở phiên

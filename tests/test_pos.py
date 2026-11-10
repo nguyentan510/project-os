@@ -83,6 +83,34 @@ class PlanCheckTest(ProjectCase):
         self.assertEqual(r.returncode, 0, r.stdout)
 
 
+class HookModeTest(CheckTest):
+    """GRD-04: `check HOOK=1` bỏ bước test chỉ khi dự án đặt HOOK_TESTS = False."""
+
+    def set_hook_tests(self, value):
+        pos = self.root / "pos.py"
+        pos.write_text(pos.read_text(encoding="utf-8").replace("HOOK_TESTS = True", f"HOOK_TESTS = {value}"), encoding="utf-8")
+
+    def test_hook_skips_failing_tests_only_when_opted_out(self):
+        self.set_cmds("none", "exit 1")
+        self.assertEqual(self.pos("check", "HOOK=1").returncode, 1, "mặc định: hook vẫn chạy test")
+        self.set_hook_tests(False)
+        r = self.pos("check", "HOOK=1")
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertIn("test: bỏ qua ở hook", r.stdout)
+        self.assertIn("check: qua phần nhanh, chưa chạy test", r.stdout)
+        self.assertNotIn("check: qua\n", r.stdout)
+
+    def test_full_check_always_runs_tests(self):
+        self.set_cmds("none", "exit 1")
+        self.set_hook_tests(False)
+        self.assertEqual(self.pos("check").returncode, 1, "CI và người gọi tay vẫn chạy test")
+
+    def test_fast_mode_still_runs_registry_secrets_and_lint(self):
+        self.set_cmds("exit 1", "none")
+        self.set_hook_tests(False)
+        self.assertEqual(self.pos("check", "HOOK=1").returncode, 1)
+
+
 class OverlapTest(unittest.TestCase):
     def setUp(self):
         import importlib.util

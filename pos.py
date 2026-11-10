@@ -3,6 +3,7 @@
 Chỉ dùng thư viện chuẩn Python 3.8+. (Đặt tên pos.py, không phải os.py, để khỏi che module `os` của Python.)
 
   python pos.py setup | run | lint | test [F=MAP-07] [L=api] | features [--sync] | secrets | check
+  python pos.py check HOOK=1                           hook pre-push gọi: bỏ bước test nếu HOOK_TESTS = False
   python pos.py task T=T-043 N=map-sales [TYPE=fix]    tạo worktree + branch từ main mới nhất
   python pos.py done T=T-043                           dọn sau khi PR đã merge
   python pos.py drop T=T-043 [CONFIRM=T-043]           huỷ task chưa merge (phải hỏi PO)
@@ -38,6 +39,9 @@ SETUP_CMD = ""
 RUN_CMD = ""
 LINT_CMD = "none"  # D12: chưa dùng công cụ lint
 TEST_CMD = "python -m unittest discover -s tests"  # D09; {F}, {L} chưa dùng được vì test chưa gắn mã
+# Hook pre-push có chạy TEST_CMD không. Bộ test chậm (vài phút) thì đặt False: hook chỉ kiểm sổ mã, quét khoá, lint và Scope.
+# Bộ test đầy đủ vẫn phải chạy ở CI (cổng cuối của luật cứng 3): chỉ đặt False khi dự án có CI chạy `python pos.py check`.
+HOOK_TESTS = False  # D14: bộ test mất 3 phút rưỡi; CI chạy đầy đủ
 
 WT_DIR = "../wt"  # worktree đặt ngoài repo
 BASE = "main"
@@ -178,11 +182,16 @@ def cmd_secrets(opts, _):
 
 
 def cmd_check(opts, _):
+    """HOOK=1 là hook pre-push gọi: bỏ bước test khi dự án đặt HOOK_TESTS = False (CI chạy bộ test đầy đủ)."""
+    skip_test = opts.get("HOOK") == "1" and not HOOK_TESTS
     for fn in (cmd_features, cmd_secrets, cmd_lint, cmd_test):
+        if fn is cmd_test and skip_test:
+            say("test: bỏ qua ở hook (HOOK_TESTS = False); CI chạy bộ test đầy đủ")
+            continue
         rc = fn(opts, [])
         if rc:
             return rc
-    say("check: qua")
+    say("check: qua phần nhanh, chưa chạy test" if skip_test else "check: qua")
     return 0
 
 
