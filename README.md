@@ -133,6 +133,7 @@ Cài bằng tay: clone repo rồi
 
 | Bạn muốn | Nói với AI / chạy |
 | --- | --- |
+| Không rành kỹ thuật, không nhớ mã hay tên prompt | Cứ nói bằng lời thường. AI tiếp nhận theo `P-00`: tự tra mã, hỏi lại, nhắc "Tôi hiểu là…" rồi mới làm |
 | Bắt đầu dự án mới, áp quy tắc vào repo đang có | *"Dùng skill project-os để bắt đầu dự án này"* |
 | Kiểm repo đã đủ để viết code chưa | *"Dùng skill project-os để kiểm toán Ngày 0"* (nên dùng phiên AI khác) |
 | Repo đang kẹt, không rõ lỗi | `python pos.py sos` rồi prompt `P-SOS` |
@@ -223,7 +224,7 @@ Mỗi bước của luồng có một prompt mẫu, gọi nhanh bằng mã, ví 
 | P-05 | Sửa nhanh (Lane Fast) | P-14 | Khẩn cấp (production) |
 | P-06 | Sửa lỗi | P-15 | Kiểm toán Ngày 0 |
 | P-07 | Review Restricted zone | P-SOS | Bị kẹt, cần cứu hộ |
-| P-08 | Merge và dọn | | |
+| P-08 | Merge và dọn | P-00 | PO nói bằng lời thường, không kèm mã |
 
 Thứ tự trong một Milestone: `P-01 → P-03 / P-03-MULTI → P-04 · P-05 · P-06 → P-07 → P-08 → P-09`, hết Milestone `P-13`. Dự án mới: `P-02 → P-15 → duyệt → T-001`. Chi tiết ở [`docs/PROCESS.md`](.agents/skills/project-os/template/docs/PROCESS.md) mục 13.
 

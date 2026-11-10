@@ -4,7 +4,7 @@ Phiên bản 1.1 · 2026-11-09 · Nguồn gốc của mọi quy tắc trong repo
 
 Một AI mới, không có lịch sử chat, mở dự án phải biết trong 1 phút: **đang ở đâu, vì sao như vậy, cái gì không được đụng, làm tiếp từ đâu và kiểm chứng bằng gì**. Đầu mối chung là **mã** (`MAP-07`).
 
-Quy tắc có 3 tầng: **Luật cứng** (mục 4, máy chặn, không ngoại lệ) · **Mặc định** (mục 12, AI được làm khác khi hợp lý hơn và ghi lý do) · **Mẫu** (phụ lục, dùng khi cần). Bắt đầu tối giản; phần nào chưa cần thì chưa bật (mục 12). Dự án mới bắt đầu từ mục 3.
+Quy tắc có 3 tầng: **Luật cứng** (mục 4, máy chặn, không ngoại lệ) · **Mặc định** (mục 12, AI được làm khác khi hợp lý hơn và ghi lý do) · **Mẫu** (phụ lục, dùng khi cần). Bắt đầu tối giản; phần nào chưa cần thì chưa bật (mục 12). Dự án mới bắt đầu từ mục 3. Product Owner không chuyên kỹ thuật đọc mục 14: chỉ cần nói bằng lời thường.
 
 ## 1. Sáu câu hỏi, sáu đầu mối
 
@@ -322,6 +322,7 @@ Bên trái là việc của Builder trên máy mình; chỉ khi check qua mới 
 
 ```
 - [ ] T-043 · MAP-02 · web Sales
+      Yêu cầu gốc: "cho sales xem điểm bán trên bản đồ ngay từ màn đầu"
       Mục tiêu:  Sales mở bản đồ điểm bán từ Bảng tin
       Lane:      Normal
       Wave:      W1                       Read (RO): src/*/contract.*
@@ -332,7 +333,7 @@ Bên trái là việc của Builder trên máy mình; chỉ khi check qua mới 
       Xong khi:  python pos.py test F=MAP-02 qua; thử tay trên điện thoại
 ```
 
-`python pos.py scope` đọc dòng `Scope:` của thẻ từ `docs/plan/*.md` (dự án nhỏ không có plan: từ `STATUS.md`) trên `origin/main`, không đọc từ branch đang làm, nên Builder không tự mở rộng Scope. Ghi Scope bằng mẫu đường dẫn cách nhau bởi dấu phẩy hoặc khoảng trắng, **gồm cả thư mục test**. Scope là quyền ghi (RW); Read (RO) chỉ để Builder biết được tham chiếu gì, không được sửa. Pre-push chặn khi push; CI chạy lại `python pos.py scope` để `--no-verify` không lách được. Mẫu đường dẫn theo cùng cách đọc với plan-check (mục 11). **Mặc định là chặn:** branch không có số T hoặc không tìm thấy thẻ thì bị coi là Lane Fast và phải qua giới hạn của Lane Fast; thẻ thiếu dòng `Scope:` là lỗi. AI không tự khai Lane để tránh kiểm. Cần mở rộng: Builder dừng và báo, Orchestrator sửa thẻ trên main, Builder rebase rồi push lại.
+`python pos.py scope` đọc dòng `Scope:` của thẻ từ `docs/plan/*.md` (dự án nhỏ không có plan: từ `STATUS.md`) trên `origin/main`, không đọc từ branch đang làm, nên Builder không tự mở rộng Scope. `Yêu cầu gốc:` là lời PO chép nguyên văn (mục 14). Ghi Scope bằng mẫu đường dẫn cách nhau bởi dấu phẩy hoặc khoảng trắng, **gồm cả thư mục test**. Scope là quyền ghi (RW); Read (RO) chỉ để Builder biết được tham chiếu gì, không được sửa. Pre-push chặn khi push; CI chạy lại `python pos.py scope` để `--no-verify` không lách được. Mẫu đường dẫn theo cùng cách đọc với plan-check (mục 11). **Mặc định là chặn:** branch không có số T hoặc không tìm thấy thẻ thì bị coi là Lane Fast và phải qua giới hạn của Lane Fast; thẻ thiếu dòng `Scope:` là lỗi. AI không tự khai Lane để tránh kiểm. Cần mở rộng: Builder dừng và báo, Orchestrator sửa thẻ trên main, Builder rebase rồi push lại.
 
 **Báo cáo khi xong:**
 
@@ -509,6 +510,7 @@ Mỗi bước của luồng có một prompt mẫu, mã `P-nn`. Bản đầy đ�
 
 | Mã | Khi dùng | Vai | Prompt | Đầu ra |
 | --- | --- | --- | --- | --- |
+| P-00 | PO nói bằng lời thường, không kèm mã | Orchestrator | Tôi nói bằng lời thường, không kèm mã: `<lời của tôi>`. Tiếp nhận theo PROCESS.md mục 14: (1) xác định ý định; (2) tự tra mã bằng `python pos.py find`, tôi không cần nhớ mã; (3) thiếu thông tin thì hỏi tối đa 3 câu dạng lựa chọn, khuyến nghị đứng đầu; (4) nhắc lại theo mẫu "Tôi hiểu là…" và chờ tôi xác nhận; (5) chuyển sang prompt đích và làm theo luồng chung. Luôn ghi tên gọi trước, mã trong ngoặc. | Lời nhắc lại + prompt đích |
 | P-01 | Mở phiên | Mọi vai | Đọc AGENTS.md và STATUS.md, chạy `python pos.py status`. Tóm tắt trong 5 dòng: Milestone nào, ai giữ task nào, đang chặn gì, việc tiếp theo. Chưa sửa gì. | 5 dòng tóm tắt |
 | P-02 | Khởi tạo dự án | Orchestrator | Từ BRIEF sau: `<brief>`. Làm Ngày 0 theo mục 3, từng bước: BRIEF → FEATURES → DECISIONS → module + contract → AGENTS + STATUS → khung repo. Trình đầu ra mỗi bước, chờ tôi duyệt rồi mới sang bước sau. | Bộ file Ngày 0 |
 | P-03 | Lập plan (một agent) | Orchestrator | Lập plan cho Milestone `<M3>`: `<mục tiêu>`. Đọc ROADMAP, FEATURES, DECISIONS. Viết thẻ task theo mẫu, task contract đi đầu, ghi Lane từng task, kiểm hai task song song không trùng Scope. Chờ tôi duyệt. | `docs/plan/M3-*.md` |
@@ -527,8 +529,83 @@ Mỗi bước của luồng có một prompt mẫu, mã `P-nn`. Bản đầy đ�
 | P-15 | Kiểm toán Ngày 0 | Orchestrator (phiên mới) | Kiểm toán repo theo bảng kiểm mục 3. Với từng ô: Đạt hoặc Chưa, kèm bằng chứng (file, dòng). Không sửa gì. Cuối cùng kết luận: qua cổng hay chưa, còn thiếu gì. | Bảng Đạt/Chưa + kết luận |
 | P-SOS | Bị kẹt, cần cứu hộ | Orchestrator | Chạy `python pos.py sos` (sao lưu vào branch `salvage/sos-*`, khám bệnh, chỉ đọc). Báo ≤ 5 dòng dễ hiểu, đưa 2 phương án: A cứu task theo đúng luồng, B huỷ task và về main xanh. Chờ tôi chọn A/B rồi mới làm. | Báo cáo + repo về chuẩn |
 
+- PO không cần nhớ bảng này: nói bằng lời thường, AI tiếp nhận theo P-00 (mục 14) rồi tự chuyển sang prompt đích.
 - Thứ tự dùng trong một Milestone: P-01 → P-03 (một agent) hoặc P-03-MULTI (nhiều agent) → (P-04 hoặc P-05, P-06) → P-07 khi cần → P-08 → P-09. Hết Milestone: P-13. Dự án mới: P-02 → P-15 → PO duyệt → T-001. Bị kẹt bất kỳ lúc nào: P-SOS (mã chữ, không chiếm số P-nn).
 - Prompt cũng là mã: không dùng lại số, sửa nội dung thì sửa ở đây trước rồi sửa `docs/prompts/` cho khớp.
+
+## 14. Lớp PO: tiếp nhận ý định
+
+PO nói bằng lời của mình. PO không phải gõ mã, không phải chọn prompt, không phải biết mình đang ở bước nào. Việc dịch lời PO sang guồng của Project OS là của Orchestrator (chế độ Một AI: chính AI đó), gọi là **tiếp nhận**. Tiếp nhận chỉ chuyển việc vào luồng có sẵn: không bỏ qua Ngày 0, Scope hay luật cứng nào.
+
+Khi PO nói mà không kèm mã prompt, AI chạy P-00 theo năm bước:
+
+1. **Nhận diện ý định** theo bảng dưới. Mơ hồ giữa hai ý định thì hỏi câu phân loại.
+2. **Tra mã thay PO:** `python pos.py find <lời của PO>` tìm trong sổ mã, DECISIONS và thẻ task. Ra nhiều kết quả thì đưa 2–3 lựa chọn bằng tên gọi; không ra thì coi là việc mới.
+3. **Hỏi phần còn thiếu:** tối đa 3 câu mỗi lượt, dạng lựa chọn, phương án khuyến nghị đứng đầu.
+4. **Nhắc lại và chờ xác nhận** theo mẫu. Bước này bắt buộc, vì AI có thể đoán sai ý định.
+5. **Chuyển** sang prompt đích và làm theo luồng chung (mục 8).
+
+### Bảy ý định
+
+| Ý định | PO hay nói | Câu hỏi phân loại khi mơ hồ | Chuyển vào |
+| --- | --- | --- | --- |
+| Khởi đầu | "Tôi có ý tưởng…", "Làm cho tôi một…" | Đã có repo qua Ngày 0 chưa? | P-02 |
+| Thay đổi sản phẩm | "Tôi muốn thêm…", "Đổi chỗ này thành…" | Trước giờ nó có chạy đúng như đã thống nhất không? Có: đây là thay đổi. Không: đây là lỗi | Đối chiếu BRIEF → sổ mã → P-03 (thẻ mới) → P-04 |
+| Báo lỗi | "Cái này hỏng", "Sai rồi", "Chậm quá" | Người dùng thật đang bị ảnh hưởng ngay lúc này không? | P-05 (nhỏ) · P-06 (có logic) · P-14 (đang chạy thật) |
+| Hỏi trạng thái | "Tới đâu rồi?", "Còn gì chưa xong?" | — | P-01 và `python pos.py status` |
+| Quyết định | "Nên chọn A hay B?", "Tôi đổi ý" | Quyết định này thay một `Dxx` đã có không? | P-11 · P-10 nếu chạm contract hoặc task đang làm |
+| Duyệt, nghiệm thu | "Cái này ổn chưa?", "Tôi bấm duyệt được chưa?" | Duyệt một PR, một plan, hay cả Milestone? | P-07 (PR Strict) · P-13 (Milestone) |
+| Kẹt | "Tôi rối quá", "Không hiểu sao nó thế này" | — | P-SOS |
+
+### Đủ để làm
+
+Một yêu cầu thay đổi hoặc báo lỗi đủ để viết thẻ khi trả lời được bốn câu. Thiếu câu nào thì hỏi câu đó, không tự đoán:
+
+1. Cho ai (vai người dùng nào)?
+2. Người dùng thấy gì khác đi?
+3. Một ví dụ cụ thể: làm gì, thấy gì, thì coi là xong?
+4. Điều gì **không** làm trong việc này?
+
+Lời PO được chép nguyên văn vào dòng `Yêu cầu gốc:` của thẻ; ví dụ ở câu 3 thành "Xong khi".
+
+### Mẫu nhắc lại
+
+```
+Tôi hiểu là: <việc, bằng lời thường>
+Loại việc:   <ý định>
+Liên quan:   <tên gọi (mã)> · <tên gọi (mã)>
+Cỡ việc:     <nhỏ: làm ngay | vừa: một task | lớn: nhiều task, cần plan>
+Phạm vi:     <trong BRIEF | ngoài BRIEF | cần sửa BRIEF>
+Sẽ làm:      <bước tiếp theo>
+Đúng không?
+```
+
+### Mức xác nhận
+
+| Mức | Khi nào | AI làm gì |
+| --- | --- | --- |
+| Làm rồi báo | Việc nhỏ, đủ điều kiện Lane Fast | Nhắc lại một dòng, làm luôn, báo kết quả |
+| Xác nhận một câu | Việc cần thẻ task (Lane Normal) | Nhắc lại theo mẫu, chờ PO nói "đúng" |
+| Nêu hệ quả trước | Sửa BRIEF, bỏ feature, Lane Strict, huỷ task (`drop`), bỏ qua luật khi khẩn cấp | Nói rõ mất gì, việc nào bị đẩy lùi, có hoàn tác được không; chờ PO xác nhận riêng việc đó |
+
+### Đối chiếu phạm vi
+
+Mọi yêu cầu thay đổi được đối chiếu với BRIEF, cho một trong ba kết luận:
+
+- **Trong phạm vi:** đi tiếp.
+- **Ngoài phạm vi:** ghi một dòng vào sổ mã với trạng thái `để sau` (có mã ngay, không mất ý tưởng), không chen vào Milestone đang làm.
+- **Cần sửa BRIEF:** nêu việc nào bị đẩy lùi, PO quyết, ghi `Dxx`.
+
+### Nói với PO
+
+- Tên gọi trước, mã trong ngoặc: "Bản đồ Sales (MAP-02)", không phải "MAP-02".
+- Thứ gì PO phải duyệt đều kèm **Tóm tắt cho PO**: người dùng thấy gì thay đổi · rủi ro nếu sai · 3 bước tự bấm thử · khuyến nghị.
+- Việc đang chờ PO nằm ở nhóm "Chờ PO" của `python pos.py status`.
+
+### Giới hạn
+
+- PO không chuyên kỹ thuật không thẩm định được code. Tóm tắt cho PO giúp quyết định có căn cứ hơn, không thay được người hiểu kỹ thuật; PR Lane Strict vẫn cần Reviewer.
+- Tiếp nhận không được thành đường tắt: yêu cầu nào cũng kết thúc ở một prompt đích và đi qua luồng chung.
 
 ## Phụ lục · Mẫu
 

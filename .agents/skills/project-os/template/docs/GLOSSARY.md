@@ -60,7 +60,7 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 | Luồng chung | `task → code → commit → check → rebase → push → PR → CI → [approve nếu Lane Strict] → merge → done` |
 | Lane | Mức kiểm soát theo rủi ro: **Fast** (câu chữ, lỗi nhỏ) · **Normal** (feature, sửa lỗi có logic) · **Strict** (chạm contract, Hot file, Restricted zone). Máy xác định: không thẻ → Fast, có thẻ → Normal, chạm `CODEOWNERS` → Strict |
 | Nâng Lane | Đang làm mà phát hiện chạm vùng rủi ro: dừng, báo Orchestrator, xin duyệt |
-| Thẻ task | Mô tả đủ một task, cũng là prompt giao việc; các trường: Mục tiêu · Lane · Wave · Scope · Read · Phụ thuộc · Cần · Restricted zone · Giao · Xong khi |
+| Thẻ task | Mô tả đủ một task, cũng là prompt giao việc; các trường: Yêu cầu gốc · Mục tiêu · Lane · Wave · Scope · Read · Phụ thuộc · Cần · Restricted zone · Giao · Xong khi |
 | Scope | Trường thẻ: các đường dẫn task được ghi (RW), gồm cả thư mục test; `python pos.py scope` chặn sửa ngoài Scope |
 | Read | Trường thẻ: đường dẫn chỉ được đọc (RO) để tham chiếu |
 | Phụ thuộc | Trường thẻ: task phải xong trước; chỉ trỏ về Wave trước |
@@ -80,6 +80,13 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 | Khác mặc định | Mục trong báo cáo PR ghi chỗ làm khác Mặc định và lý do |
 | Worktree mồ côi | Worktree có branch đã merge mà chưa dọn; `python pos.py wt-clean` tìm |
 | SOS | Cứu hộ khi repo kẹt: `python pos.py sos` sao lưu vào branch `salvage/sos-*` rồi chạy P-SOS |
+| Lớp PO | Phần của quy trình để PO nói bằng lời thường: tiếp nhận, tra mã, tóm tắt cho PO, nhóm "Chờ PO" (PROCESS.md mục 14) |
+| Ý định | Loại việc PO đang muốn: khởi đầu · thay đổi sản phẩm · báo lỗi · hỏi trạng thái · quyết định · duyệt, nghiệm thu · kẹt |
+| Tiếp nhận | Orchestrator dịch lời PO sang luồng: nhận diện ý định → tra mã → hỏi → nhắc lại → chuyển (P-00) |
+| Yêu cầu gốc | Trường thẻ: lời PO chép nguyên văn |
+| Tên gọi | Cột của sổ mã: 2–5 từ bằng lời PO để gọi một feature; `python pos.py find` tìm theo đây |
+| Để sau | Trạng thái feature: ý tưởng ngoài phạm vi hiện tại, đã có mã, PO chưa quyết làm |
+| Tóm tắt cho PO | Bốn dòng kèm mọi thứ PO phải duyệt: người dùng thấy gì đổi · rủi ro nếu sai · 3 bước tự thử · khuyến nghị |
 | Khẩn cấp | Lỗi production; chỉ PO cho bỏ qua luật, ghi `Dxx`, làm task bù (P-14) |
 
 ## Git và GitHub
@@ -137,7 +144,7 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 
 | Ở đâu | Giá trị |
 | --- | --- |
-| Feature (sổ mã) | `dự kiến` · `dùng` · `bỏ (Dxx)` |
+| Feature (sổ mã) | `dự kiến` · `dùng` · `bỏ (Dxx)` · `để sau` |
 | Milestone (ROADMAP) | `chưa bắt đầu` · `đang làm` · `xong <ngày> · <phiên bản>` |
 | Duyệt (DECISIONS) | `PO` · `AI` |
 | Lệnh `pos.py` | `qua` · `LỖI` |

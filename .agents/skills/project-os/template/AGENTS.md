@@ -9,6 +9,10 @@ Bản đầy đủ: `docs/PROCESS.md`. Thuật ngữ: `docs/GLOSSARY.md`. Chỗ 
 ## Đọc khi mở phiên
 AGENTS.md → STATUS.md → thẻ task (nếu có) → dòng mã trong `docs/product/FEATURES.md` → `rg "<mã>"`.
 
+## Khi PO nói không kèm mã (PROCESS.md mục 14)
+Chạy P-00: xác định ý định, tự tra mã bằng `python pos.py find <lời của PO>`, hỏi tối đa 3 câu, rồi nhắc lại "Tôi hiểu là…" và chờ PO xác nhận trước khi làm.
+Nói với PO bằng tên gọi, mã để trong ngoặc: "Bản đồ Sales (MAP-02)". Không bắt PO nhớ mã hay chọn prompt.
+
 ## Lệnh
 - `python pos.py setup` · `python pos.py run` · `python pos.py lint`
 - `python pos.py test` · `python pos.py test F=MAP-07` (theo mã) · `python pos.py test L=api` (theo tầng)
