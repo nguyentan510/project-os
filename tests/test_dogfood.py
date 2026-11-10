@@ -54,5 +54,18 @@ class VersionTest(unittest.TestCase):
         self.assertEqual(m.group(1), version, "PROCESS.md ghi phiên bản khác package.json (D10)")
 
 
+class HookEnvTest(unittest.TestCase):
+    def test_git_hook_env_does_not_leak_into_test_repos(self):
+        """Hook đặt GIT_DIR trỏ về repo thật; lệnh git của test vẫn phải chạy trên repo tạm."""
+        import os
+        import tempfile
+        from helpers import git, run
+        with tempfile.TemporaryDirectory() as d:
+            git(d, "init", "-q", "-b", "main")
+            env = dict(os.environ, GIT_DIR=str(REPO / ".git"), GIT_WORK_TREE=str(REPO))
+            top = run(["git", "rev-parse", "--show-toplevel"], d, env=env).stdout.strip()
+            self.assertEqual(os.path.realpath(top), os.path.realpath(d))
+
+
 if __name__ == "__main__":
     unittest.main()
