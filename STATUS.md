@@ -9,7 +9,16 @@
       Xong khi:  sửa một chữ trong docs/PROCESS.md ở gốc mà không sửa template thì `check` báo lỗi và chỉ ra file lệch;
                  python pos.py check qua
 
-Sau T-001, chưa viết thẻ (PO chọn thứ tự):
+- [ ] T-002 · INS-01 · phát hành 1.6.0
+      Yêu cầu gốc: "Xử lý các hạng mục tồn" (gói npm vẫn là 1.5.1)
+      Mục tiêu:  tăng phiên bản gói lên 1.6.0 để người cài qua npx nhận máy chặn mới, vai và Lớp PO; PROCESS ghi cùng số (D10)
+      Lane:      Strict
+      Scope:     package.json, README.md, .agents/skills/project-os/template/docs/PROCESS.md, docs/PROCESS.md
+      Phụ thuộc: T-001
+      Xong khi:  sau khi PO chạy `npm publish`, lệnh `npx -y @nguyentan0510/project-os@1.6.0` cài được bản mới;
+                 python pos.py check qua
+
+Sau T-002, chưa viết thẻ (PO chọn thứ tự):
 - Gắn mã feature vào test hiện có, để cột Test của sổ mã tự ghi được (REG-02).
 - `find` khớp theo từ thay vì chuỗi con: gõ "do luong" đang ra nhầm "Bảng prompt" (POL-02).
 - Ba bộ thử ứng với ba chỉ số trong BRIEF (EVL-01, EVL-02, EVL-03).
@@ -18,5 +27,6 @@ Sau T-001, chưa viết thẻ (PO chọn thứ tự):
 (trống)
 
 ## Ghi chú bàn giao
-Ngày 0 của repo này đang ở bước 5/7, chưa commit. Còn bước 6 (điền lệnh, CODEOWNERS, `.env.example`, CI) và bước 7 (kiểm toán).
-Kiểm toán sẽ báo "Chưa" ở các ô module README và contract: lệch đã chấp nhận (D13).
+Ngày 0 đã vào main (PR 9). Kiểm toán máy: Đạt 29, Chưa 18; cả 18 là ô module README và contract, lệch đã chấp nhận (D13).
+Chưa làm: kiểm toán theo P-15 bằng một phiên AI khác; chưa ghi quyết định "Qua cổng Ngày 0".
+PO cần tự làm trên GitHub: thêm `check` và `pr-title` vào check bắt buộc của main. Phát hành npm cần PO đăng nhập và chạy `npm publish`.
