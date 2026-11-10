@@ -432,11 +432,14 @@ def cmd_pr(opts, extra):
     say(f"**Mã · Task · Lane:** {', '.join(named(f, feature_names()) for f in feats) or '<MÃ>'} · {t or '—'} · <Fast | Normal | Strict>\n")
     if t:
         say(f"Closes #{int(t[2:])}  <!-- chỉ giữ nếu T-nnn trùng số GitHub Issue (PROCESS.md mục 7) -->\n")
+    say("**Tóm tắt cho PO** (lời thường, không dùng mã trần):\n- Người dùng thấy gì thay đổi:\n- Rủi ro nếu sai:\n"
+        "- 3 bước tự bấm thử:\n- Khuyến nghị:\n")
     say("**Đã làm:**\n\n**Scope thực tế:** khớp thẻ / thêm …, vì …\n")
     say(f"**File thay đổi:**\n```\n{stat or '(không khác ' + base + ')'}\n```\n")
     say(f"**Commit:**\n```\n{commits or '(chưa có commit)'}\n```\n")
     say(f"**Test đã chạy:** {check}\n")
-    say("**Khác mặc định (nếu có, lý do):**\n\n**Rủi ro:**\n\n**Ghi chú bàn giao:**")
+    say("**Khác mặc định (nếu có, lý do):**\n\n**Rủi ro:**\n\n**Ghi chú bàn giao:**\n\n"
+        "**Việc cần PO chuyển cho Orchestrator** (viết sẵn để dán nguyên văn; không có thì ghi \"không\"):")
     return 0
 
 
@@ -663,6 +666,8 @@ def parse_cards(files=None):
                 d = field(nxt, "Phụ thuộc")
                 if d:
                     c["deps"] = re.findall(r"T-\d{3,}", d)
+                if field(nxt, "Xong khi"):
+                    c["done_when"] = True
             cards.append(c)
     return cards
 
@@ -724,6 +729,9 @@ def cmd_plan_check(opts, _):
                 continue
             if dep and dep["wave"] is not None and c["wave"] is not None and dep["wave"] >= c["wave"]:
                 errs.append(f"{c['t']} (W{c['wave']}) phụ thuộc {d} (W{dep['wave']}): phải trỏ về Wave trước")
+    for c in cards:
+        if not c.get("done_when"):  # không chặn: thẻ cũ vẫn chạy, nhưng PO không tự nghiệm thu được
+            say(f"    cảnh báo  {c['t']}: thiếu 'Xong khi' (một hành vi PO tự quan sát được + một lệnh kiểm)")
     if errs:
         say("plan-check: plan chưa đạt:")
         for e in errs:
