@@ -553,6 +553,10 @@ def cmd_scope(opts, _):
     base = base_ref()
     if base is None:
         die(f"scope: không thấy origin/{BASE} lẫn {BASE}: không kiểm được")
+    if git("cat-file", "-e", f"{base}:pos.py")[0] != 0:
+        # Repo đang có code áp Project OS lần đầu: PR Ngày 0 chính là PR đưa máy chặn vào, không thể có thẻ trên BASE trước.
+        say(f"scope: {base} chưa có pos.py (dự án chưa qua Ngày 0 trên {BASE}): chưa có máy chặn để bảo vệ, bỏ qua")
+        return 0
     code, out, err = git("diff", "--name-only", "--no-renames", f"{base}...HEAD")
     if code:
         die(f"scope: không so được với {base}: {err}")

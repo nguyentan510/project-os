@@ -260,6 +260,46 @@ class ScopeTest(WorktreeCase):
         self.assertEqual(self.pos("scope").returncode, 0)
 
 
+class ScopeBootstrapTest(unittest.TestCase):
+    """Repo đang có code, main đã khoá, áp Project OS lần đầu: PR Ngày 0 phải qua được scope."""
+
+    def test_day0_branch_passes_until_main_has_pos_py(self):
+        import pathlib
+        import tempfile
+        from helpers import INIT
+        with tempfile.TemporaryDirectory() as d:
+            root, origin = pathlib.Path(d) / "proj", pathlib.Path(d) / "origin.git"
+            root.mkdir()
+            git(root, "init", "-q", "-b", "main")
+            git(root, "config", "user.email", "test@example.com")
+            git(root, "config", "user.name", "test")
+            (root / "app.py").write_text("print(1)\n", encoding="utf-8")
+            git(root, "add", "-A")
+            git(root, "commit", "-q", "-m", "code có sẵn")
+            git(root.parent, "init", "-q", "--bare", "-b", "main", str(origin))
+            git(root, "remote", "add", "origin", str(origin))
+            git(root, "push", "-q", "-u", "origin", "main")
+
+            git(root, "checkout", "-q", "-b", "chore/day0")
+            self.assertEqual(run([PY, str(INIT), str(root)], root).returncode, 0)
+            git(root, "add", "-A")
+            git(root, "commit", "-q", "-m", "Ngày 0")
+            env = dict(os.environ, PROJECT_OS_BRANCH="chore/day0")
+            r = run([PY, "pos.py", "scope"], root, env=env)
+            self.assertEqual(r.returncode, 0, r.stdout)
+            self.assertIn("chưa có pos.py", r.stdout)
+
+            # Ngày 0 đã vào main: từ đây việc không thẻ chạm máy chặn bị chặn như thường
+            git(root, "push", "-q", "--no-verify", "origin", "chore/day0:main")
+            git(root, "fetch", "-q", "origin")
+            git(root, "checkout", "-q", "-b", "fix/x", "origin/main")
+            (root / ".github/workflows/extra.yml").write_text("x\n", encoding="utf-8")
+            git(root, "add", "-A")
+            git(root, "commit", "-q", "-m", "chạm máy chặn")
+            r = run([PY, "pos.py", "scope"], root, env=dict(os.environ, PROJECT_OS_BRANCH="fix/x"))
+            self.assertEqual(r.returncode, 1, r.stdout)
+
+
 class PathMatchTest(OverlapTest):
     def test_cases(self):
         cases = [
