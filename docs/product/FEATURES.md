@@ -56,6 +56,7 @@ Mỗi module là một tiêu đề `### MÃ · Tên`; kiểm sổ mã chỉ nh�
 | GRD-05 | Cổng CI của PR | PR phải qua `check`, kiểm Scope bằng bản `pos.py` của `main`, và đúng mẫu tiêu đề | khung/.github/workflows/ci.yml | — (chưa chạy thật trên GitHub Actions) | — | dùng |
 | GRD-06 | Bảo vệ file máy chặn | PR sửa file máy chặn hoặc plan phải có PO approve | khung/.github/CODEOWNERS | — (phụ thuộc cài đặt GitHub, chưa kiểm) | — | dùng |
 | GRD-07 | Bắt mã dùng lại | Mã feature, số T, số D đã cấp mà bị dùng lại thì bị chặn; tiêu đề PR của task có thẻ buộc có `[T-nnn]` | — | — | — | để sau |
+| GRD-08 | Bảo toàn test | Thay đổi xoá file test, đổi loại file test hoặc làm giảm số test đếm được so với `main` thì bị chặn, trừ khi thẻ ghi đích danh file đó trong Scope | khung/pos.py | — (có test, chưa gắn mã) | — | dùng |
 
 ### REG · Sổ mã
 

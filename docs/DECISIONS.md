@@ -18,8 +18,12 @@ Mỗi lựa chọn kỹ thuật một dòng. Duyệt = `PO` (quyết định l�
 | D12 | 2026-11-10 | Chưa dùng công cụ lint: `LINT_CMD = "none"`, `check` in cảnh báo mỗi lần chạy | Giữ đúng D01 (không phụ thuộc ngoài); cảnh báo nhắc đây là việc còn nợ | RUN-01 | PO |
 | D13 | 2026-11-10 | Kiểm toán Ngày 0 của repo này chấp nhận lệch ở các ô "module có README" và "module có contract": ranh giới module và contract ghi ở `docs/product/MODULES.md` thay cho `src/<module>/`. Sửa `audit.py` cho repo có cấu trúc riêng là việc của DAY-04 | Không viết code trong Ngày 0; repo này không có `src/` (D05) | DAY-03, DAY-04 | PO |
 | D14 | 2026-11-10 | Repo này đặt `HOOK_TESTS = False`: hook pre-push chỉ kiểm sổ mã, quét khoá, lint và Scope; bộ test đầy đủ chạy ở CI trong job `test` (check bắt buộc của main). CI gộp về một workflow để bộ test chạy một lần | Mỗi lần push chờ 3 phút rưỡi và CI chạy trùng bộ test hai lần làm một thay đổi nhỏ mất 10–15 phút | GRD-04, GRD-05 | PO |
+| D15 | 2026-11-10 | Bảo toàn test: xoá file test hoặc làm giảm số test chỉ được phép khi thẻ của task ghi đích danh file đó trong Scope. Không thêm trường mới vào thẻ | Thêm trường là sửa contract C1 mà ba module đang đọc; PO duyệt thẻ nên đó là chỗ PO cho phép | GRD-08 | PO |
+| D16 | 2026-11-10 | Lane Normal không thêm bước bắt buộc PO tự thử "Xong khi" trước khi merge | Gần như mọi việc ở repo này đã là Lane Strict; thêm một cổng người sẽ lặp lại chi phí vừa giảm ở D14. "Tóm tắt cho PO" đã có ba bước tự thử | DOC-02 | PO |
+| D17 | 2026-11-10 | Chưa viết luồng phát hành và luồng hoàn tác sau merge; xem lại sau lần phát hành thứ hai | Mới phát hành một lần, chưa hoàn tác lần nào; viết quy trình lúc này là đoán | INS-01 | PO |
 
 ## Còn mở
 
 | Mã | Câu hỏi | Lựa chọn (khuyến nghị đứng đầu) | Chờ ai |
 | --- | --- | --- | --- |
+| Q-codeowner | Có bật "Require review from Code Owners" cho main không. Không bật thì mục "Kết luận Reviewer" chỉ được máy kiểm là có, không kiểm được ai viết | Giữ D11, PO tự merge; xem lại khi chạy nhiều Builder · Tạo tài khoản bot để AI mở PR rồi bật | PO |

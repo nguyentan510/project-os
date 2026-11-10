@@ -316,6 +316,106 @@ class ScopeTest(WorktreeCase):
         self.assertEqual(self.pos("scope").returncode, 0)
 
 
+TWO_TESTS = "def test_one():\n    assert True\n\n\ndef test_two():\n    assert True\n"
+
+
+class LostTestsTest(WorktreeCase):
+    """GRD-08: không được làm check xanh bằng cách xoá hay bớt test."""
+
+    def setUp(self):
+        super().setUp()
+        self.commit_on_main("tests/api/map/test_a.py", TWO_TESTS)
+        self.commit_on_main("docs/plan/M1.md", CARDS)
+        self.pos("task", "T=T-002", "N=map-sales")
+
+    def scope(self, branch="feat/T-002-map-sales"):
+        return run([PY, "pos.py", "scope"], self.wt, env=dict(os.environ, PROJECT_OS_BRANCH=branch))
+
+    def commit(self, message):
+        git(self.wt, "add", "-A")
+        git(self.wt, "commit", "-q", "-m", message)
+
+    def test_deleting_a_test_file_is_blocked_even_inside_scope(self):
+        (self.wt / "tests/api/map/test_a.py").unlink()
+        self.commit("xoá test")
+        r = self.scope()
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertIn("tests/api/map/test_a.py: xoá file test", r.stdout)
+
+    def test_removing_one_test_is_blocked(self):
+        (self.wt / "tests/api/map/test_a.py").write_text("def test_one():\n    assert True\n", encoding="utf-8")
+        self.commit("bớt một test")
+        r = self.scope()
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertIn("số test giảm từ 2 xuống 1", r.stdout)
+
+    def test_adding_or_editing_tests_passes(self):
+        (self.wt / "tests/api/map/test_a.py").write_text(TWO_TESTS + "\n\ndef test_three():\n    assert True\n", encoding="utf-8")
+        (self.wt / "tests/api/map/test_b.py").write_text("def test_new():\n    assert True\n", encoding="utf-8")
+        self.commit("thêm test")
+        self.assertEqual(self.scope().returncode, 0)
+
+    def test_card_naming_the_exact_file_allows_removal(self):
+        self.commit_on_main("docs/plan/M1.md", CARDS.replace("src/map/*, tests/api/map/*", "src/map/*, tests/api/map/*, tests/api/map/test_a.py"))
+        git(self.wt, "rebase", "-q", "origin/main")
+        (self.wt / "tests/api/map/test_a.py").unlink()
+        self.commit("xoá test đã được thẻ cho phép")
+        r = self.scope()
+        self.assertEqual(r.returncode, 0, r.stdout)
+
+    # Các trường hợp dưới đây do Reviewer độc lập của PR 18 tìm ra.
+    def test_non_ascii_test_file_is_guarded_and_can_be_named_in_scope(self):
+        self.commit_on_main("tests/api/map/test_đơn.py", TWO_TESTS)
+        git(self.wt, "rebase", "-q", "origin/main")
+        (self.wt / "tests/api/map/test_đơn.py").unlink()
+        self.commit("xoá test có dấu")
+        r = self.scope()
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertIn("tests/api/map/test_đơn.py: xoá file test", r.stdout)
+        self.assertEqual(self.scope("fix/MAP-01-typo").returncode, 1, "không thẻ cũng phải bị chặn")
+
+        self.commit_on_main("docs/plan/M1.md", CARDS.replace("src/map/*, tests/api/map/*", "src/map/*, tests/api/map/*, tests/api/map/test_đơn.py"))
+        self.assertEqual(self.scope().returncode, 0, "thẻ ghi đích danh file có dấu thì được xoá")
+
+    def test_turning_a_test_file_into_a_symlink_is_blocked(self):
+        # Tạo symlink ngay trong index (mode 120000) để test chạy được cả trên Windows.
+        target = self.wt / "link-target.txt"
+        target.write_text("src/map/a.py", encoding="utf-8")
+        blob = git(self.wt, "hash-object", "-w", "link-target.txt")
+        target.unlink()
+        git(self.wt, "update-index", "--cacheinfo", f"120000,{blob},tests/api/map/test_a.py")
+        git(self.wt, "commit", "-q", "-m", "đổi file test thành symlink")
+        r = self.scope()
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertIn("tests/api/map/test_a.py: đổi loại file test", r.stdout)
+
+    def test_deleting_helpers_and_fixtures_without_tests_is_allowed(self):
+        self.commit_on_main("tests/api/map/helpers.py", "def build():\n    return 1\n")
+        self.commit_on_main("tests/api/map/data.json", "{}\n")
+        git(self.wt, "rebase", "-q", "origin/main")
+        (self.wt / "tests/api/map/helpers.py").unlink()
+        (self.wt / "tests/api/map/data.json").unlink()
+        self.commit("dọn fixture")
+        r = self.scope()
+        self.assertEqual(r.returncode, 0, r.stdout)
+
+    def test_file_with_tests_outside_test_dirs_is_guarded(self):
+        self.commit_on_main("src/map/tests.py", TWO_TESTS)
+        git(self.wt, "rebase", "-q", "origin/main")
+        (self.wt / "src/map/tests.py").unlink()
+        self.commit("xoá tests.py kiểu Django")
+        r = self.scope()
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertIn("src/map/tests.py: xoá file test", r.stdout)
+
+    def test_branch_without_card_cannot_remove_tests(self):
+        (self.wt / "tests/api/map/test_a.py").unlink()
+        self.commit("xoá test")
+        r = self.scope("fix/MAP-01-typo")
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertIn("xoá file test", r.stdout)
+
+
 class ScopeBootstrapTest(unittest.TestCase):
     """Repo đang có code, main đã khoá, áp Project OS lần đầu: PR Ngày 0 phải qua được scope."""
 
