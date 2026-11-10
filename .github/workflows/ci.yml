@@ -3,6 +3,7 @@ name: ci
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, edited]  # edited: sửa mô tả PR (thêm Kết luận Reviewer) thì kiểm lại
   push:
     branches: [main]
 
@@ -38,6 +39,20 @@ jobs:
             python "$RUNNER_TEMP/pos.py" scope
           else
             python pos.py scope  # nhánh đích chưa có pos.py (PR đầu tiên của dự án)
+          fi
+      - name: Kiểm Kết luận Reviewer cho PR Lane Strict (luật cứng 7)
+        if: github.event_name == 'pull_request'
+        env:
+          PROJECT_OS_BRANCH: ${{ github.head_ref }}
+          PROJECT_OS_ROOT: ${{ github.workspace }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          printf '%s' "$PR_BODY" > "$RUNNER_TEMP/pr-body.md"
+          # Dùng bản pos.py của nhánh đích (bước Scope đã lấy về); nhánh đích chưa có lệnh này thì dùng bản của PR.
+          if [ -s "$RUNNER_TEMP/pos.py" ] && grep -q '"review-check"' "$RUNNER_TEMP/pos.py"; then
+            python "$RUNNER_TEMP/pos.py" review-check BODY="$RUNNER_TEMP/pr-body.md"
+          else
+            python pos.py review-check BODY="$RUNNER_TEMP/pr-body.md"
           fi
       - name: Kiểm plan theo Wave
         run: python pos.py plan-check
