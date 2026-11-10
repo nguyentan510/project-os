@@ -35,7 +35,7 @@ class RootCopiesTest(unittest.TestCase):
 
     def test_pos_py_differs_only_in_command_config(self):
         def engine(path):  # bỏ các dòng cấu hình lệnh: gốc repo điền lệnh thật, bản gốc để trống
-            return "\n".join(l for l in text(path).splitlines() if not re.match(r"^(SETUP|RUN|LINT|TEST)_CMD = ", l))
+            return "\n".join(l for l in text(path).splitlines() if not re.match(r"^((SETUP|RUN|LINT|TEST)_CMD|HOOK_TESTS) = ", l))
         self.assertSame("pos.py", engine(REPO / "pos.py"), engine(TEMPLATE / "pos.py"))
 
     def test_glossary_matches_up_to_project_terms(self):

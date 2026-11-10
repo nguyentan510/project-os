@@ -99,7 +99,7 @@ Tám luật duy nhất không linh hoạt. Luật nào máy chặn được thì
 | --- | --- | --- |
 | 1 | Không push thẳng lên main; chỉ merge qua PR | Khoá main |
 | 2 | Không đưa khoá bí mật vào Git, code, tài liệu | `.gitignore` có `.env`; `python pos.py secrets` (trong `check`) quét các dạng khoá phổ biến và file `.env` lọt vào Git |
-| 3 | Chỉ push khi `python pos.py check` qua | pre-push hook; CI của PR là cổng cuối |
+| 3 | Chỉ push khi `python pos.py check` qua | pre-push hook (dự án có bộ test chậm đặt `HOOK_TESTS = False`: hook chỉ kiểm sổ mã, quét khoá, lint và Scope, bộ test chạy ở CI); CI của PR là cổng cuối |
 | 4 | Tiêu đề PR có mã: `<loại>(<mã>): <việc> [T-nnn]` | CI kiểm tiêu đề PR |
 | 5 | Mã không bao giờ dùng lại; mã trong code phải có trong sổ mã | Kiểm sổ mã trong `python pos.py check` |
 | 6 | Builder không tự sửa **contract đã khoá, Hot file, Restricted zone**. Cần sửa → dừng task, báo Orchestrator, xin duyệt | `CODEOWNERS` liệt kê đúng các đường dẫn này; máy chặn (`pos.py`, `scripts/features.py`, `.githooks/`, `.github/`) luôn là Hot file |

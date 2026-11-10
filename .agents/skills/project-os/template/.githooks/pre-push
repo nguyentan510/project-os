@@ -9,5 +9,5 @@ for p in python3 python py; do
 done
 [ -n "$PY" ] || { echo "pre-push: không tìm thấy Python (python3 / python / py)."; exit 1; }
 echo "pre-push: chạy check…"
-"$PY" pos.py check || { echo "pre-push: check chưa qua, không push."; exit 1; }
+"$PY" pos.py check HOOK=1 || { echo "pre-push: check chưa qua, không push."; exit 1; }
 "$PY" pos.py scope || { echo "pre-push: sửa ngoài Scope của thẻ, không push."; exit 1; }
