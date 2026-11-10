@@ -1,5 +1,6 @@
 """pos.py: check, task/done, scope (luật cứng 8), plan-check (Wave), sos."""
 import os
+import pathlib
 import unittest
 
 from helpers import PY, ProjectCase, git, run
@@ -126,6 +127,33 @@ class WorktreeCase(ProjectCase):
         git(self.root, "add", "-A")
         git(self.root, "commit", "-q", "-m", f"add {rel}")
         git(self.root, "push", "-q", "origin", "main")
+
+
+class HookEnvTest(WorktreeCase):
+    """GRD-04: hook pre-push dọn biến môi trường của git trước khi chạy check."""
+
+    def test_push_from_worktree_does_not_leak_git_env_into_project_tests(self):
+        # Bộ test của dự án: đỏ nếu thấy GIT_DIR. Thấy GIT_DIR nghĩa là `git init` trong test sẽ chạy trên repo thật.
+        self.write("probe.py", """
+            import os, sys
+            leaked = [k for k in ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE") if os.environ.get(k)]
+            print("GIT_ENV_LEAK", leaked)
+            sys.exit(1 if leaked else 0)
+        """)
+        pos = self.root / "pos.py"
+        cmd = f'"{pathlib.PurePath(PY).as_posix()}" probe.py'
+        pos.write_text(pos.read_text(encoding="utf-8").replace('TEST_CMD = "none"', f"TEST_CMD = {cmd!r}"), encoding="utf-8")
+        git(self.root, "add", "-A")
+        git(self.root, "commit", "-q", "-m", "bộ test dò biến môi trường")
+        git(self.root, "push", "-q", "origin", "main")
+
+        self.assertEqual(self.pos("task", "T=T-002", "N=map-sales").returncode, 0)
+        (self.wt / "note.txt").write_text("x", encoding="utf-8")
+        git(self.wt, "add", "-A")
+        git(self.wt, "commit", "-q", "-m", "wip")
+        r = run(["git", "push", "-u", "origin", "feat/T-002-map-sales"], self.wt)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertNotIn("GIT_ENV_LEAK ['", r.stdout + r.stderr)
 
 
 class TaskTest(WorktreeCase):

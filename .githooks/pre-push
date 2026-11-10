@@ -1,5 +1,8 @@
 #!/bin/sh
 # Luật cứng 3 và 8: chỉ push khi check qua và không sửa ngoài Scope của thẻ. Bật bằng: python pos.py setup
+# Git đặt GIT_DIR, GIT_WORK_TREE… khi gọi hook (rõ nhất là khi push từ một worktree). Để lọt xuống thì mọi lệnh git
+# trong bộ test của dự án, kể cả `git init` ở thư mục tạm, sẽ chạy trên CHÍNH repo này. pos.py tự tìm repo theo thư mục.
+unset $(git rev-parse --local-env-vars 2>/dev/null)
 PY=
 for p in python3 python py; do
   if "$p" -c "" >/dev/null 2>&1; then PY=$p; break; fi
