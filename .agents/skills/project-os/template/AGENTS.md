@@ -14,6 +14,7 @@ AGENTS.md → STATUS.md → thẻ task (nếu có) → dòng mã trong `docs/pro
 - `python pos.py test` · `python pos.py test F=MAP-07` (theo mã) · `python pos.py test L=api` (theo tầng)
 - `python pos.py check` = kiểm sổ mã + quét khoá + lint + test; chạy trước mỗi lần push
 - `python pos.py task T=T-043 N=short-name` · `python pos.py done T=T-043` · `python pos.py wt`
+- `python pos.py status` ai đang làm task nào, task nào sẵn sàng, đã xong (suy từ thẻ + Git, không ghi tay)
 - `python pos.py wt-clean [APPLY=1]` dọn worktree đã merge · `python pos.py pr` sinh sẵn khung báo cáo PR
 - `python pos.py sos` khi bị kẹt: sao lưu vào branch `salvage/sos-*` + khám bệnh, rồi chạy P-SOS (`docs/prompts/P-SOS.md`)
 - `python pos.py plan-check` kiểm plan nhiều agent: cùng Wave không trùng Scope (PROCESS.md mục 11)
@@ -22,7 +23,12 @@ AGENTS.md → STATUS.md → thẻ task (nếu có) → dòng mã trong `docs/pro
 task → code → commit → check → rebase → push → PR → CI → [approve nếu Lane Strict] → merge → done
 
 ## Lane
-Fast · Normal · Strict (PROCESS.md mục 8). Ghi Lane vào mô tả PR. Phân vân thì chọn Lane cao hơn.
+Fast · Normal · Strict (PROCESS.md mục 8). Không có thẻ → Fast; có thẻ → Normal; chạm đường dẫn trong CODEOWNERS → Strict. Ghi Lane vào mô tả PR. Phân vân thì chọn Lane cao hơn.
+
+## Vai (PROCESS.md mục 11)
+{{Một AI: không tách vai | Một Orchestrator + nhiều Builder}}
+Orchestrator: thẻ, số T, merge, STATUS. Builder: làm trong Scope, dừng khi PR qua CI. Reviewer: chỉ PR Lane Strict.
+Cần báo Orchestrator: ghi vào báo cáo hoặc PR rồi dừng; chủ dự án chuyển tin. Builder không ghi STATUS, plan.
 
 ## Luật cứng (PROCESS.md mục 4)
 1. Không push thẳng lên main; chỉ merge qua PR.

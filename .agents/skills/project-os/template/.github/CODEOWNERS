@@ -10,6 +10,10 @@
 /.githooks/          @chu-du-an
 /.github/            @chu-du-an
 
+# Plan: thẻ trên main quyết định Scope của task, nên chủ dự án duyệt mọi thay đổi (PROCESS.md mục 7).
+# Không ghi docs/plan/ vào mục Hot file của AGENTS.md: Orchestrator sửa plan qua PR không có thẻ.
+/docs/plan/          @chu-du-an
+
 # Của dự án: bỏ dấu # ở các dòng cần dùng, sửa đường dẫn cho đúng.
 # /src/auth/           @chu-du-an
 # /src/payment/        @chu-du-an

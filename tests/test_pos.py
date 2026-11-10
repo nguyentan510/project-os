@@ -309,6 +309,59 @@ class SecretsTest(ProjectCase):
         self.assertIn(".env: file .env đang nằm trong Git", r.stdout)
 
 
+class StatusTest(WorktreeCase):
+    """status suy trạng thái task từ thẻ + Git, không cần ghi tay."""
+
+    PLAN = CARDS + """- [ ] T-004 · RPT-01 · báo cáo
+      Wave:      W2
+      Scope:     src/rpt/*
+      Phụ thuộc: T-002
+"""
+
+    def setUp(self):
+        super().setUp()
+        self.commit_on_main("docs/plan/M1.md", self.PLAN)
+
+    def group(self, out, title):
+        """Các dòng thụt vào ngay dưới tiêu đề nhóm."""
+        lines, rows, on = out.splitlines(), [], False
+        for line in lines:
+            if not line.startswith("    "):
+                on = line.strip() == title
+            elif on:
+                rows.append(line.strip())
+        return rows
+
+    def test_groups_before_and_after_merge(self):
+        self.pos("task", "T=T-002", "N=map-sales")
+        out = self.pos("status").stdout
+        self.assertTrue(any(r.startswith("T-002  feat/T-002-map-sales") for r in self.group(out, "Đang làm")), out)
+        ready = self.group(out, "Sẵn sàng")
+        self.assertTrue(any(r.startswith("T-003") for r in ready), out)
+        self.assertTrue(any(r.startswith("T-001") for r in ready), "thẻ T-001 trong STATUS.md: " + out)
+        self.assertTrue(any(r.startswith("T-004  (chờ T-002)") for r in self.group(out, "Chờ phụ thuộc")), out)
+
+        # PR của T-002 được merge squash: main có commit mang [T-002]
+        self.write("src/map/a.py", "x = 1")
+        git(self.root, "add", "-A")
+        git(self.root, "commit", "-q", "-m", "feat(MAP-01): add map [T-002] (#7)")
+        git(self.root, "push", "-q", "origin", "main")
+        out = self.pos("status").stdout
+        done = self.group(out, "Xong")
+        self.assertTrue(any(r.startswith("T-002") and "chưa dọn feat/T-002-map-sales" in r for r in done), out)
+        self.assertTrue(any(r.startswith("T-004") for r in self.group(out, "Sẵn sàng")), out)
+
+    def test_branch_with_task_number_but_no_card_is_reported(self):
+        git(self.root, "branch", "feat/T-050-ghost")
+        out = self.pos("status").stdout
+        self.assertIn("T-050  feat/T-050-ghost", self.group(out, "Branch mang số T nhưng không có thẻ"), out)
+
+    def test_ticked_card_counts_as_done(self):
+        self.commit_on_main("docs/plan/M1.md", self.PLAN.replace("- [ ] T-002", "- [x] T-002"))
+        out = self.pos("status").stdout
+        self.assertTrue(any(r.startswith("T-002") for r in self.group(out, "Xong")), out)
+
+
 class SosTest(ProjectCase):
     def test_sos_backs_up_dirty_tree_without_touching_it(self):
         self.write("new.txt", "chưa commit")

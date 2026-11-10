@@ -1,8 +1,5 @@
 # STATUS · {{YYYY-MM-DD}} · {{Milestone hoặc —}}
 
-## Đang giữ
-(trống)
-
 ## Tiếp theo
 - [ ] T-001 · {{mã feature MVP đầu tiên}} · khung chạy được
       Mục tiêu:  một luồng giao diện → API → dữ liệu, kèm 1 test e2e

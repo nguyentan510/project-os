@@ -153,7 +153,7 @@ Luồng chung cho mọi task:
 task → code → commit → check → rebase → push → PR → CI → [approve nếu Lane Strict] → merge → done
 ```
 
-Mỗi task chọn một **Lane** theo rủi ro: **Fast** (câu chữ, lỗi nhỏ), **Normal** (feature, một Builder), **Strict** (chạm Restricted zone, contract, Hot file, hoặc nhiều Builder song song). Phân vân thì chọn Lane cao hơn. Tên gọi (Milestone, Wave, Task, Lane, Scope, Hot file, Restricted zone…) theo [`docs/GLOSSARY.md`](.agents/skills/project-os/template/docs/GLOSSARY.md).
+Mỗi task chọn một **Lane** theo rủi ro: **Fast** (câu chữ, lỗi nhỏ), **Normal** (feature, sửa lỗi có logic), **Strict** (chạm Restricted zone, contract, Hot file). Máy xác định được Lane: không có thẻ là Fast, có thẻ là Normal, chạm đường dẫn trong `CODEOWNERS` là Strict. Tên gọi (Milestone, Wave, Task, Lane, Scope, Hot file, Restricted zone…) theo [`docs/GLOSSARY.md`](.agents/skills/project-os/template/docs/GLOSSARY.md).
 
 ## Khung Ngày 0 có gì
 
@@ -162,7 +162,7 @@ Mỗi task chọn một **Lane** theo rủi ro: **Fast** (câu chữ, lỗi nh�
 | File | Vai trò |
 | --- | --- |
 | `AGENTS.md` · `CLAUDE.md` | Luật chơi cho mọi AI (`CLAUDE.md` chỉ chứa `@AGENTS.md`) |
-| `STATUS.md` | Đang giữ, tiếp theo, đang chặn, ghi chú bàn giao |
+| `STATUS.md` | Tiếp theo (thẻ task), đang chặn, ghi chú bàn giao |
 | `docs/PROCESS.md` | Bản đầy đủ của quy tắc (13 mục + phụ lục mẫu) |
 | `docs/GLOSSARY.md` | Bảng thuật ngữ: một khái niệm một tên |
 | `docs/product/BRIEF.md` · `FEATURES.md` | Sản phẩm để làm gì · sổ mã feature |
@@ -187,6 +187,7 @@ Chỉ dùng thư viện chuẩn Python 3.8+, chạy như nhau trên Windows, mac
 | `task T=T-043 N=map-sales [TYPE=fix]` | Tạo worktree + branch từ `main` mới nhất |
 | `done T=T-043` | Dọn sau khi PR đã merge (nhận cả merge squash) |
 | `drop T=T-043 [CONFIRM=T-043]` | Huỷ task chưa merge |
+| `status` | Trạng thái task suy từ thẻ + Git: đang làm, sẵn sàng, chờ, xong |
 | `wt` · `wt-clean [APPLY=1]` | Liệt kê · dọn worktree mồ côi |
 | `pr [T=T-043]` | Sinh khung báo cáo PR từ diff + kết quả check |
 | `scope` | Kiểm file đã sửa nằm trong Scope của thẻ task; không có thẻ thì chỉ qua khi đủ nhỏ để là Lane Fast |

@@ -52,7 +52,7 @@ Mỗi bước có đầu ra; chủ dự án duyệt rồi mới sang bước sau
 | `DECISIONS.md` | Tối thiểu: ngôn ngữ + khung, CSDL + lưu trữ, nơi chạy, xác thực, cấu trúc module; câu hỏi `Q-` còn mở ghi người chờ | Mọi lựa chọn kỹ thuật có lý do; không `Q-` nào chặn MVP |
 | `src/<module>/README.md` + `contract.*` | Chức năng, vào/ra, phụ thuộc; kiểu dữ liệu và chữ ký API công khai (chưa cần code thật) | Module chỉ gọi nhau qua contract; contract dữ liệu lõi đã viết |
 | `AGENTS.md` | Đủ các mục theo mẫu phụ lục; Restricted zone và Hot file **thật** của dự án | AI phiên mới đọc xong làm được task mẫu mà không phải hỏi lại |
-| `STATUS.md` | Đang giữ: trống · Tiếp theo: T-001 · Đang chặn: các `Q-` liên quan | Biết ngay việc đầu tiên là gì |
+| `STATUS.md` | Tiếp theo: thẻ T-001 có dòng `Scope:` · Đang chặn: các `Q-` liên quan | Biết ngay việc đầu tiên là gì |
 | `GLOSSARY.md` | Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) ở mục cuối | Không từ nào trong BRIEF, FEATURES phải đoán nghĩa |
 | `pos.py`, hook | `setup`, `check`, `task`, `done`; pre-push hook gọi `python pos.py check` | `python pos.py setup` + `python pos.py check` xanh trên máy sạch; `LINT_CMD`, `TEST_CMD` đã điền (chưa có test thì ghi `"none"`: qua kèm cảnh báo; để trống thì `check` báo lỗi) |
 | GitHub | Khoá main, CI chạy `python pos.py check`, `CODEOWNERS` khi có Restricted zone | Thử push thẳng main bị chặn |
@@ -104,7 +104,7 @@ Tám luật duy nhất không linh hoạt. Luật nào máy chặn được thì
 | 5 | Mã không bao giờ dùng lại; mã trong code phải có trong sổ mã | Kiểm sổ mã trong `python pos.py check` |
 | 6 | Builder không tự sửa **contract đã khoá, Hot file, Restricted zone**. Cần sửa → dừng task, báo Orchestrator, xin duyệt | `CODEOWNERS` liệt kê đúng các đường dẫn này; máy chặn (`pos.py`, `scripts/features.py`, `.githooks/`, `.github/`) luôn là Hot file |
 | 7 | PR chạm các đường dẫn ở luật 6 phải có **chủ dự án approve** | Khoá main: bắt buộc Code Owner approve (dùng merge queue: thêm job `approval-check`, phụ lục) |
-| 8 | Không sửa ngoài Scope của thẻ; cần thì dừng và báo | pre-push hook và CI chạy `python pos.py scope` (so file đã sửa với dòng `Scope:` của thẻ trên main; không có thẻ thì chỉ qua khi đủ điều kiện Lane Fast); CI dùng bản `pos.py` của main; Reviewer |
+| 8 | Không sửa ngoài Scope của thẻ; cần thì dừng và báo | pre-push hook và CI chạy `python pos.py scope` (so file đã sửa với dòng `Scope:` của thẻ trên main; không có thẻ thì chỉ qua khi đủ điều kiện Lane Fast); CI dùng bản `pos.py` của main |
 
 - Restricted zone và Hot file ghi **một danh sách** trong AGENTS.md, chép đúng sang `CODEOWNERS` (phụ lục). Mặc định Restricted zone: đăng nhập, phân quyền, thanh toán, contract, migration, xoá dữ liệu.
 - Xin duyệt = Orchestrator tạo task riêng cho phần cần sửa; chủ dự án duyệt task trước, approve PR sau.
@@ -219,15 +219,14 @@ Hai trục nối nhau qua mã feature: **Sản phẩm** (có gì, sống lâu) v
 | File | Trả lời | Nguồn duy nhất của | Ai ghi |
 | --- | --- | --- | --- |
 | ROADMAP.md | Làm gì, thứ tự nào | Milestone + trạng thái | Orchestrator đề xuất, chủ dự án duyệt |
-| Plan `M3-*.md` | Milestone này làm thế nào | Thẻ task + ô tick | Orchestrator |
-| STATUS.md | Phiên trước dừng ở đâu | Ai giữ task nào, đang chặn gì, ghi chú bàn giao | Orchestrator (một AI: chính nó) |
+| Plan `M3-*.md` | Milestone này làm thế nào | Thẻ task (Scope, Phụ thuộc, Xong khi) | Orchestrator viết, chủ dự án duyệt (Code Owner của `docs/plan/`) |
+| STATUS.md | Phiên trước dừng ở đâu | Đang chặn gì, ghi chú bàn giao; thẻ task khi chưa có plan | Orchestrator (một AI: chính nó) |
 
-Dự án nhỏ chỉ cần STATUS.md, dùng mục "Tiếp theo" thay plan. "Vừa xong" không ghi ở đâu: đã có trong Git. Milestone nghiệm thu thì xoá plan (lịch sử ở Git).
+Dự án nhỏ chỉ cần STATUS.md, đặt thẻ task ở mục "Tiếp theo" thay plan. Ai đang giữ task nào và task nào đã xong **không ghi tay**: `python pos.py status` suy ra từ thẻ, branch và commit trên main (task xong khi PR mang `[T-nnn]` đã merge). "Vừa xong" không ghi ở đâu: đã có trong Git. Milestone nghiệm thu thì xoá plan (lịch sử ở Git).
 
 ```
 # STATUS · 2026-11-09 · M3
-## Đang giữ          T-043 · Builder A · feat/T-043-map-sales
-## Tiếp theo         T-044
+## Tiếp theo         T-044 (thẻ ở docs/plan/M3-store-map.md)
 ## Đang chặn         Q-map: nguồn ô bản đồ (chờ chủ dự án)
 ## Ghi chú bàn giao  Thẻ điểm bán xong; còn offline. Chạy python pos.py test F=MAP-02 trước.
 ```
@@ -266,7 +265,7 @@ Dự án nhỏ chỉ cần STATUS.md, dùng mục "Tiếp theo" thay plan. "Vừ
 
 - Worktree đặt ngoài repo (`../wt/`), không lồng trong repo.
 - Lệnh nằm ở `pos.py` (cần Python 3, không cần make hay bash; Linux/macOS có thể phải gõ `python3`); `python pos.py wt` liệt kê worktree đang có. `python pos.py done` nhận ra PR đã merge squash qua lệnh `gh`; máy không có `gh` thì so nội dung branch với `origin/main` (cần git 2.38+).
-- Cuối phiên, Orchestrator chạy `python pos.py wt-clean`: liệt kê worktree mồ côi (branch đã merge vào main, hoặc PR đã MERGED qua `gh`; bỏ qua cái còn thay đổi chưa commit). Đúng danh sách thì `python pos.py wt-clean APPLY=1` để dọn. Worktree chưa merge mà không có trong "Đang giữ" của STATUS thì báo, không tự xoá (huỷ phải qua `drop`).
+- Cuối phiên, Orchestrator chạy `python pos.py wt-clean`: liệt kê worktree mồ côi (branch đã merge vào main, hoặc PR đã MERGED qua `gh`; bỏ qua cái còn thay đổi chưa commit). Đúng danh sách thì `python pos.py wt-clean APPLY=1` để dọn. Worktree chưa merge thì không tự xoá (huỷ phải qua `drop`); `python pos.py status` chỉ ra branch mang số T mà không có thẻ.
 - Mở PR: `python pos.py pr` in sẵn khung báo cáo từ `git diff --stat`, commit, mã feature và kết quả `check`; Builder chỉ điền các ô còn trống.
 
 ### Luồng chung (mọi Lane)
@@ -277,13 +276,15 @@ task → code → commit → check → rebase → push → PR → CI → [approv
 
 ### Chọn Lane theo rủi ro
 
-AI tự chọn Lane và ghi Lane vào mô tả PR. Phân vân thì chọn Lane cao hơn. Đang làm mà phát hiện chạm Restricted zone, contract hay Hot file thì **nâng Lane**: dừng, báo Orchestrator, xin duyệt.
+Lane là điều máy xác định được, AI không tự khai thấp hơn: không có thẻ → Fast (phải qua giới hạn của `scope`); có thẻ → Normal; diff chạm đường dẫn trong `CODEOWNERS` → Strict. AI ghi Lane đó vào mô tả PR. Phân vân thì chọn Lane cao hơn. Đang làm mà phát hiện chạm Restricted zone, contract hay Hot file thì **nâng Lane**: dừng, báo Orchestrator, xin duyệt.
 
 | Lane | Khi nào | Được bỏ | Bắt buộc thêm |
 | --- | --- | --- | --- |
 | **Fast** | Câu chữ, tài liệu, lỗi nhỏ rõ nguyên nhân; không chạm Restricted zone, contract, Hot file | Thẻ task, số T, plan, Reviewer | Qua `python pos.py scope`: không chạm đường dẫn được bảo vệ, tối đa 5 file code và 100 dòng code (`FAST_MAX_*` trong `pos.py`; tài liệu không tính). Task mang mã feature: `python pos.py task T=MAP-02 N=typo TYPE=fix` |
-| **Normal** | Feature hoặc sửa lỗi có logic; 1 Builder | Reviewer, merge queue | Thẻ task, test cho hành vi mới |
-| **Strict** | Chạm Restricted zone, contract, Hot file; hoặc nhiều Builder chạy song song | — | Task riêng được chủ dự án duyệt trước; chủ dự án approve PR; song song: worktree riêng + PR phải rebase theo main trước khi merge |
+| **Normal** | Feature hoặc sửa lỗi có logic; không chạm đường dẫn được bảo vệ | Reviewer, approve của chủ dự án | Thẻ task, test cho hành vi mới |
+| **Strict** | Chạm Restricted zone, contract, Hot file (các đường dẫn trong `CODEOWNERS`) | — | Task riêng được chủ dự án duyệt trước; Reviewer (P-07); chủ dự án approve PR |
+
+Chạy song song không phải là Lane. Nhiều Builder cùng lúc thì mỗi task một worktree, PR rebase theo main rồi merge lần lượt (mục 11); Lane của từng task vẫn xét theo bảng trên.
 
 ### Các bước
 
@@ -293,7 +294,7 @@ AI tự chọn Lane và ghi Lane vào mô tả PR. Phân vân thì chọn Lane c
 4. **`python pos.py check`:** lỗi → sửa → check lại.
 5. **Rebase + push + PR:** `git rebase origin/main`, pre-push hook chạy lại check và scope, mở PR theo mẫu (ghi Lane).
 6. **CI của PR:** lỗi → sửa ở local → push lại. Lane Strict: chờ chủ dự án approve.
-7. **Merge + done:** squash vào main → `python pos.py done` → tick task, cập nhật STATUS.
+7. **Merge + done** (Orchestrator; chế độ một AI: chính nó): squash vào main → `python pos.py done`. Không tick tay: `python pos.py status` nhận task xong từ commit mang `[T-nnn]`.
 
 ```
 MÁY LOCAL (mỗi Builder một worktree)            GITHUB
@@ -312,7 +313,7 @@ python pos.py task ──► code + commit ──► python pos.py check ─┐
      Lane Strict? ── có ──► chờ chủ dự án approve
         │ không
         ▼
-     Merge (squash, PR đã rebase theo main) ──► python pos.py done · tick task · STATUS
+     Merge (squash, PR đã rebase theo main) ──► python pos.py done
 ```
 
 Bên trái là việc của Builder trên máy mình; chỉ khi check qua mới sang GitHub, nơi CI của PR là cổng không tắt được.
@@ -322,7 +323,7 @@ Bên trái là việc của Builder trên máy mình; chỉ khi check qua mới 
 ```
 - [ ] T-043 · MAP-02 · web Sales
       Mục tiêu:  Sales mở bản đồ điểm bán từ Bảng tin
-      Lane:      Strict (song song)
+      Lane:      Normal
       Wave:      W1                       Read (RO): src/*/contract.*
       Scope:     src/map/web/*, tests/e2e/map/*
       Phụ thuộc: T-042 (W0, contract đã khoá)
@@ -394,17 +395,25 @@ feat(MAP-07): add GET /stores/map with team/company scope [T-042]
 Why: D59 · Test: python pos.py test F=MAP-07 (api 5 pass)
 ```
 
-Loại: `feat` · `fix` · `refactor` · `test` · `docs` · `chore` (chore không cần mã).
+Loại: `feat` · `fix` · `refactor` · `test` · `docs` · `chore` (chore không cần mã). Task có thẻ bắt buộc ghi `[T-nnn]` ở tiêu đề PR: `python pos.py status` dựa vào đó để biết task đã xong.
 
 ## 11. Nhiều agent song song
 
-Chỉ dùng khi có từ 2 task không trùng file. Chỉ có một AI thì nó đóng lần lượt cả ba vai.
+Có hai chế độ; dự án chọn một và ghi vào AGENTS.md.
+
+| Chế độ | Khi nào | Vai |
+| --- | --- | --- |
+| **Một AI** | Mặc định của solo dev | Không tách vai: cùng một AI viết thẻ, làm, merge. Kiểm chứng độc lập chỉ còn ở máy chặn và cổng của chủ dự án (duyệt plan, approve PR Strict) |
+| **Một Orchestrator + nhiều Builder** | Có từ 2 task không trùng file | Tách vai theo bảng dưới. **Mỗi lúc chỉ một Orchestrator**; phiên Orchestrator mới đọc STATUS và chạy `python pos.py status` trước khi ghi gì |
 
 | Vai | Nhìn gì | Làm gì | Không làm |
 | --- | --- | --- | --- |
-| Orchestrator | ROADMAP, plan, STATUS, FEATURES, DECISIONS | Viết thẻ, kiểm trùng Scope, cấp số T, chạy merge queue, cập nhật plan + STATUS | Viết code feature |
-| Builder | Thẻ của mình, README module, contract, `rg "<mã>"` | Luồng chung (mục 8) trên worktree riêng | Sửa ngoài Scope, contract đã khoá, Hot file |
-| Reviewer | Diff của PR + "Xong khi" | Chỉ PR chạm Restricted zone: kiểm, đề xuất bản sửa, rồi chuyển chủ dự án approve | Kiểm PR thường (CI đã lo), tự merge |
+| Chủ dự án | Đầu ra từng bước, PR cần approve | Phát prompt (P-nn), chuyển tin giữa các phiên AI, duyệt plan, approve PR Strict, quyết khi Reviewer quá 2 vòng, nghiệm thu Milestone, bật cài đặt GitHub | Để AI duyệt thay mình |
+| Orchestrator | ROADMAP, plan, STATUS, FEATURES, DECISIONS | Viết thẻ, kiểm trùng Scope, cấp số T, merge lần lượt và `done`, đổi trạng thái feature trong sổ mã, khoá contract cuối W0, ghi STATUS. Mọi thay đổi của nó cũng đi qua PR (`chore:` hoặc `docs`) | Viết code feature |
+| Builder | Thẻ của mình, README module, contract, `rg "<mã>"` | Luồng chung (mục 8) trên worktree riêng, tới khi PR qua CI; rebase và sửa xung đột trên branch của mình | Sửa ngoài Scope, contract đã khoá, Hot file; ghi plan, STATUS; tự merge |
+| Reviewer | Diff của PR + "Xong khi" | Chỉ PR Lane Strict: kiểm, ghi kết luận vào PR, đề xuất bản sửa cho Builder, rồi chuyển chủ dự án approve. Nên là phiên AI khác phiên đã làm task | Kiểm PR Fast, Normal (CI đã lo); tự sửa code; tự merge |
+
+**Kênh báo.** Các phiên AI không nhắn được cho nhau. "Dừng và báo Orchestrator" nghĩa là: Builder commit WIP, ghi vấn đề vào báo cáo (hoặc comment trên PR nếu đã mở) rồi dừng; chủ dự án chuyển cho phiên Orchestrator. Builder không tự ghi STATUS hay plan.
 
 ### Plan theo Wave (đồ thị không chu trình, DAG)
 
@@ -451,7 +460,7 @@ Chọn một cách ở Ngày 0 (ghi `Dxx`), file gốc ra khỏi danh sách Hot 
                          │
               Restricted zone? ── có ──► Reviewer (≤ 2 vòng) ──► quá 2 vòng: chủ dự án quyết
                          │ không / đạt
-                   Merge + STATUS (Orchestrator tick task)
+                   Merge + done (Orchestrator)
 ```
 
 Song song chỉ nằm giữa hai điểm tuần tự: **task contract khoá trước**, **merge queue từng PR sau** (rebase theo main, CI lại).
@@ -465,13 +474,14 @@ Song song chỉ nằm giữa hai điểm tuần tự: **task contract khoá trư
 Task đang làm phát hiện contract hoặc task trước thiếu sót (luật cứng 6 và 8 áp dụng, không sửa lén, không hardcode):
 
 1. **Dừng và lưu:** commit WIP lên branch của task, không sửa module khác.
-2. **Báo:** ghi `Đang chặn` trong STATUS; Orchestrator dùng P-10, tra `rg` theo mã để liệt kê **mọi task dùng phần contract đó**; các task ấy tạm dừng, không chỉ task bị kẹt.
+2. **Báo:** Builder báo theo kênh báo ở trên; Orchestrator ghi `Đang chặn` trong STATUS, dùng P-10, tra `rg` theo mã để liệt kê **mọi task dùng phần contract đó**; các task ấy tạm dừng, không chỉ task bị kẹt.
 3. **Task vá:** một task riêng Lane Strict, chờ chủ dự án duyệt. Orchestrator sửa `Phụ thuộc` của các thẻ bị ảnh hưởng (trỏ về task vá) và chạy lại `python pos.py plan-check`.
 4. **Sau khi task vá merge:** Builder bị kẹt rebase **rồi chạy lại contract test và `check`**. Rebase chỉ giữ code, không đảm bảo code đúng với contract mới; phần dựa trên contract hoặc mock cũ phải sửa.
 5. **Không ngồi chờ:** Builder bị kẹt nhận task khác ở cùng Wave hoặc dừng phiên (P-09).
 
 - Chỉ Orchestrator ghi plan, STATUS và cấp số task; Builder ghi bàn giao trong báo cáo.
 - Chủ dự án duyệt: plan của Milestone, mọi PR Lane Strict (approve), khi Reviewer quá 2 vòng chưa đạt, và quyết định lớn (mục 12).
+- Nghiệm thu Milestone là việc của chủ dự án: đối chiếu chỉ số thành công trong BRIEF và "Xong khi" của các thẻ, rồi mới chạy P-13.
 - Không gắn công cụ: Claude, Codex, Gemini, Cursor… đóng vai nào cũng được, vì cùng đọc AGENTS.md, plan và STATUS.
 
 ## 12. Mặc định: AI được linh hoạt
@@ -499,21 +509,21 @@ Mỗi bước của luồng có một prompt mẫu, mã `P-nn`. Bản đầy đ�
 
 | Mã | Khi dùng | Vai | Prompt | Đầu ra |
 | --- | --- | --- | --- | --- |
-| P-01 | Mở phiên | Mọi vai | Đọc AGENTS.md và STATUS.md. Tóm tắt trong 5 dòng: Milestone nào, ai giữ task nào, đang chặn gì, việc tiếp theo. Chưa sửa gì. | 5 dòng tóm tắt |
+| P-01 | Mở phiên | Mọi vai | Đọc AGENTS.md và STATUS.md, chạy `python pos.py status`. Tóm tắt trong 5 dòng: Milestone nào, ai giữ task nào, đang chặn gì, việc tiếp theo. Chưa sửa gì. | 5 dòng tóm tắt |
 | P-02 | Khởi tạo dự án | Orchestrator | Từ BRIEF sau: `<brief>`. Làm Ngày 0 theo mục 3, từng bước: BRIEF → FEATURES → DECISIONS → module + contract → AGENTS + STATUS → khung repo. Trình đầu ra mỗi bước, chờ tôi duyệt rồi mới sang bước sau. | Bộ file Ngày 0 |
 | P-03 | Lập plan (một agent) | Orchestrator | Lập plan cho Milestone `<M3>`: `<mục tiêu>`. Đọc ROADMAP, FEATURES, DECISIONS. Viết thẻ task theo mẫu, task contract đi đầu, ghi Lane từng task, kiểm hai task song song không trùng Scope. Chờ tôi duyệt. | `docs/plan/M3-*.md` |
 | P-03-MULTI | Lập plan nhiều agent | Orchestrator | Lập plan cho Milestone `<M3>` theo đồ thị không chu trình. Đọc BRIEF, FEATURES, ROADMAP, DECISIONS. Chia W0 (task contract + mock) → W1 (2–5 task song song) → W2 (nối dây + e2e). Mỗi thẻ ghi Wave, Scope (RW), Read (RO), Phụ thuộc chỉ trỏ Wave trước. Cách đăng ký module để không sửa Hot file. Chạy `python pos.py plan-check` đến khi qua, dán kết quả. Chờ tôi duyệt. | `docs/plan/M3-*.md` + kết quả plan-check |
 | P-04 | Giao task | Orchestrator → Builder | Làm task sau theo luồng chung: `<thẻ task>`. Dừng và báo nếu cần sửa ngoài Scope, hoặc phải chạm contract, Hot file, Restricted zone. Trước khi mở PR tự hỏi: (1) file ranh giới mới đã có 3 dòng đầu file gắn mã chưa? (2) test mới đã gắn mã feature chưa? (3) `python pos.py check` đã in "qua" chưa? Xong thì báo cáo theo mẫu. | PR + báo cáo |
-| P-05 | Sửa nhanh | Builder (solo) | Lane Fast, mã `<MAP-02>`: `<việc cần sửa>`. `python pos.py task T=<mã> N=<short-name> TYPE=fix` → sửa → `python pos.py check` → PR. | PR nhỏ |
-| P-06 | Sửa lỗi | Builder | Lỗi: `<hiện tượng, log>`. Mã liên quan: `<MAP-07>`. Viết test tái hiện lỗi trước, rồi sửa. Lane Normal. | Test đỏ → xanh, PR |
-| P-07 | Review Restricted zone | Reviewer | Review PR `<#n>` (Lane Strict). Đối chiếu "Xong khi", Scope của thẻ, luật cứng 6–8. Kết luận Đạt hoặc Trả lại kèm bản sửa đề xuất. Không merge. | Kết luận + lý do |
-| P-08 | Merge và dọn | Orchestrator | PR `<#n>` đã qua CI (và đã được approve nếu Lane Strict). Merge squash, `python pos.py done T=<mã>`, tick task trong plan, cập nhật STATUS. | main mới, STATUS mới |
-| P-09 | Cuối phiên | Orchestrator | Kết thúc phiên. Cập nhật STATUS (đang giữ, đang chặn, bàn giao ≤ 3 dòng). Chạy `python pos.py wt-clean` (dọn worktree mồ côi bằng `APPLY=1`), báo worktree thừa chưa merge. | STATUS mới |
+| P-05 | Sửa nhanh | Builder (solo) | Lane Fast, mã `<MAP-02>`: `<việc cần sửa>`. `python pos.py task T=<mã> N=<short-name> TYPE=fix` → sửa → `python pos.py check` → PR. CI qua thì merge squash và `python pos.py done T=<mã>`. `python pos.py scope` báo vượt giới hạn Lane Fast thì dừng: việc này cần thẻ. | PR nhỏ |
+| P-06 | Sửa lỗi | Builder | Lỗi: `<hiện tượng, log>`. Mã liên quan: `<MAP-07>`. Viết test tái hiện lỗi trước, rồi sửa. Lane Normal: làm theo thẻ `<T-nnn>`; chưa có thẻ thì dừng, để Orchestrator viết thẻ có Scope trước. | Test đỏ → xanh, PR |
+| P-07 | Review Restricted zone | Reviewer | Review PR `<#n>` (Lane Strict). Đối chiếu "Xong khi", Scope của thẻ, luật cứng 6–8. Kết luận Đạt hoặc Trả lại kèm bản sửa đề xuất, ghi vào PR. Không tự sửa code, không merge. | Kết luận + lý do |
+| P-08 | Merge và dọn | Orchestrator | PR `<#n>` đã qua CI (và đã được approve nếu Lane Strict). Merge squash, `python pos.py done T=<mã>`, chạy `python pos.py status` để thấy task đã xong và task nào sẵn sàng tiếp (không tick tay). Task hoàn tất một feature thì đổi trạng thái feature đó sang `dùng` trong sổ mã. | main mới, STATUS mới |
+| P-09 | Cuối phiên | Orchestrator | Kết thúc phiên. Cập nhật STATUS (đang chặn, bàn giao ≤ 3 dòng) qua PR `chore:`; ai giữ task nào xem `python pos.py status`, không ghi tay. Chạy `python pos.py wt-clean` (dọn worktree mồ côi bằng `APPLY=1`), báo worktree thừa chưa merge. | STATUS mới |
 | P-10 | Nâng Lane / đổi contract | Orchestrator | Task `<T-043>` cần sửa `<file>` vì `<lý do>`. Liệt kê ảnh hưởng (`rg` theo mã), tạo task riêng Lane Strict. Chờ tôi duyệt. | Task mới + ảnh hưởng |
 | P-11 | Ghi quyết định | Mọi vai | Ghi quyết định: `<nội dung>`, lý do `<…>`. Cấp mã D tiếp theo, điền bảng DECISIONS, cột Duyệt = `<Chủ dự án/AI>`, ghi mã liên quan. | Dòng Dxx mới |
 | P-12 | Rà tài liệu | Orchestrator | Rà AGENTS.md, STATUS, FEATURES, DECISIONS, GLOSSARY: thông tin trùng, lỗi thời, thuật ngữ lệch GLOSSARY, mã thiếu test, worktree thừa. Liệt kê, chưa sửa. | Danh sách cần dọn |
 | P-13 | Nghiệm thu Milestone | Orchestrator | Milestone `<M3>` đã nghiệm thu, phiên bản `<v0.5>`. Đánh dấu xong trong ROADMAP, xoá plan của Milestone, dọn STATUS, liệt kê câu hỏi Q- còn mở. | ROADMAP mới |
-| P-14 | Khẩn cấp | Builder | Lỗi production: `<hiện tượng>`. Sửa nhanh nhất; tôi cho phép bỏ qua `<luật>`. Ghi lý do vào DECISIONS, tạo task bù. | Hotfix + Dxx + task bù |
+| P-14 | Khẩn cấp | Builder | Lỗi production: `<hiện tượng>`. Sửa nhanh nhất; tôi cho phép bỏ qua `<luật>`. Ghi lý do vào DECISIONS, đề xuất task bù để Orchestrator cấp số T. | Hotfix + Dxx + task bù |
 | P-15 | Kiểm toán Ngày 0 | Orchestrator (phiên mới) | Kiểm toán repo theo bảng kiểm mục 3. Với từng ô: Đạt hoặc Chưa, kèm bằng chứng (file, dòng). Không sửa gì. Cuối cùng kết luận: qua cổng hay chưa, còn thiếu gì. | Bảng Đạt/Chưa + kết luận |
 | P-SOS | Bị kẹt, cần cứu hộ | Orchestrator | Chạy `python pos.py sos` (sao lưu vào branch `salvage/sos-*`, khám bệnh, chỉ đọc). Báo ≤ 5 dòng dễ hiểu, đưa 2 phương án: A cứu task theo đúng luồng, B huỷ task và về main xanh. Chờ tôi chọn A/B rồi mới làm. | Báo cáo + repo về chuẩn |
 
@@ -528,11 +538,12 @@ Mỗi bước của luồng có một prompt mẫu, mã `P-nn`. Bản đầy đ�
 # AGENTS · Luật của dự án
 ## Mục tiêu          1–2 câu, dẫn docs/product/BRIEF.md
 ## Đọc khi mở phiên  AGENTS.md → STATUS.md → thẻ task → dòng mã → rg "<mã>"; thuật ngữ: docs/GLOSSARY.md
-## Lệnh              python pos.py setup · run · test [F=<mã>] [L=<tầng>] · lint · check · task · done
+## Lệnh              python pos.py setup · run · test [F=<mã>] [L=<tầng>] · lint · check · task · done · status
 ## Luồng             task → code → commit → check → rebase → push → PR → CI → [approve nếu Lane Strict] → merge → done
 ## Lane              Fast · Normal · Strict (PROCESS.md mục 8); phân vân thì chọn Lane cao hơn
 ## Luật cứng         8 luật (PROCESS.md mục 4)
-## Hot file          src/app/routes.*, db/schema.*, src/copy.*, .github/**
+## Vai               chế độ Một AI, hoặc Một Orchestrator + nhiều Builder (PROCESS.md mục 11)
+## Hot file          pos.py, scripts/features.py, .githooks/, .github/, src/app/routes.*, db/schema.*, src/copy.*
 ## Restricted zone   src/auth/, src/payment/, db/migrations/, **/contract.*
 ## Báo cáo           Đã làm · Scope thực tế · File · Test · Khác mặc định · Rủi ro · Bàn giao
 ```
@@ -553,7 +564,11 @@ Mỗi bước của luồng có một prompt mẫu, mã `P-nn`. Bản đầy đ�
 /db/migrations/      @chu-du-an
 **/contract.*        @chu-du-an
 /src/app/routes.*    @chu-du-an
+/pos.py              @chu-du-an
+/scripts/features.py @chu-du-an
+/.githooks/          @chu-du-an
 /.github/            @chu-du-an
+/docs/plan/          @chu-du-an
 ```
 
 Bật trên GitHub: khoá main → **Require review from Code Owners**. Khi dùng merge queue, thêm job CI `approval-check`: `gh pr view --json reviewDecision` phải là `APPROVED` thì mới merge.

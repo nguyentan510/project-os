@@ -6,6 +6,7 @@ Chỉ dùng thư viện chuẩn Python 3.8+. (Đặt tên pos.py, không phải 
   python pos.py task T=T-043 N=map-sales [TYPE=fix]    tạo worktree + branch từ main mới nhất
   python pos.py done T=T-043                           dọn sau khi PR đã merge
   python pos.py drop T=T-043 [CONFIRM=T-043]           huỷ task chưa merge (phải hỏi chủ dự án)
+  python pos.py status                                 trạng thái task suy từ thẻ + Git: đang làm, sẵn sàng, chờ, xong
   python pos.py wt                                     liệt kê worktree
   python pos.py wt-clean [APPLY=1]                     tìm worktree mồ côi (đã merge); chỉ liệt kê, APPLY=1 mới dọn
   python pos.py pr [T=T-043] [--no-check]              sinh sẵn khung báo cáo PR từ git diff + kết quả check
@@ -381,6 +382,7 @@ def cmd_sos(opts, _):
     say("[3/4] Worktree:")
     say("      " + git("worktree", "list")[1].replace("\n", "\n      "))
     cmd_wt_clean({}, [])
+    cmd_status({}, [])
     st = ROOT / "STATUS.md"
     if st.is_file():
         say("      STATUS.md: mục Đang giữ / Đang chặn:")
@@ -634,16 +636,19 @@ def field(line, name):
     return m.group(1).strip() if m else None
 
 
-def parse_cards():
+def parse_cards(files=None):
     cards = []
-    head = re.compile(r"^\s*-\s*\[[ xX]\]\s*(T-\d{3,})\b")
-    for f in sorted((ROOT / "docs" / "plan").glob("*.md")):
+    head = re.compile(r"^\s*-\s*\[([ xX])\]\s*(T-\d{3,})\b(.*)")
+    if files is None:
+        files = sorted((ROOT / "docs" / "plan").glob("*.md"))
+    for f in files:
         lines = f.read_text(encoding="utf-8").splitlines()
         for i, line in enumerate(lines):
             m = head.match(line)
             if not m:
                 continue
-            c = {"t": m.group(1), "file": f.name, "wave": None, "rw": [], "deps": []}
+            c = {"t": m.group(2), "title": m.group(3).strip(" ·"), "ticked": m.group(1) != " ",
+                 "file": f.name, "wave": None, "rw": [], "deps": []}
             for nxt in lines[i + 1:]:
                 if not nxt.strip() or re.match(r"^\s*-\s*\[", nxt):
                     break
@@ -727,7 +732,49 @@ def cmd_plan_check(opts, _):
     return 0
 
 
+# ── Trạng thái task: suy từ thẻ + Git, không ghi tay ───────────────────────
+# Thẻ ở docs/plan/*.md và STATUS.md (thư mục làm việc). Xong = main có commit mang [T-nnn] (tiêu đề PR đã
+# merge squash) hoặc thẻ đã tick. Đang làm = có branch <loại>/T-nnn-… ở máy hoặc trên origin.
+
+def cmd_status(opts, _):
+    files = sorted((ROOT / "docs" / "plan").glob("*.md"))
+    if (ROOT / "STATUS.md").is_file():
+        files.append(ROOT / "STATUS.md")
+    cards = parse_cards(files)
+    base = base_ref()
+    merged = set(re.findall(r"\[(T-\d{3,})\]", git("log", base, "--format=%s")[1])) if base else set()
+    branches = {}
+    for ref in git("for-each-ref", "--format=%(refname:short)", "refs/heads", "refs/remotes/origin")[1].splitlines():
+        name = ref[len("origin/"):] if ref.startswith("origin/") else ref
+        m = re.match(r"^[a-z]+/(T-\d{3,})-", name)
+        if m:
+            branches.setdefault(m.group(1), name)
+    done = merged | {c["t"] for c in cards if c["ticked"]}
+    groups = {"Đang làm": [], "Sẵn sàng": [], "Chờ phụ thuộc": [], "Xong": []}
+    for c in cards:
+        t, br = c["t"], branches.get(c["t"])
+        wait = [d for d in c["deps"] if d not in done]
+        if t in done:
+            groups["Xong"].append(f"{t}  {c['title']}" + (f"  (chưa dọn {br}: python pos.py done T={t})" if br else ""))
+        elif br:
+            groups["Đang làm"].append(f"{t}  {br}  {c['title']}")
+        elif wait:
+            groups["Chờ phụ thuộc"].append(f"{t}  (chờ {', '.join(wait)})  {c['title']}")
+        else:
+            groups["Sẵn sàng"].append(f"{t}  {c['title']}")
+    known = {c["t"] for c in cards}
+    stray = [f"{t}  {br}" for t, br in sorted(branches.items()) if t not in known and t not in merged]
+    say(f"status: {len(cards)} thẻ · " + " · ".join(f"{k.lower()} {len(v)}" for k, v in groups.items()))
+    for title, rows in list(groups.items()) + [("Branch mang số T nhưng không có thẻ", stray)]:
+        if rows:
+            say(title)
+            for row in rows:
+                say("    " + row)
+    return 0
+
+
 COMMANDS = {
+    "status": cmd_status,
     "setup": cmd_setup, "run": cmd_run, "lint": cmd_lint, "test": cmd_test, "features": cmd_features,
     "secrets": cmd_secrets, "check": cmd_check, "task": cmd_task, "done": cmd_done, "drop": cmd_drop, "wt": cmd_wt, "scope": cmd_scope, "plan-check": cmd_plan_check,
     "wt-clean": cmd_wt_clean, "pr": cmd_pr, "sos": cmd_sos,

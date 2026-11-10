@@ -31,17 +31,17 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 
 | Thuật ngữ | Nghĩa |
 | --- | --- |
-| Chủ dự án | Người quyết định cuối: duyệt plan, approve PR Lane Strict, cho phép bỏ qua luật khi khẩn cấp |
-| Orchestrator | AI điều phối: viết thẻ task, cấp số T, chạy merge queue, ghi plan và STATUS; không viết code feature |
+| Chủ dự án | Người quyết định cuối: duyệt plan, approve PR Lane Strict, nghiệm thu Milestone, cho phép bỏ qua luật khi khẩn cấp; phát prompt và chuyển tin giữa các phiên AI |
+| Orchestrator | AI điều phối: viết thẻ task, cấp số T, merge lần lượt, ghi plan và STATUS; không viết code feature; mỗi lúc chỉ một Orchestrator |
 | Builder | AI làm task trên worktree riêng, theo luồng chung |
-| Reviewer | AI review PR chạm Restricted zone, tối đa 2 vòng rồi chuyển chủ dự án |
+| Reviewer | AI review PR Lane Strict, tối đa 2 vòng rồi chuyển chủ dự án |
 
 ## File và tài liệu
 
 | Thuật ngữ | Nghĩa |
 | --- | --- |
 | AGENTS.md | Luật của dự án; mọi AI đọc đầu tiên |
-| STATUS.md | Chỗ dừng của phiên trước: Đang giữ · Tiếp theo · Đang chặn · Ghi chú bàn giao |
+| STATUS.md | Chỗ dừng của phiên trước: Tiếp theo · Đang chặn · Ghi chú bàn giao; ai giữ task nào xem `python pos.py status` |
 | BRIEF | Làm cho ai, để làm gì, thế nào là thành công (`docs/product/BRIEF.md`) |
 | Sổ mã | `docs/product/FEATURES.md`: nguồn duy nhất của mã module và feature |
 | DECISIONS | Bảng quyết định `Dxx` và câu hỏi mở `Q-` (`docs/DECISIONS.md`) |
@@ -58,7 +58,7 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 | Luật cứng | 8 luật không ngoại lệ, máy chặn được thì máy chặn (PROCESS.md mục 4) |
 | Mặc định | Điểm xuất phát AI được làm khác khi hợp lý, ghi lý do ở "Khác mặc định" |
 | Luồng chung | `task → code → commit → check → rebase → push → PR → CI → [approve nếu Lane Strict] → merge → done` |
-| Lane | Mức kiểm soát theo rủi ro: **Fast** (câu chữ, lỗi nhỏ) · **Normal** (feature, sửa lỗi có logic) · **Strict** (chạm contract, Hot file, Restricted zone, hoặc nhiều Builder song song) |
+| Lane | Mức kiểm soát theo rủi ro: **Fast** (câu chữ, lỗi nhỏ) · **Normal** (feature, sửa lỗi có logic) · **Strict** (chạm contract, Hot file, Restricted zone). Máy xác định: không thẻ → Fast, có thẻ → Normal, chạm `CODEOWNERS` → Strict |
 | Nâng Lane | Đang làm mà phát hiện chạm vùng rủi ro: dừng, báo Orchestrator, xin duyệt |
 | Thẻ task | Mô tả đủ một task, cũng là prompt giao việc; các trường: Mục tiêu · Lane · Wave · Scope · Read · Phụ thuộc · Cần · Restricted zone · Giao · Xong khi |
 | Scope | Trường thẻ: các đường dẫn task được ghi (RW), gồm cả thư mục test; `python pos.py scope` chặn sửa ngoài Scope |
