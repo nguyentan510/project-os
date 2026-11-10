@@ -1,0 +1,10 @@
+#!/bin/sh
+# Luật cứng 3 và 8: chỉ push khi check qua và không sửa ngoài Scope của thẻ. Bật bằng: python pos.py setup
+PY=
+for p in python3 python py; do
+  if "$p" -c "" >/dev/null 2>&1; then PY=$p; break; fi
+done
+[ -n "$PY" ] || { echo "pre-push: không tìm thấy Python (python3 / python / py)."; exit 1; }
+echo "pre-push: chạy check…"
+"$PY" pos.py check || { echo "pre-push: check chưa qua, không push."; exit 1; }
+"$PY" pos.py scope || { echo "pre-push: sửa ngoài Scope của thẻ, không push."; exit 1; }

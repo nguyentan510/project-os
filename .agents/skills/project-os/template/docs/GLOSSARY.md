@@ -31,7 +31,7 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 
 | Thuật ngữ | Nghĩa |
 | --- | --- |
-| Product Owner (PO) | Người (không phải AI) quyết định cuối: duyệt plan, approve PR Lane Strict, nghiệm thu Milestone, cho phép bỏ qua luật khi khẩn cấp; phát prompt và chuyển tin giữa các phiên AI |
+| Product Owner (PO) | Solo Dev trong vai người quyết định; một người, không phải AI. Quyết định cuối: duyệt plan, approve PR Lane Strict, nghiệm thu Milestone, cho phép bỏ qua luật khi khẩn cấp; phát prompt và chuyển tin giữa các phiên AI |
 | Orchestrator | AI điều phối: viết thẻ task, cấp số T, merge lần lượt, ghi plan và STATUS; không viết code feature; mỗi lúc chỉ một Orchestrator |
 | Builder | AI làm task trên worktree riêng, theo luồng chung |
 | Reviewer | AI review PR Lane Strict, tối đa 2 vòng rồi chuyển PO |

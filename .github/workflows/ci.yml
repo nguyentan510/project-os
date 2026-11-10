@@ -1,0 +1,54 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # scope cần so với origin/main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Cấu hình git cho test (test tạo repo tạm và commit)
+        run: |
+          git config --global user.email ci@example.com
+          git config --global user.name ci
+          git config --global init.defaultBranch main
+      - run: python pos.py check
+      - name: Kiểm Scope của thẻ (luật cứng 8), chống --no-verify
+        # Chạy bản pos.py của nhánh đích, không phải bản trong PR: PR không tự nới được máy chặn Scope.
+        if: github.event_name == 'pull_request'
+        env:
+          PROJECT_OS_BRANCH: ${{ github.head_ref }}
+          PROJECT_OS_ROOT: ${{ github.workspace }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if git show "origin/$BASE_REF:pos.py" > "$RUNNER_TEMP/pos.py" 2>/dev/null; then
+            python "$RUNNER_TEMP/pos.py" scope
+          else
+            python pos.py scope  # nhánh đích chưa có pos.py (PR đầu tiên của dự án)
+          fi
+      - name: Kiểm plan theo Wave
+        run: python pos.py plan-check
+
+  pr-title:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kiểm tiêu đề PR (luật cứng 4)
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if printf '%s' "$TITLE" | grep -Eq '^(feat|fix|refactor|test|docs)\([A-Z]+-[0-9]{2,}(,[A-Z]+-[0-9]{2,})*\): [^[]+( \[T-[0-9]{3,}\])?$|^chore: [^[]+( \[T-[0-9]{3,}\])?$'; then
+            echo "Tiêu đề PR đúng mẫu."
+          else
+            echo "Tiêu đề PR sai mẫu: $TITLE"
+            echo "Đúng: feat(MAP-07): add store map API [T-042]  ·  chore: bump ruff"
+            exit 1
+          fi

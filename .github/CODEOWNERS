@@ -1,0 +1,28 @@
+# Máy chặn + Restricted zone + contract + Hot file → bắt buộc PO approve (luật cứng 6, 7).
+# Cùng danh sách với mục "Hot file" và "Restricted zone" trong AGENTS.md.
+# GitHub không cho tác giả approve PR của chính mình. Ở chế độ Một AI, PO tự merge (D11), nên
+# "Require review from Code Owners" chưa bật; file này hiện để GitHub đánh dấu PR nào chạm vùng cần PO xem kỹ.
+
+# Máy chặn của repo này
+/pos.py              @nguyentan510
+/scripts/features.py @nguyentan510
+/.githooks/          @nguyentan510
+/.github/            @nguyentan510
+
+# Plan: thẻ trên main quyết định Scope của task
+/docs/plan/          @nguyentan510
+
+# Hot file
+/.agents/skills/project-os/template/pos.py           @nguyentan510
+/.agents/skills/project-os/template/docs/PROCESS.md  @nguyentan510
+/README.md                                           @nguyentan510
+/package.json                                        @nguyentan510
+
+# Restricted zone: máy chặn phát hành cho người dùng, trình cài, contract
+/.agents/skills/project-os/template/.githooks/           @nguyentan510
+/.agents/skills/project-os/template/.github/             @nguyentan510
+/.agents/skills/project-os/template/scripts/features.py  @nguyentan510
+/bin/                                                    @nguyentan510
+/install.sh                                              @nguyentan510
+/install.ps1                                             @nguyentan510
+/docs/product/MODULES.md                                 @nguyentan510

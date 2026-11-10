@@ -2,9 +2,9 @@
 
 Phiên bản 1.1 · 2026-11-09 · Nguồn gốc của mọi quy tắc trong repo này. Tên gọi theo `docs/GLOSSARY.md`.
 
-Một AI mới, không có lịch sử chat, mở dự án phải biết trong 1 phút: **đang ở đâu, vì sao như vậy, cái gì không được đụng, làm tiếp từ đâu và kiểm chứng bằng gì**. Đầu mối chung là **mã** (`MAP-07`).
+**Vibe code có kiểm soát:** một người làm cùng nhiều AI, nói bằng lời thường, mà dự án không trượt khỏi mục tiêu. Một AI mới, không có lịch sử chat, mở dự án phải biết trong 1 phút: **đang ở đâu, vì sao như vậy, cái gì không được đụng, làm tiếp từ đâu và kiểm chứng bằng gì**. Đầu mối chung là **mã** (`MAP-07`).
 
-Quy tắc có 3 tầng: **Luật cứng** (mục 4, máy chặn, không ngoại lệ) · **Mặc định** (mục 12, AI được làm khác khi hợp lý hơn và ghi lý do) · **Mẫu** (phụ lục, dùng khi cần). Bắt đầu tối giản; phần nào chưa cần thì chưa bật (mục 12). Dự án mới bắt đầu từ mục 3. Product Owner không chuyên kỹ thuật đọc mục 14: chỉ cần nói bằng lời thường.
+Quy tắc có 3 tầng: **Luật cứng** (mục 4, máy chặn, không ngoại lệ) · **Mặc định** (mục 12, AI được làm khác khi hợp lý hơn và ghi lý do) · **Mẫu** (phụ lục, dùng khi cần). Bắt đầu tối giản; phần nào chưa cần thì chưa bật (mục 12). Dự án mới bắt đầu từ mục 3. Product Owner không cần nhớ mã hay tên prompt: nói bằng lời thường, AI tiếp nhận theo mục 14.
 
 ## 1. Sáu câu hỏi, sáu đầu mối
 
@@ -33,7 +33,7 @@ Người hay AI mới làm 5 bước:
 
 ### Thứ tự lập
 
-Mỗi bước có đầu ra; Product Owner (PO), người quyết định cuối của dự án, duyệt rồi mới sang bước sau (prompt P-02).
+Mỗi bước có đầu ra; Product Owner (PO), tức chính Solo Dev trong vai người quyết định, duyệt rồi mới sang bước sau (prompt P-02).
 
 1. **BRIEF** — làm cho ai, để làm gì, thế nào là thành công.
 2. **FEATURES** — module + mã, hành vi MVP, trạng thái `dự kiến`.
@@ -409,7 +409,7 @@ Có hai chế độ; dự án chọn một và ghi vào AGENTS.md.
 
 | Chế độ | Khi nào | Vai |
 | --- | --- | --- |
-| **Một AI** | Mặc định của solo dev | Không tách vai: cùng một AI viết thẻ, làm, merge. Kiểm chứng độc lập chỉ còn ở máy chặn và cổng của PO (duyệt plan, approve PR Strict) |
+| **Một AI** | Mặc định | Không tách vai: cùng một AI viết thẻ, làm, merge. Kiểm chứng độc lập chỉ còn ở máy chặn và cổng của PO (duyệt plan, approve PR Strict) |
 | **Một Orchestrator + nhiều Builder** | Có từ 2 task không trùng file | Tách vai theo bảng dưới. **Mỗi lúc chỉ một Orchestrator**; phiên Orchestrator mới đọc STATUS và chạy `python pos.py status` trước khi ghi gì |
 
 | Vai | Nhìn gì | Làm gì | Không làm |
@@ -609,7 +609,7 @@ Mọi yêu cầu thay đổi được đối chiếu với BRIEF, cho một tron
 
 ### Giới hạn
 
-- PO không chuyên kỹ thuật không thẩm định được code. Tóm tắt cho PO giúp quyết định có căn cứ hơn, không thay được người hiểu kỹ thuật; PR Lane Strict vẫn cần Reviewer.
+- PO vibe code thì không đọc từng dòng code. Tóm tắt cho PO giúp quyết định có căn cứ; thẩm định code của PR Lane Strict là việc của Reviewer.
 - Tiếp nhận không được thành đường tắt: yêu cầu nào cũng kết thúc ở một prompt đích và đi qua luồng chung.
 
 ## Phụ lục · Mẫu
