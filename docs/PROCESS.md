@@ -104,10 +104,11 @@ Tám luật duy nhất không linh hoạt. Luật nào máy chặn được thì
 | 5 | Mã không bao giờ dùng lại; mã trong code phải có trong sổ mã | Kiểm sổ mã trong `python pos.py check` |
 | 6 | Builder không tự sửa **contract đã khoá, Hot file, Restricted zone**. Cần sửa → dừng task, báo Orchestrator, xin duyệt | `CODEOWNERS` liệt kê đúng các đường dẫn này; máy chặn (`pos.py`, `scripts/features.py`, `.githooks/`, `.github/`) luôn là Hot file |
 | 7 | PR chạm các đường dẫn ở luật 6 phải có **PO approve** | Khoá main: bắt buộc Code Owner approve (dùng merge queue: thêm job `approval-check`, phụ lục) |
-| 8 | Không sửa ngoài Scope của thẻ; cần thì dừng và báo | pre-push hook và CI chạy `python pos.py scope` (so file đã sửa với dòng `Scope:` của thẻ trên main; không có thẻ thì chỉ qua khi đủ điều kiện Lane Fast); CI dùng bản `pos.py` của main |
+| 8 | Không sửa ngoài Scope của thẻ; cần thì dừng và báo. Không xoá hay làm giảm test để `check` qua | pre-push hook và CI chạy `python pos.py scope` (so file đã sửa với dòng `Scope:` của thẻ trên main; không có thẻ thì chỉ qua khi đủ điều kiện Lane Fast); CI dùng bản `pos.py` của main |
 
 - Restricted zone và Hot file ghi **một danh sách** trong AGENTS.md, chép đúng sang `CODEOWNERS` (phụ lục). Mặc định Restricted zone: đăng nhập, phân quyền, thanh toán, contract, migration, xoá dữ liệu.
 - Xin duyệt = Orchestrator tạo task riêng cho phần cần sửa; PO duyệt task trước, approve PR sau.
+- **Bảo toàn test** (thuộc luật 8): `python pos.py scope` chặn thay đổi xoá một file test hoặc làm giảm số test trong một file test so với main. Muốn bỏ test thật thì thẻ của task ghi đích danh file đó trong Scope (mẫu có `*` không tính), tức là PO đã duyệt việc bỏ khi duyệt thẻ. Máy đếm theo dấu hiệu khai báo test (`def test_`, `it(`, `#[test]`…); nó không phát hiện được việc làm yếu một phép kiểm bên trong test, phần đó là của Reviewer.
 - Luật 2 chỉ quét dạng khoá phổ biến trong file hiện có, không quét lịch sử Git; cần chặt hơn thì thêm gitleaks vào CI. Giá trị giả trong dữ liệu test: ghi `project-os: allow-secret` trên cùng dòng.
 - Luật 6–8 chỉ kín khi đã bật "Require review from Code Owners": không có nó, một PR vẫn sửa được chính `ci.yml`. GitHub không cho tác giả approve PR của mình, nên AI phải mở PR bằng tài khoản khác PO (tài khoản bot hoặc GitHub App).
 - Khẩn cấp (lỗi production): chỉ PO được cho bỏ qua luật, ghi lý do vào DECISIONS.md, làm task bù sau (P-14).

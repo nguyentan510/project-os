@@ -211,7 +211,7 @@ Tám luật duy nhất không linh hoạt; luật nào máy chặn được thì
 | 5 | Mã không bao giờ dùng lại; mã trong code phải có trong sổ mã | `pos.py check` |
 | 6 | Builder không tự sửa contract đã khoá, Hot file, Restricted zone | `CODEOWNERS` |
 | 7 | PR chạm các đường dẫn ở luật 6 phải có Product Owner (PO) approve | Khoá `main`: bắt buộc Code Owner |
-| 8 | Không sửa ngoài Scope của thẻ | pre-push hook + CI chạy `pos.py scope` (bản của `main`); không có thẻ thì phải đủ điều kiện Lane Fast |
+| 8 | Không sửa ngoài Scope của thẻ; không xoá hay làm giảm test để `check` qua | pre-push hook + CI chạy `pos.py scope` (bản của `main`); không có thẻ thì phải đủ điều kiện Lane Fast |
 
 ## Bảng prompt
 

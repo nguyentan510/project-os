@@ -48,7 +48,7 @@ Kiểm chứng độc lập chỉ còn ở máy chặn và cổng của PO, nên
 5. Mã không bao giờ dùng lại; mã trong code phải có trong sổ mã.
 6. Không tự sửa contract đã khoá, Hot file, Restricted zone. Cần sửa → dừng, báo Orchestrator, xin duyệt.
 7. PR chạm các đường dẫn ở luật 6 phải có PO approve.
-8. Không sửa ngoài Scope của thẻ; cần thì dừng và báo. Không có thẻ thì chỉ được là Lane Fast: `python pos.py scope` chặn khi chạm Hot file, Restricted zone hoặc quá ngưỡng `FAST_MAX_*` trong `pos.py`.
+8. Không sửa ngoài Scope của thẻ; cần thì dừng và báo. Không có thẻ thì chỉ được là Lane Fast: `python pos.py scope` chặn khi chạm Hot file, Restricted zone hoặc quá ngưỡng `FAST_MAX_*` trong `pos.py`. Không xoá file test hay làm giảm số test so với main, trừ khi thẻ ghi đích danh file đó trong Scope: `python pos.py scope` chặn.
 
 ## Hot file (cùng danh sách với .github/CODEOWNERS)
 pos.py, scripts/features.py, .githooks/, .github/
