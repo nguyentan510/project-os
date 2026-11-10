@@ -13,5 +13,5 @@ Ngày 0 cần tối thiểu 5 dòng dưới đây.
 
 ## Còn mở
 
-| Mã | Câu hỏi | Chờ ai |
-| --- | --- | --- |
+| Mã | Câu hỏi | Lựa chọn (khuyến nghị đứng đầu) | Chờ ai |
+| --- | --- | --- | --- |

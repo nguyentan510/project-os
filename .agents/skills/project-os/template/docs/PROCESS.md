@@ -211,9 +211,9 @@ Hai trục nối nhau qua mã feature: **Sản phẩm** (có gì, sống lâu) v
 | D60 | 2026-11-09 | Gom cụm tính lại khi dừng kéo bản đồ    | Máy yếu không bị giật     | MAP-02          | AI        |
 
 ## Còn mở
-| Mã    | Câu hỏi                          | Chờ ai      |
-| ----- | -------------------------------- | ----------- |
-| Q-map | Nguồn ô bản đồ trước khi mở rộng | PO   |
+| Mã    | Câu hỏi                          | Lựa chọn (khuyến nghị đứng đầu)       | Chờ ai |
+| ----- | -------------------------------- | -------------------------------------- | ------ |
+| Q-map | Nguồn ô bản đồ trước khi mở rộng | OpenStreetMap miễn phí · Google trả phí | PO     |
 ```
 
 ## 7. Kế hoạch và bàn giao
@@ -224,7 +224,7 @@ Hai trục nối nhau qua mã feature: **Sản phẩm** (có gì, sống lâu) v
 | Plan `M3-*.md` | Milestone này làm thế nào | Thẻ task (Scope, Phụ thuộc, Xong khi) | Orchestrator viết, PO duyệt (Code Owner của `docs/plan/`) |
 | STATUS.md | Phiên trước dừng ở đâu | Đang chặn gì, ghi chú bàn giao; thẻ task khi chưa có plan | Orchestrator (một AI: chính nó) |
 
-Dự án nhỏ chỉ cần STATUS.md, đặt thẻ task ở mục "Tiếp theo" thay plan. Ai đang giữ task nào và task nào đã xong **không ghi tay**: `python pos.py status` suy ra từ thẻ, branch và commit trên main (task xong khi PR mang `[T-nnn]` đã merge). "Vừa xong" không ghi ở đâu: đã có trong Git. Milestone nghiệm thu thì xoá plan (lịch sử ở Git).
+Việc đang chờ PO (câu hỏi `Q-` còn mở, mục "Đang chặn", PR cần approve) được `python pos.py status` gom vào nhóm "Chờ PO". Dự án nhỏ chỉ cần STATUS.md, đặt thẻ task ở mục "Tiếp theo" thay plan. Ai đang giữ task nào và task nào đã xong **không ghi tay**: `python pos.py status` suy ra từ thẻ, branch và commit trên main (task xong khi PR mang `[T-nnn]` đã merge). "Vừa xong" không ghi ở đâu: đã có trong Git. Milestone nghiệm thu thì xoá plan (lịch sử ở Git).
 
 ```
 # STATUS · 2026-11-09 · M3
@@ -516,7 +516,7 @@ Mỗi bước của luồng có một prompt mẫu, mã `P-nn`. Bản đầy đ�
 | Mã | Khi dùng | Vai | Prompt | Đầu ra |
 | --- | --- | --- | --- | --- |
 | P-00 | PO nói bằng lời thường, không kèm mã | Orchestrator | Tôi nói bằng lời thường, không kèm mã: `<lời của tôi>`. Tiếp nhận theo PROCESS.md mục 14: (1) xác định ý định; (2) tự tra mã bằng `python pos.py find`, tôi không cần nhớ mã; (3) thiếu thông tin thì hỏi tối đa 3 câu dạng lựa chọn, khuyến nghị đứng đầu; (4) nhắc lại theo mẫu "Tôi hiểu là…" và chờ tôi xác nhận; (5) chuyển sang prompt đích và làm theo luồng chung. Luôn ghi tên gọi trước, mã trong ngoặc. | Lời nhắc lại + prompt đích |
-| P-01 | Mở phiên | Mọi vai | Đọc AGENTS.md và STATUS.md, chạy `python pos.py status`. Tóm tắt trong 5 dòng: Milestone nào, ai giữ task nào, đang chặn gì, việc tiếp theo. Chưa sửa gì. | 5 dòng tóm tắt |
+| P-01 | Mở phiên | Mọi vai | Đọc AGENTS.md và STATUS.md, chạy `python pos.py status`. Tóm tắt trong 5 dòng: Milestone nào, ai giữ task nào, đang chặn gì, đang chờ tôi quyết gì (nhóm "Chờ PO"), việc tiếp theo. Chưa sửa gì. | 5 dòng tóm tắt |
 | P-02 | Khởi tạo dự án | Orchestrator | Từ BRIEF sau: `<brief>`. Làm Ngày 0 theo mục 3, từng bước: BRIEF → FEATURES → DECISIONS → module + contract → AGENTS + STATUS → khung repo. Trình đầu ra mỗi bước, chờ tôi duyệt rồi mới sang bước sau. | Bộ file Ngày 0 |
 | P-03 | Lập plan (một agent) | Orchestrator | Lập plan cho Milestone `<M3>`: `<mục tiêu>`. Đọc ROADMAP, FEATURES, DECISIONS. Viết thẻ task theo mẫu, task contract đi đầu, ghi Lane từng task, kiểm hai task song song không trùng Scope. Mỗi thẻ có "Xong khi" gồm một hành vi tôi tự quan sát được và một lệnh kiểm. Đầu plan viết "Tóm tắt cho PO": làm gì, theo thứ tự nào, tôi sẽ phải duyệt những gì. Chờ tôi duyệt. | `docs/plan/M3-*.md` |
 | P-03-MULTI | Lập plan nhiều agent | Orchestrator | Lập plan cho Milestone `<M3>` theo đồ thị không chu trình. Đọc BRIEF, FEATURES, ROADMAP, DECISIONS. Chia W0 (task contract + mock) → W1 (2–5 task song song) → W2 (nối dây + e2e). Mỗi thẻ ghi Wave, Scope (RW), Read (RO), Phụ thuộc chỉ trỏ Wave trước. Cách đăng ký module để không sửa Hot file. Chạy `python pos.py plan-check` đến khi qua, dán kết quả. Mỗi thẻ có "Xong khi" gồm một hành vi tôi tự quan sát được và một lệnh kiểm. Đầu plan viết "Tóm tắt cho PO": làm gì, theo thứ tự nào, tôi sẽ phải duyệt những gì. Chờ tôi duyệt. | `docs/plan/M3-*.md` + kết quả plan-check |

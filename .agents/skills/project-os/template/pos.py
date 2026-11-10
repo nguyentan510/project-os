@@ -899,7 +899,7 @@ def cmd_status(opts, _):
     stray = [f"{t}  {br}" for t, br in sorted(branches.items()) if t not in known and t not in merged]
     waiting = waiting_on_po()
     say(f"status: {len(cards)} thẻ · " + " · ".join(f"{k.lower()} {len(v)}" for k, v in groups.items())
-        + f" · chờ PO {len(waiting)}")
+        + f" · chờ PO {sum(1 for w in waiting if not w.startswith('('))}")
     for title, rows in [("Chờ PO", waiting)] + list(groups.items()) + [("Branch mang số T nhưng không có thẻ", stray)]:
         if rows:
             say(title)

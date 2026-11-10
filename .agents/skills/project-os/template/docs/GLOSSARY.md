@@ -24,7 +24,7 @@ Thuật ngữ riêng của dự án (domain, module, tên nghiệp vụ) thêm v
 | Wave | Lớp task trong plan nhiều agent; task chỉ phụ thuộc Wave trước | `W0`, `W1`, `W2` |
 | Task | Đơn vị công việc; 1 task = 1 branch = 1 worktree = 1 PR | `T-043` (Lane Fast: mã feature) |
 | Quyết định | Một lựa chọn kỹ thuật kèm lý do, trong DECISIONS.md | `D59` |
-| Câu hỏi mở | Điều chưa chốt, ghi người đang chờ | `Q-map` |
+| Câu hỏi mở | Điều chưa chốt, ghi các lựa chọn và người đang chờ; chờ PO thì hiện ở nhóm "Chờ PO" của `status` | `Q-map` |
 | Prompt | Prompt mẫu cho từng bước của luồng | `P-04`, `P-SOS` |
 
 ## Vai
