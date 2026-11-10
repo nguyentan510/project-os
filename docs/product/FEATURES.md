@@ -90,4 +90,4 @@ Mỗi module là một tiêu đề `### MÃ · Tên`; kiểm sổ mã chỉ nh�
 | --- | --- | --- | --- | --- | --- | --- |
 | EVL-01 | Thử AI phiên trắng | Có kịch bản và bảng chấm để kiểm AI mới tóm tắt đúng dự án trong 1 phút trên Claude Code, Codex, Antigravity | — | — | — | dự kiến |
 | EVL-02 | Thử tiếp nhận 8 câu | Có 8 câu mẫu của PO và bảng chấm: AI nhắc lại đúng ý định và chuyển đúng prompt | — | — | — | dự kiến |
-| EVL-03 | Thử vi phạm 10 task | Có 10 task cố tình vi phạm và kết quả máy chặn bắt được bao nhiêu | — | — | — | dự kiến |
+| EVL-03 | Thử vi phạm 10 task | Một lệnh làm thật 10 việc bị cấm trên một dự án tạm và in bảng máy chặn bắt được bao nhiêu, kèm danh sách kiểu đã biết là lọt | evals/violations.py | — (có test, chưa gắn mã) | — | dùng |
