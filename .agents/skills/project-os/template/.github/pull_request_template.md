@@ -15,5 +15,5 @@
 **Ghi chú bàn giao:**
 
 - [ ] `python pos.py check` qua ở local
-- [ ] Không chạm Restricted zone / Hot file / contract đã khoá (nếu có: Lane Strict, chờ chủ dự án approve)
+- [ ] Không chạm Restricted zone / Hot file / contract đã khoá (nếu có: Lane Strict, chờ PO approve)
 - [ ] FEATURES.md, DECISIONS.md, GLOSSARY.md đã cập nhật nếu cần

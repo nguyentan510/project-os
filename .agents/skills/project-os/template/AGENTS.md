@@ -28,7 +28,7 @@ Fast · Normal · Strict (PROCESS.md mục 8). Không có thẻ → Fast; có th
 ## Vai (PROCESS.md mục 11)
 {{Một AI: không tách vai | Một Orchestrator + nhiều Builder}}
 Orchestrator: thẻ, số T, merge, STATUS. Builder: làm trong Scope, dừng khi PR qua CI. Reviewer: chỉ PR Lane Strict.
-Cần báo Orchestrator: ghi vào báo cáo hoặc PR rồi dừng; chủ dự án chuyển tin. Builder không ghi STATUS, plan.
+Cần báo Orchestrator: ghi vào báo cáo hoặc PR rồi dừng; Product Owner (PO) chuyển tin. Builder không ghi STATUS, plan.
 
 ## Luật cứng (PROCESS.md mục 4)
 1. Không push thẳng lên main; chỉ merge qua PR.
@@ -37,7 +37,7 @@ Cần báo Orchestrator: ghi vào báo cáo hoặc PR rồi dừng; chủ dự �
 4. Tiêu đề PR: `<loại>(<mã>): <việc> [T-nnn]`.
 5. Mã không bao giờ dùng lại; mã trong code phải có trong sổ mã.
 6. Không tự sửa contract đã khoá, Hot file, Restricted zone. Cần sửa → dừng, báo Orchestrator, xin duyệt.
-7. PR chạm các đường dẫn ở luật 6 phải có chủ dự án approve.
+7. PR chạm các đường dẫn ở luật 6 phải có PO approve.
 8. Không sửa ngoài Scope của thẻ; cần thì dừng và báo. Không có thẻ thì chỉ được là Lane Fast: `python pos.py scope` chặn khi chạm Hot file, Restricted zone hoặc quá ngưỡng `FAST_MAX_*` trong `pos.py`.
 
 ## Hot file (cùng danh sách với .github/CODEOWNERS)

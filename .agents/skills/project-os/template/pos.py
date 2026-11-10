@@ -5,7 +5,7 @@ Chỉ dùng thư viện chuẩn Python 3.8+. (Đặt tên pos.py, không phải 
   python pos.py setup | run | lint | test [F=MAP-07] [L=api] | features [--sync] | secrets | check
   python pos.py task T=T-043 N=map-sales [TYPE=fix]    tạo worktree + branch từ main mới nhất
   python pos.py done T=T-043                           dọn sau khi PR đã merge
-  python pos.py drop T=T-043 [CONFIRM=T-043]           huỷ task chưa merge (phải hỏi chủ dự án)
+  python pos.py drop T=T-043 [CONFIRM=T-043]           huỷ task chưa merge (phải hỏi PO)
   python pos.py status                                 trạng thái task suy từ thẻ + Git: đang làm, sẵn sàng, chờ, xong
   python pos.py wt                                     liệt kê worktree
   python pos.py wt-clean [APPLY=1]                     tìm worktree mồ côi (đã merge); chỉ liệt kê, APPLY=1 mới dọn
@@ -284,7 +284,7 @@ def cmd_drop(opts, _):
         say("  Thay đổi chưa commit:")
         for line in git("status", "--short", cwd=path)[1].splitlines():
             say("    " + line)
-        die(f"Chủ dự án đồng ý thì chạy lại: python pos.py drop T={t} CONFIRM={t}")
+        die(f"PO đồng ý thì chạy lại: python pos.py drop T={t} CONFIRM={t}")
     git("worktree", "remove", "--force", str(path))
     git("branch", "--quiet", "-D", br)
     git("worktree", "prune")
@@ -573,7 +573,7 @@ def cmd_scope(opts, _):
 
 
 # ── Kiểm plan theo Wave (PROCESS.md mục 11) ─────────────────────────────────
-# Chạy trên docs/plan/*.md trong thư mục làm việc, TRƯỚC khi chủ dự án duyệt plan. Bốn lỗi bị chặn:
+# Chạy trên docs/plan/*.md trong thư mục làm việc, TRƯỚC khi PO duyệt plan. Bốn lỗi bị chặn:
 #   1. hai task cùng Wave có "Scope" (quyền ghi, RW) giao nhau;
 #   2. "Phụ thuộc" trỏ tới task cùng Wave hoặc Wave sau;
 #   3. "Phụ thuộc" trỏ tới task không có trong plan;

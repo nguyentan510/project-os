@@ -206,7 +206,7 @@ Tám luật duy nhất không linh hoạt; luật nào máy chặn được thì
 | 4 | Tiêu đề PR có mã: `<loại>(<mã>): <việc> [T-nnn]` | CI kiểm tiêu đề PR |
 | 5 | Mã không bao giờ dùng lại; mã trong code phải có trong sổ mã | `pos.py check` |
 | 6 | Builder không tự sửa contract đã khoá, Hot file, Restricted zone | `CODEOWNERS` |
-| 7 | PR chạm các đường dẫn ở luật 6 phải có chủ dự án approve | Khoá `main`: bắt buộc Code Owner |
+| 7 | PR chạm các đường dẫn ở luật 6 phải có Product Owner (PO) approve | Khoá `main`: bắt buộc Code Owner |
 | 8 | Không sửa ngoài Scope của thẻ | pre-push hook + CI chạy `pos.py scope` (bản của `main`); không có thẻ thì phải đủ điều kiện Lane Fast |
 
 ## Bảng prompt
@@ -234,9 +234,9 @@ Làm bằng tay, một lần cho mỗi dự án: **Settings → Branches → Add
 - [x] Require a pull request before merging
 - [x] Require status checks to pass: `check`, `pr-title`
 - [x] Require branches to be up to date before merging
-- [x] Require review from Code Owners (sau khi thay `@chu-du-an` trong `.github/CODEOWNERS`)
+- [x] Require review from Code Owners (sau khi thay `@product-owner` trong `.github/CODEOWNERS`)
 
-Luật 6–8 chỉ kín khi bật mục cuối: không có nó, một PR vẫn sửa được chính `pos.py` hoặc `ci.yml`. GitHub không cho tác giả approve PR của mình, nên AI cần mở PR bằng tài khoản khác chủ dự án (tài khoản bot hoặc GitHub App).
+Luật 6–8 chỉ kín khi bật mục cuối: không có nó, một PR vẫn sửa được chính `pos.py` hoặc `ci.yml`. GitHub không cho tác giả approve PR của mình, nên AI cần mở PR bằng tài khoản khác PO (tài khoản bot hoặc GitHub App).
 
 ## Yêu cầu
 
