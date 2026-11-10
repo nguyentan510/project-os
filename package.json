@@ -1,7 +1,7 @@
 {
   "name": "@nguyentan0510/project-os",
   "version": "1.5.1",
-  "description": "Cài skill Project OS (quy tắc dự án cho solo dev + nhiều AI) vào Claude Code, Codex, Antigravity bằng một lệnh: npx -y @nguyentan0510/project-os",
+  "description": "Cài skill Project OS (vibe code có kiểm soát cho solo dev + nhiều AI) vào Claude Code, Codex, Antigravity bằng một lệnh: npx -y @nguyentan0510/project-os",
   "license": "MIT",
   "publishConfig": {
     "access": "public"

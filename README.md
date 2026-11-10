@@ -2,7 +2,7 @@
 
 # Project OS
 
-**Quy tắc triển khai dự án cho Solo Dev làm việc cùng nhiều AI**<br>
+**Vibe code có kiểm soát: quy tắc triển khai dự án cho Solo Dev làm việc cùng nhiều AI**<br>
 Claude Code · Codex · Antigravity · Cursor…
 
 [![npm](https://img.shields.io/npm/v/@nguyentan0510/project-os?color=cb3837&logo=npm)](https://www.npmjs.com/package/@nguyentan0510/project-os)
@@ -19,6 +19,8 @@ npx -y @nguyentan0510/project-os
 
 Một AI mới, không có lịch sử chat, mở repo phải biết trong **1 phút**: *đang ở đâu, vì sao như vậy, cái gì không được đụng, làm tiếp từ đâu và kiểm chứng bằng gì*.
 Project OS đạt điều đó bằng một đầu mối chung là **mã** (`MAP-07`, `D59`, `T-042`) xuyên suốt sổ feature, code, test, commit và PR, cùng **8 luật cứng do máy chặn** thay vì trông vào việc AI có đọc hướng dẫn hay không.
+
+Solo Dev cũng chính là **Product Owner (PO)**: một người vừa quyết định sản phẩm vừa điều khiển AI viết code. PO nói bằng lời thường; quy trình lo phần mã, prompt và máy chặn.
 
 Repo này vừa là **skill** (định dạng `SKILL.md` chung, AI tự gọi) vừa là **khung Ngày 0** (chép vào dự án trước dòng code đầu tiên).
 
@@ -133,7 +135,7 @@ Cài bằng tay: clone repo rồi
 
 | Bạn muốn | Nói với AI / chạy |
 | --- | --- |
-| Không rành kỹ thuật, không nhớ mã hay tên prompt | Cứ nói bằng lời thường. AI tiếp nhận theo `P-00`: tự tra mã, hỏi lại, nhắc "Tôi hiểu là…" rồi mới làm |
+| Không muốn nhớ mã hay tên prompt | Cứ nói bằng lời thường. AI tiếp nhận theo `P-00`: tự tra mã, hỏi lại, nhắc "Tôi hiểu là…" rồi mới làm |
 | Bắt đầu dự án mới, áp quy tắc vào repo đang có | *"Dùng skill project-os để bắt đầu dự án này"* |
 | Kiểm repo đã đủ để viết code chưa | *"Dùng skill project-os để kiểm toán Ngày 0"* (nên dùng phiên AI khác) |
 | Repo đang kẹt, không rõ lỗi | `python pos.py sos` rồi prompt `P-SOS` |
