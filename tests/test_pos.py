@@ -378,7 +378,7 @@ class LostTestsTest(WorktreeCase):
         self.assertEqual(self.scope().returncode, 0, "thẻ ghi đích danh file có dấu thì được xoá")
 
     def test_turning_a_test_file_into_a_symlink_is_blocked(self):
-        blob = git(self.wt, "hash-object", "-w", "--stdin") if False else None
+        # Tạo symlink ngay trong index (mode 120000) để test chạy được cả trên Windows.
         target = self.wt / "link-target.txt"
         target.write_text("src/map/a.py", encoding="utf-8")
         blob = git(self.wt, "hash-object", "-w", "link-target.txt")
